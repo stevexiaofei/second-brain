@@ -8,3 +8,4 @@
 - [Autonomous Driving](./autonomous-driving/)
 - [Engineering](./engineering/)
 - [Mathematics](./mathematics/)
+- [PyTorch](./pytorch/)

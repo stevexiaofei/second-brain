@@ -33,7 +33,8 @@ export default withMermaid(
         { text: 'AI', link: '/knowledge/ai/' },
         { text: 'Autonomous Driving', link: '/knowledge/autonomous-driving/' },
         { text: 'Engineering', link: '/knowledge/engineering/' },
-        { text: 'Mathematics', link: '/knowledge/mathematics/' }
+        { text: 'Mathematics', link: '/knowledge/mathematics/' },
+        { text: 'PyTorch', link: '/knowledge/pytorch/' }
       ]}],
       '/projects/': [{ text: 'Projects', items: [{ text: 'Overview', link: '/projects/' }] }],
       '/ideas/': [{ text: 'Ideas', items: [{ text: 'Overview', link: '/ideas/' }] }],

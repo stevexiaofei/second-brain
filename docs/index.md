@@ -15,6 +15,7 @@
 - [Autonomous Driving](/knowledge/autonomous-driving/)
 - [Engineering](/knowledge/engineering/)
 - [Mathematics](/knowledge/mathematics/)
+- [PyTorch](/knowledge/pytorch/)
 
 ## 🚀 Projects
 
