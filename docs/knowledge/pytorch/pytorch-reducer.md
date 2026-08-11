@@ -24,16 +24,26 @@ updated: 2026-08-11
 ### 定位：事件驱动的归约协调器
 用户写 `nn.parallel.DistributedDataParallel(model)` 时，构造函数经 `_ddp_init_helper` 在 C++ 侧 `new c10d::Reducer(...)`。Python 的 `DistributedDataParallel` 只是一层薄包装，真正的活儿都在 Reducer 里。它被动等 autograd 钩子告诉它"某参数梯度好了"，把这些事件翻译成"某桶可以 all-reduce 了"，反向结束时统一收尾。
 
-```mermaid
-flowchart TD
-    U["用户代码"] --> DDP["nn.parallel.DistributedDataParallel\
-(Python 薄包装)\
-_ddp_init_helper / _pre_forward / _post_forward"]
-    DDP --> R["c10d::Reducer ← 本文档主角\
-分桶 / 注册 autograd hook / 触发 allreduce"]
-    R --> PG["c10d::ProcessGroup\
-NCCL / Gloo / MPI"]
-```
+<div class="diagram">
+  <div class="h-flow" style="flex-wrap:wrap; justify-content:center; align-items:stretch;">
+    <span class="d-node d-node-start" style="min-width:140px;">用户代码</span>
+    <span class="d-arrow"></span>
+    <span class="d-node" style="min-width:280px;">
+      <b>DistributedDataParallel</b>（Python 薄包装）<br/>
+      <small style="opacity:0.8; font-weight:400;"><code>_ddp_init_helper</code> · <code>_pre_forward</code> · <code>_post_forward</code></small>
+    </span>
+    <span class="d-arrow"></span>
+    <span class="d-node d-node-active" style="min-width:320px;">
+      <b>c10d::Reducer</b>（本文档主角）<br/>
+      <small style="opacity:0.8; font-weight:400;">分桶 · 注册 autograd hook · 按序 all-reduce</small>
+    </span>
+    <span class="d-arrow"></span>
+    <span class="d-node" style="min-width:200px;">
+      <b>ProcessGroup</b><br/>
+      <small style="opacity:0.8; font-weight:400;">后端：NCCL / Gloo / MPI / UCC</small>
+    </span>
+  </div>
+</div>
 
 它要解决的七个问题：逐个 allreduce 太慢（合并成桶）、等全部梯度再通信浪费 GPU（桶一就绪就发起，与反向重叠）、怎么知道某参数梯度算完（给 AccumulateGrad 挂 post hook）、有些参数没参与 forward（DFS 找未使用参数预标 ready）、跨 rank 桶顺序不一致会死锁（按 `next_bucket_` 严格顺序归约）、想自定义通信（CommHook 接口）、归约结果怎么回 `param.grad`（unflatten 写回或让 grad 直接是桶视图）。
 

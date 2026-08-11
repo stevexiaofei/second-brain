@@ -70,38 +70,55 @@ torchgen 把这件事变成**声明式**的：开发者只在 `native_functions.
 
 torchgen 把"声明"逐步翻译成"目标代码"，分四个阶段：
 
-```mermaid
-flowchart TD
-    YAML["native_functions.yaml\
-derivatives.yaml\
-tags.yaml"] --> PARSE["yaml_utils.py\
-加载与校验"]
-    PARSE --> MODEL["model.py\
-NativeFunction / FunctionSchema / Type dataclass\
-（无 C++ 类型，往返无损）"]
-    MODEL --> API["api/ emitters\
-cpp · dispatcher · native · python\
-meta · autograd · structured · functionalization\
-ufunc · lazy"]
-    API --> DEST["dest/ emitters\
-native_functions.py → NativeFunctions.h/.cpp\
-register_dispatch_key.py → TORCH_LIBRARY_IMPL\
-lazy_ir.py / lazy_ts_lowering.py → LazyTensor IR"]
-    DEST --> GEN["gen.py\
-主编排器：组合上述为每算子×每分发键发射代码"]
-    GEN --> OUT1["torch/csrc/autograd/generated/\
-VariableType_*.cpp · TraceType_*.cpp\
-ADInplaceOrViewType_*.cpp · Functions.cpp\
-python_functions_*.cpp"]
-    GEN --> OUT2["torch/csrc/aten/\
-aten 内核绑定"]
-    GEN --> OUT3["torch/_C/__init__.pyi\
-Python 绑定类型存根"]
-    GEN --> OUT4["c10/core/DispatchKey.h\
-分发键表"]
-    GEN --> OUT5["树外后端桩（XLA / MPS / PrivateUse1-3）\
-via gen_backend_stubs.py"]
-```
+<div class="diagram">
+  <div class="v-steps">
+    <div class="step-row">
+      <div class="step-dot" style="background:#fefce8;border-color:#ca8a04;color:#713f12;">1</div>
+      <div class="step-body">
+        <b>单一事实来源（YAML）</b>
+        <small><code>native_functions.yaml</code>（算子 schema）· <code>derivatives.yaml</code>（导数公式）· <code>tags.yaml</code>（算子标签）。<b>一条 YAML 生成所有层，杜绝手签不一致。</b></small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#fef9c3;border-color:#eab308;color:#713f12;">2</div>
+      <div class="step-body">
+        <b><code>yaml_utils.py</code> 加载 & 校验 → <code>model.py</code> 构建内存模型</b>
+        <small><code>NativeFunction</code> / <code>FunctionSchema</code> / <code>Type</code> 都是纯 Python dataclass，<b>不包含任何 C++ 特定类型</b>——可无损往返 YAML，是生成器的"黄金中间表示"。</small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#ecfeff;border-color:#06b6d4;color:#164e63;">3</div>
+      <div class="step-body">
+        <b>两层 emitters：<code>api/</code> → <code>dest/</code></b>
+        <small>
+          <b>api/（抽象模板）</b>：cpp · dispatcher · native · python · meta · autograd · structured · functionalization · ufunc · lazy<br/>
+          <b>dest/（具体产物组装）</b>：<code>native_functions.py</code> 生 NativeFunctions.h/.cpp · <code>register_dispatch_key.py</code> 生 <code>TORCH_LIBRARY_IMPL</code> · <code>lazy_ir.py</code> / <code>lazy_ts_lowering.py</code> 生 Lazy IR
+        </small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#eff6ff;border-color:#3b82f6;color:#1e3a8a;">4</div>
+      <div class="step-body">
+        <b><code>gen.py</code> 主编排器：为每算子 × 每分发键组合发射代码</b>
+        <small>核心是"一个算子声明 → 所有后端/层的代码都自动生成"。</small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#eef2ff;border-color:#6366f1;color:#3730a3;">5</div>
+      <div class="step-body">
+        <b>最终产物（构建时写入源码树）</b>
+        <small>
+          <b>autograd generated：</b><code>VariableType_*.cpp</code> / <code>TraceType_*.cpp</code> / <code>ADInplaceOrViewType_*.cpp</code> / <code>Functions.cpp</code> / <code>python_functions_*.cpp</code>（<code>torch/csrc/autograd/generated/</code>）<br/>
+          <b>绑定 & 类型：</b><code>torch/csrc/aten/</code> 内核绑定 · <code>torch/_C/__init__.pyi</code> Python 类型存根 · <code>c10/core/DispatchKey.h</code> 分发键枚举表<br/>
+          <b>树外后端桩：</b>XLA / MPS / PrivateUse1–3（<code>gen_backend_stubs.py</code>）
+        </small>
+      </div>
+    </div>
+  </div>
+  <div class="d-note">
+    <b>触发位置：</b>构建时由 <code>caffe2/CMakeLists.txt</code> 调 <code>tools/setup_helpers/generate_code.py</code> 再调 <code>torchgen/gen.py</code>——caffe2 虽然是构建编排层，但 torchgen 才是"声明→代码"的真正执行者。
+  </div>
+</div>
 
 阶段解释：
 

@@ -41,23 +41,24 @@ updated: 2026-08-11
 
 `torch.export.export(model, args)` 通过追踪（`_trace.py`）捕获模型为 FX graph，应用默认分解（`default_decompositions`）规范化算子，再附上签名与状态信息组装成 `ExportedProgram`。导出图可经 `_unlift`/`_swap` 处理 lift/unlift 语义；`unflatten` 还原嵌套模块；`save`/`load` 经 serde 持久化；`draft_export` 提供宽松的草稿导出用于迭代；`_safeguard` 做安全检查；`register_dataclass`/`custom_ops`/`custom_obj` 支持自定义类型。
 
-```mermaid
-flowchart LR
-    M["用户模型\
-nn.Module + args"] --> EX["torch.export.export\
-(_trace.py)"]
-    EX --> TR["追踪捕获 FX graph\
-+ default_decompositions 规范化"]
-    TR --> EP["ExportedProgram\
-(FX graph + ExportGraphSignature\
-+ 状态 + ModuleCallEntry)"]
-    EP --> UF["unflatten.py\
-恢复嵌套模块结构"]
-    EP --> SL["save / load\
-serde schema 持久化"]
-    EP --> BE["交付后端编译器 /\
-AOT-Inductor / C++ 运行时"]
-```
+<div class="diagram">
+  <div class="h-flow" style="flex-wrap:wrap; justify-content:center; align-items:stretch;">
+    <span class="d-node d-node-start" style="min-width:180px;">用户模型<br/><small style="opacity:0.75; font-weight:400;">nn.Module + 示例输入</small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node" style="min-width:220px;"><b>torch.export.export</b><br/><small style="opacity:0.75; font-weight:400;">(<code>_trace.py</code>：symbolic trace)</small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node" style="min-width:260px;">追踪捕获 FX Graph<br/><small style="opacity:0.75; font-weight:400;">+ <code>default_decompositions</code> 规范化算子</small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node d-node-active" style="min-width:280px;"><b>ExportedProgram</b><br/><small style="opacity:0.8; font-weight:400;">FX graph + ExportGraphSignature + 状态 + ModuleCallEntry</small></span>
+  </div>
+  <div class="h-flow" style="justify-content:center; margin-top:16px; flex-wrap:wrap;">
+    <div style="display:grid; grid-template-columns:repeat(3,minmax(220px,1fr)); gap:10px;">
+      <span class="d-label" style="max-width:none;"><b>① 源码复原：</b><code>unflatten.py</code> 恢复嵌套模块结构</span>
+      <span class="d-label" style="max-width:none;"><b>② 持久化：</b><code>save / load</code> 用 serde schema 把 ExportedProgram 写到磁盘</span>
+      <span class="d-label" style="max-width:none;"><b>③ 部署消费：</b>交给后端编译器 / AOT-Inductor / C++ 运行时（无 Python）</span>
+    </div>
+  </div>
+</div>
 
 ## 我的理解
 

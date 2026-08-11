@@ -64,18 +64,27 @@ updated: 2026-08-11
 
 ### 训练循环中的位置
 
-```mermaid
-flowchart LR
-    F["forward"] --> L["loss"]
-    L --> B["loss.backward()\
-autograd 写 .grad"]
-    B --> Z["optimizer.zero_grad()"]
-    Z --> S["optimizer.step()\
-读 .grad 更新参数"]
-    S --> LR["scheduler.step()\
-调整 lr"]
-    LR --> F
-```
+<div class="diagram">
+  <div class="h-flow" style="flex-wrap:wrap; justify-content:center; align-items:stretch;">
+    <span class="d-node d-node-start">① forward<br/><small style="opacity:0.75; font-weight:400;">算 <code>y = model(x)</code></small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node">② 计算 loss</span>
+    <span class="d-arrow"></span>
+    <span class="d-node d-node-active">③ <code>loss.backward()</code><br/><small style="opacity:0.75; font-weight:400;">autograd 引擎把梯度写进 <code>.grad</code></small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node">④ <code>zero_grad()</code><br/><small style="opacity:0.75; font-weight:400;">默认 <code>set_to_none=True</code></small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node d-node-active">⑤ <code>optimizer.step()</code><br/><small style="opacity:0.75; font-weight:400;">读 <code>.grad</code> 更新参数 + 维护 state</small></span>
+    <span class="d-arrow"></span>
+    <span class="d-node">⑥ <code>scheduler.step()</code><br/><small style="opacity:0.75; font-weight:400;">调整每 <code>param_group</code> 的 <code>lr</code></small></span>
+  </div>
+  <div class="h-flow" style="justify-content:center; margin-top:14px; flex-wrap:wrap;">
+    <span class="d-label" style="border-color:#c7d2fe; background:#eef2ff; color:#3730a3;">⑥ → 下一迭代回到 ①（按 step 或 epoch 调调度器）</span>
+  </div>
+  <div class="d-note">
+    <b>常见坑：</b><code>zero_grad()</code> 在 <code>backward()</code> 前调（PyTorch 习惯）还是 <code>step()</code> 后调（TF 习惯）等价；<code>ReduceLROnPlateau</code> 的 <code>step(metric)</code> 与其他基于 epoch/step 的调度器语义不同，不可混用。
+  </div>
+</div>
 
 ### 关键算法的数学形式
 

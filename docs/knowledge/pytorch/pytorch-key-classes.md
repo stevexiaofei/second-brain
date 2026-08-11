@@ -66,71 +66,90 @@ updated: 2026-08-11
 
 这些类不是孤立的，它们沿着"表示 → 句柄 → 路由 → 执行 → 编译"五个层次组织。理解它们的关系，就能在调用栈里定位自己处于哪一层。
 
-```mermaid
-graph TD
-    subgraph 表示层["表示层（c10）"]
-        TensorImpl["c10::TensorImpl\
-底层表示"]
-        Storage["c10::Storage\
-数据缓冲"]
-        ScalarType["c10::ScalarType\
-dtype 枚举"]
-        Device["c10::Device\
-设备抽象"]
-        TensorImpl --> Storage
-        TensorImpl --> ScalarType
-        TensorImpl --> Device
-    end
-    subgraph 句柄与路由层["句柄与路由层（ATen）"]
-        ATenTensor["at::Tensor\
-用户句柄"]
-        TensorIterator["at::TensorIterator\
-广播/提升"]
-        Dispatcher["c10::Dispatcher\
-算子路由"]
-        ATenTensor -->|"intrusive_ptr"| TensorImpl
-        ATenTensor --> Dispatcher
-        TensorIterator --> Dispatcher
-    end
-    subgraph 自动微分层["自动微分层（torch/csrc/autograd）"]
-        Node["torch::autograd::Node\
-反向节点"]
-        Engine["torch::autograd::Engine\
-反向引擎"]
-        Engine --> Node
-        Node -->|"apply"| ATenTensor
-    end
-    subgraph 编译与导出层["编译与导出层（JIT / FX / compile）"]
-        Graph["torch.jit Graph/Node/Value\
-TorchScript SSA IR"]
-        FXGraph["torch.fx GraphModule/Graph/Node\
-FX 图 IR"]
-        Compile["torch.compile\
-Dynamo + Inductor"]
-        IValue["c10::IValue\
-JIT 栈值类型"]
-        Graph --> IValue
-        Compile --> FXGraph
-    end
-    subgraph 分布式层["分布式层（c10d）"]
-        ProcessGroup["c10d::ProcessGroup\
-进程组"]
-        Reducer["c10d::Reducer\
-DDP 梯度归约"]
-        Reducer --> ProcessGroup
-    end
-    subgraph Python 边界["Python 边界"]
-        PyTensor["torch.Tensor\
-包装 _C.TensorBase"]
-        PyModule["torch.nn.Module\
-网络基类"]
-        PyFunction["torch.autograd.Function\
-自定义算子"]
-        PyTensor -->|"包装"| ATenTensor
-        PyModule --> PyTensor
-        PyFunction --> Node
-    end
-```
+<div class="diagram">
+  <div style="display:grid; grid-template-columns:repeat(3,minmax(240px,1fr)); gap:16px; align-items:stretch;">
+    <!-- 表示层 -->
+    <div style="padding:14px; border-radius:10px; background:linear-gradient(180deg,#f0fdfa 0%, #ccfbf1 100%); border:1px solid #5eead4; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#0f766e; text-align:center;">L1 · 表示层（c10）</b>
+      <span class="d-node d-node-start" style="align-self:stretch; justify-content:flex-start;"><b>c10::TensorImpl</b><br/><small style="opacity:0.75; font-weight:400;">底层真·表示：sizes/strides/storage_offset</small></span>
+      <div class="h-flow" style="gap:4px; justify-content:center; padding:0; flex-wrap:wrap;">
+        <span class="d-label" style="max-width:none;">持有 ①</span>
+        <span class="d-node" style="min-width:auto; padding:6px 12px;"><b>Storage</b><br/><small style="opacity:0.75; font-weight:400;">数据缓冲</small></span>
+      </div>
+      <div class="h-flow" style="gap:4px; justify-content:center; padding:0; flex-wrap:wrap;">
+        <span class="d-label" style="max-width:none;">持有 ②</span>
+        <span class="d-node" style="min-width:auto; padding:6px 12px;"><b>ScalarType</b><br/><small style="opacity:0.75; font-weight:400;">dtype 枚举</small></span>
+      </div>
+      <div class="h-flow" style="gap:4px; justify-content:center; padding:0; flex-wrap:wrap;">
+        <span class="d-label" style="max-width:none;">持有 ③</span>
+        <span class="d-node" style="min-width:auto; padding:6px 12px;"><b>Device</b><br/><small style="opacity:0.75; font-weight:400;">设备抽象</small></span>
+      </div>
+    </div>
+
+    <!-- 句柄/路由层 -->
+    <div style="padding:14px; border-radius:10px; background:linear-gradient(180deg,#eef2ff 0%, #ddd6fe 100%); border:1px solid #a5b4fc; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#3730a3; text-align:center;">L2 · 句柄与路由层（ATen）</b>
+      <span class="d-node" style="align-self:stretch; justify-content:flex-start;"><b>at::Tensor</b><br/><small style="opacity:0.75; font-weight:400;">用户句柄：<code>intrusive_ptr&lt;TensorImpl&gt;</code></small></span>
+      <span class="d-label" style="max-width:none;">──▶ 算子调用下沉到 Dispatcher</span>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <span class="d-node" style="padding:8px 10px;"><b>TensorIterator</b><br/><small style="opacity:0.75; font-weight:400;">广播/类型提升</small></span>
+        <span class="d-node d-node-active" style="padding:8px 10px;"><b>c10::Dispatcher</b><br/><small style="opacity:0.75; font-weight:400;">按 DispatchKeySet 路由内核</small></span>
+      </div>
+    </div>
+
+    <!-- autograd 层 -->
+    <div style="padding:14px; border-radius:10px; background:linear-gradient(180deg,#fff7ed 0%, #ffedd5 100%); border:1px solid #fdba74; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#9a3412; text-align:center;">L3 · 自动微分层（torch/csrc/autograd）</b>
+      <span class="d-node" style="align-self:stretch; justify-content:flex-start;"><b>autograd::Node</b><br/><small style="opacity:0.75; font-weight:400;">反向节点（grad_fn）· apply 实现局部链式法则</small></span>
+      <div class="h-flow" style="gap:4px; justify-content:center; padding:0; flex-wrap:wrap;">
+        <span class="d-label" style="max-width:none;">调度执行</span>
+        <span class="d-node d-node-active" style="min-width:auto;"><b>Engine</b><br/><small style="opacity:0.75; font-weight:400;">多线程拓扑调度器</small></span>
+      </div>
+      <div class="h-flow" style="gap:4px; justify-content:center; padding:0; flex-wrap:wrap;">
+        <span class="d-label" style="max-width:none;">特殊叶子</span>
+        <span class="d-node" style="min-width:auto; padding:6px 10px;"><b>AccumulateGrad</b><br/><small style="opacity:0.75; font-weight:400;">写 .grad</small></span>
+      </div>
+    </div>
+  </div>
+  <div class="d-note" style="margin-top:16px;">
+    <b>横向协作关系（L2 → L1、L3 → L2）：</b><code>at::Tensor</code> 通过 <code>intrusive_ptr</code> 持有 L1 的 <code>TensorImpl</code>；算子调用经 L2 Dispatcher 按 <code>TensorImpl.DispatchKeySet</code> 路由；Autograd 的 Dispatcher 拦截层在反向时 build <code>Node → Node → AccumulateGrad</code> 边 DAG，最终由 Engine 多线程拓扑跑一遍把梯度沉积到各 Parameter。
+  </div>
+</div>
+
+<!-- 额外两条关系（L3 内部）：
+- **Node → AccumulateGrad**：AccumulateGrad 是 Node 子类，专门负责把梯度累积（写入）到叶子张量的 `.grad`。
+- **Engine ⇢ Node ⇢ at::Tensor**：Engine 不继承 Node，而是持有图与就绪队列；按拓扑调 Node.apply，其内部继续调用 ATen 算子完成局部链式法则。 -->
+
+<!-- L4 · 编译 & 导出 / 分布式 / Python 边界 -->
+<div class="diagram" style="margin-top:20px;">
+  <div style="display:grid; grid-template-columns:repeat(3,minmax(240px,1fr)); gap:16px; align-items:stretch;">
+    <div style="padding:14px; border-radius:10px; background:linear-gradient(180deg,#fdf4ff 0%, #fae8ff 100%); border:1px solid #e879f9; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#701a75; text-align:center;">L4 · 编译与导出（JIT / FX / compile）</b>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <span class="d-node" style="padding:8px 10px;"><b>torch.jit Graph/Node/Value</b><br/><small style="opacity:0.75; font-weight:400;">TorchScript SSA IR</small></span>
+        <span class="d-node" style="padding:8px 10px;"><b>c10::IValue</b><br/><small style="opacity:0.75; font-weight:400;">JIT 栈值类型</small></span>
+        <span class="d-node" style="padding:8px 10px;"><b>torch.fx GraphModule</b><br/><small style="opacity:0.75; font-weight:400;">FX Python IR</small></span>
+        <span class="d-node d-node-active" style="padding:8px 10px;"><b>torch.compile</b><br/><small style="opacity:0.75; font-weight:400;">Dynamo + Inductor</small></span>
+      </div>
+      <div class="d-label" style="max-width:none;">JIT Graph 用 IValue；compile 走 FX 路径；两套并存。</div>
+    </div>
+
+    <div style="padding:14px; border-radius:10px; background:linear-gradient(180deg,#fff1f2 0%, #ffe4e6 100%); border:1px solid #fda4af; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#881337; text-align:center;">L4 · 分布式（c10d）</b>
+      <span class="d-node" style="align-self:stretch;"><b>c10d::Reducer</b><br/><small style="opacity:0.75; font-weight:400;">DDP 梯度分桶 / 按序归约</small></span>
+      <div class="d-arrow" style="height:20px;"></div>
+      <span class="d-node d-node-active" style="align-self:stretch;"><b>c10d::ProcessGroup</b><br/><small style="opacity:0.75; font-weight:400;">集合通信抽象：NCCL / Gloo / MPI / UCC</small></span>
+      <div class="d-label" style="max-width:none;">分布式是<b>正交叠加层</b>：不修改 TensorImpl，只在反向/集合通信时点介入。</div>
+    </div>
+
+    <div style="padding:14px; border-radius:10px; background:linear-gradient(180deg,#fefce8 0%, #fef9c3 100%); border:1px solid #facc15; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#713f12; text-align:center;">L5 · Python 边界（torch/csrc）</b>
+      <span class="d-node" style="align-self:stretch;"><b>torch.Tensor</b><br/><small style="opacity:0.75; font-weight:400;">包装 <code>_C.TensorBase</code> ↔ C++ <code>at::Tensor</code></small></span>
+      <span class="d-node" style="align-self:stretch;"><b>torch.nn.Module</b><br/><small style="opacity:0.75; font-weight:400;">网络基类，持有 Parameter / buffer / 子模块</small></span>
+      <span class="d-node" style="align-self:stretch;"><b>torch.autograd.Function</b><br/><small style="opacity:0.75; font-weight:400;">自定义算子：PyNode 桥接到 C++ Node</small></span>
+    </div>
+  </div>
+</div>
 
 ### 几条关键的"持有"与"调用"关系
 

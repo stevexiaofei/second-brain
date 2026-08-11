@@ -56,31 +56,44 @@ FX 是现代 PyTorch 编译栈的"普通话"。`torch.compile`（Dynamo）产出
 
 ### 三组件如何串联
 
-```mermaid
-flowchart LR
-    subgraph 捕获 Tracer
-        M["nn.Module\
-(forward)"] -->|"Tracer.trace"| P["Proxy 占位输入"]
-        P -->|"执行 forward\
-算子经 __torch_function__ 拦截"| G["Graph\
-(Node 列表)"]
-    end
-    subgraph 变换 Pass
-        G --> RW["图变换\
-subgraph_rewriter / passes/"]
-        RW --> G2["新 Graph"]
-    end
-    subgraph 代码生成 CodeGen
-        G2 -->|"Graph.python_code"| SRC["Python forward 源码"]
-        SRC -->|"exec 绑定"| GM["GraphModule\
-(nn.Module + 生成的 forward)"]
-    end
-    subgraph 执行
-        GM -->|"gm(real_input)"| OUT["真实输出"]
-    end
-    GM -.->|"可被 Dynamo/Inductor\
-再次捕获编译"| COMPILE["torch.compile"]
-```
+<div class="diagram">
+  <div style="display:grid; grid-template-columns:repeat(4,minmax(200px,1fr)) 80px minmax(200px,1fr); gap:10px; align-items:stretch;">
+
+    <div style="padding:12px; border-radius:10px; background:linear-gradient(180deg,#f0fdfa 0%, #ccfbf1 100%); border:1px solid #5eead4; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#0f766e; text-align:center;">① Tracer 捕获</b>
+      <span class="d-node d-node-start" style="align-self:stretch;">nn.Module (forward)</span>
+      <div class="d-label" style="max-width:none;"><b>Tracer.trace：</b>用 <code>Proxy</code> 替输入，调用 forward</div>
+      <span class="d-node" style="align-self:stretch;">每个 Proxy 算子经 <code>__torch_function__</code> 拦截 → 写入 Node</span>
+      <span class="d-node d-node-active" style="align-self:stretch;">Graph（扁平 Node 列表）</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:22px; grid-column:span 1;">──▶</div>
+
+    <div style="padding:12px; border-radius:10px; background:linear-gradient(180deg,#eef2ff 0%, #ddd6fe 100%); border:1px solid #a5b4fc; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#3730a3; text-align:center;">② Pass 图变换</b>
+      <div class="d-label" style="max-width:none;"><code>subgraph_rewriter</code> · <code>passes/shape_prop</code> · <code>reinplace</code> · 量化等 pass</div>
+      <span class="d-node" style="align-self:stretch;">新 Graph（结构/算子被改写）</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:22px; grid-column:span 1;">──▶</div>
+
+    <div style="padding:12px; border-radius:10px; background:linear-gradient(180deg,#eff6ff 0%, #dbeafe 100%); border:1px solid #93c5fd; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#1e3a8a; text-align:center;">③ CodeGen</b>
+      <span class="d-node" style="align-self:stretch;"><code>Graph.python_code()</code> 把每个 Node 翻成一行 Python</span>
+      <div class="d-label" style="max-width:none;"><code>exec</code> 编译为 <code>forward</code> 方法</div>
+      <span class="d-node d-node-active" style="align-self:stretch;"><b>GraphModule</b>（<code>nn.Module</code> + 生成的 forward，保留原参数/子模块）</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:22px; grid-column:span 1;">──▶</div>
+
+    <div style="padding:12px; border-radius:10px; background:linear-gradient(180deg,#fff7ed 0%, #ffedd5 100%); border:1px solid #fdba74; display:flex; flex-direction:column; gap:8px;">
+      <b style="color:#9a3412; text-align:center;">④ 执行 & 再捕获</b>
+      <span class="d-node d-node-start" style="align-self:stretch;"><code>gm(real_input)</code> → 真实输出</span>
+      <div class="d-label" style="max-width:none;"><b>GraphModule 双向性：</b>仍是 <code>nn.Module</code>，可再次被 <code>torch.compile</code>（Dynamo/Inductor）捕获与编译。</div>
+      <span class="d-node" style="align-self:stretch;">→ 进入 torch.compile 栈</span>
+    </div>
+  </div>
+</div>
 
 1. **Tracer** 用 `Proxy` 替换模块的输入参数，调用 `forward`。每个 `Proxy` 上的算子通过 `__torch_function__` 被 Tracer 拦截，emit 一个对应 `Node` 到 `Graph`。`call_module` 路径记录子模块调用，`get_attr` 记录参数/buffer 读取。
 2. **Graph** 此时是纯 IR，可被任意变换：删节点、改 target、重连 args、模式匹配替换。`passes/`（如 `shape_prop` 形状传播、`reinplace` 就地化）与外部 pass 在此操作。

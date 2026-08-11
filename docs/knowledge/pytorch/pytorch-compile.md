@@ -46,30 +46,60 @@ Dynamo 产出 FX 图，Inductor 消费 FX `GraphModule`。FX 也是独立的图�
 
 torch.compile 的端到端流水线如下：用户调用 `torch.compile(model)` 后，Dynamo 安装 PEP 523 帧求值器；首次运行时符号化字节码产出受 Guard 保护的 FX 图；FX 图交给后端（默认 Inductor），Inductor 做 lowering → 调度 → 融合 pass → 生成 Triton/C++ 内核，并常包装进 CUDA graph；AOT-Inductor 还可把产物持久化用于无 Python 部署。
 
-```mermaid
-flowchart TD
-    U["用户代码: torch.compile(model)"] --> D0["安装 PEP 523 帧求值器\
-(eval_frame.py)"]
-    D0 --> D1["首次运行: convert_frame → symbolic_convert\
-符号化字节码, variables/ 跟踪"]
-    D1 --> D2["产出受 Guard 保护的 FX GraphModule\
-(output_graph.py, guards.py)"]
-    D2 -->|"Guard 失败"| D1
-    D2 -->|"Guard 通过"| BE{后端选择}
-    BE -->|"默认"| I0["TorchInductor: compile_fx"]
-    BE -->|"可选"| ALT["TensorRT / TVM / ONNX RT / TorchXLA ..."]
-    I0 --> I1["lowering.py: ATen 算子 → Inductor IR\
-(ir.py / graph.py)"]
-    I1 --> I2["scheduler.py: 调度内核"]
-    I2 --> I3["fx_passes/: 前后梯度融合\
-(fuse_attention, b2b_gemm, post_grad...)"]
-    I3 --> I4["codegen/: 生成内核\
-triton.py(CUDA) / cpp.py(CPU) / cuda(CUTLASS) / rocm(CK)"]
-    I4 --> I5["cudagraph_trees.py: 包装进 CUDA graph"]
-    I5 --> I6["编译后的融合内核执行"]
-    I4 -.->|"AOT-Inductor"| AOT["aoti_eager / package / cpp_wrapper\
-持久化产物, 无 Python 部署"]
-```
+<div class="diagram">
+  <div class="v-steps">
+    <div class="step-row">
+      <div class="step-dot" style="background:#f0fdfa;border-color:#10b981;color:#064e3b;">0</div>
+      <div class="step-body">
+        <b><code>torch.compile(model)</code> → 安装 PEP 523 帧求值器</b>
+        <small><code>torch/_dynamo/eval_frame.py</code> 把自定义 <code>_dynamo_eval_frame</code> 挂到每个正在解释的 Python 帧上，后续字节码执行优先经 Dynamo 的符号化路径。</small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#ecfeff;border-color:#06b6d4;color:#164e63;">1</div>
+      <div class="step-body">
+        <b>首次命中：<code>convert_frame → symbolic_convert</code></b>
+        <small>把字节码符号化地"跑一遍"，<code>variables/</code> 追踪 Python 对象，产出一份"能翻成 FX Graph"的执行序列；<b>graph break</b> 把无法符号化的部分切出回 Python。</small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#eff6ff;border-color:#3b82f6;color:#1e3a8a;">2</div>
+      <div class="step-body">
+        <b>受 Guard 保护的 FX GraphModule</b>
+        <small>由 <code>output_graph.py</code> 组装 GraphModule；<code>guards.py</code> 生成一组 guard 表达式（形状、dtype、类型、参数 id…）用于缓存命中判定。<b>Guard 失败</b>时回到 Step 1 重新捕获。</small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#eef2ff;border-color:#6366f1;color:#3730a3;">3</div>
+      <div class="step-body">
+        <b>后端选择：默认 TorchInductor（<code>compile_fx</code>）</b>
+        <small>也可替换为 TensorRT / TVM / ONNX RT / TorchXLA 等自定义后端。</small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#f5f3ff;border-color:#8b5cf6;color:#4c1d95;">4</div>
+      <div class="step-body">
+        <b>Inductor lowering → 内核调度 → fx_passes → codegen</b>
+        <small>
+          <b>① lowering.py：</b>ATen 算子 → Inductor IR（<code>ir.py</code> / <code>graph.py</code>）<br/>
+          <b>② scheduler.py：</b>分组调度，决定哪些节点融合为一个内核<br/>
+          <b>③ fx_passes：</b><code>fuse_attention</code> · <code>b2b_gemm</code> · <code>post_grad</code> 等前后梯度大融合<br/>
+          <b>④ codegen/：</b><code>triton.py</code>(CUDA) · <code>cpp.py</code>(CPU) · CUTLASS / ROCm CK 生成最终内核代码
+        </small>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-dot" style="background:#faf5ff;border-color:#a855f7;color:#581c87;">5</div>
+      <div class="step-body">
+        <b>可选包装：CUDA Graph Trees · AOT-Inductor 持久化</b>
+        <small><code>cudagraph_trees.py</code> 把生成内核包进 CUDA Graph 减启动；<b>AOT-Inductor</b>（<code>aoti_eager / package / cpp_wrapper</code>）把 Triton/C++ 产物持久化，实现<b>无 Python 部署</b>。</small>
+      </div>
+    </div>
+  </div>
+  <div class="d-note">
+    <b>正确性 > 性能：</b>Dynamo 的核心哲学是 Guard + graph break 保护边界，绝不"硬编"不保证的代码；Inductor 的收益主要来自<b>融合</b>（少 kernel launch + 少访存），FX 作为统一 IR 让"Guard / 图变换 / 编译 / 持久化"四层共享同一种图表达。
+  </div>
+</div>
 
 ## 我的理解
 
