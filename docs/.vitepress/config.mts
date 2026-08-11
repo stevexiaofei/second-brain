@@ -12,7 +12,6 @@ export default withMermaid(
     lang: 'zh-CN',
   base: isGitHubActions ? '/second-brain/' : '/',
   lastUpdated: true,
-  cleanUrls: true,
   head: [],
     // AGENTS.md / README.md / templates/*.md 位于仓库根目录（docs/ 之外），
     // 但确实是真实存在的 Markdown，VitePress 无法把它们当站内页面解析，

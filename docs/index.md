@@ -3,32 +3,34 @@
 > A living map of what I know, what I am learning, and what I am thinking about.
 
 <div class="hero-actions">
-<a href="./knowledge/" class="action-button">Explore Knowledge</a>
-<a href="./inbox/" class="action-button secondary">Open Inbox</a>
+
+[Explore Knowledge](/knowledge/){.action-button}
+[Open Inbox](/inbox/){.action-button .secondary}
+
 </div>
 
 ## 🧠 Knowledge
 
-- [AI](./knowledge/ai/)
-- [Autonomous Driving](./knowledge/autonomous-driving/)
-- [Engineering](./knowledge/engineering/)
-- [Mathematics](./knowledge/mathematics/)
+- [AI](/knowledge/ai/)
+- [Autonomous Driving](/knowledge/autonomous-driving/)
+- [Engineering](/knowledge/engineering/)
+- [Mathematics](/knowledge/mathematics/)
 
 ## 🚀 Projects
 
-[查看 Projects →](./projects/)
+[查看 Projects →](/projects/)
 
 ## 💡 Ideas
 
-[查看 Ideas →](./ideas/)
+[查看 Ideas →](/ideas/)
 
 ## 📚 Reading
 
-[查看 Reading →](./reading/)
+[查看 Reading →](/reading/)
 
 ## 📥 Inbox
 
-[进入 Inbox →](./inbox/)
+[进入 Inbox →](/inbox/)
 
 ## 🧭 My Philosophy
 
