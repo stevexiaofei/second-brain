@@ -59,9 +59,15 @@ export default withMermaid(
   {
     mermaid: {
       theme: 'neutral',
+      themeVariables: {
+        fontSize: '20px',
+        fontFamily: '"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif',
+        noteFontSize: '16px',
+        labelFontSize: '18px'
+      },
       startOnLoad: true,
       securityLevel: 'loose',
-      flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
+      flowchart: { useMaxWidth: false, htmlLabels: false, curve: 'basis' },
       sequence: { useMaxWidth: false, wrap: true, actorMargin: 50 },
       class: { useMaxWidth: false },
       state: { useMaxWidth: false },

@@ -67,10 +67,13 @@ updated: 2026-08-11
 ```mermaid
 flowchart LR
     F["forward"] --> L["loss"]
-    L --> B["loss.backward()<br/>autograd 写 .grad"]
+    L --> B["loss.backward()\
+autograd 写 .grad"]
     B --> Z["optimizer.zero_grad()"]
-    Z --> S["optimizer.step()<br/>读 .grad 更新参数"]
-    S --> LR["scheduler.step()<br/>调整 lr"]
+    Z --> S["optimizer.step()\
+读 .grad 更新参数"]
+    S --> LR["scheduler.step()\
+调整 lr"]
     LR --> F
 ```
 

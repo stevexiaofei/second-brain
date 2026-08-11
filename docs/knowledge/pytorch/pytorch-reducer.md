@@ -26,9 +26,13 @@ updated: 2026-08-11
 
 ```mermaid
 flowchart TD
-    U["用户代码"] --> DDP["nn.parallel.DistributedDataParallel<br/>(Python 薄包装)<br/>_ddp_init_helper / _pre_forward / _post_forward"]
-    DDP --> R["c10d::Reducer ← 本文档主角<br/>分桶 / 注册 autograd hook / 触发 allreduce"]
-    R --> PG["c10d::ProcessGroup<br/>NCCL / Gloo / MPI"]
+    U["用户代码"] --> DDP["nn.parallel.DistributedDataParallel\
+(Python 薄包装)\
+_ddp_init_helper / _pre_forward / _post_forward"]
+    DDP --> R["c10d::Reducer ← 本文档主角\
+分桶 / 注册 autograd hook / 触发 allreduce"]
+    R --> PG["c10d::ProcessGroup\
+NCCL / Gloo / MPI"]
 ```
 
 它要解决的七个问题：逐个 allreduce 太慢（合并成桶）、等全部梯度再通信浪费 GPU（桶一就绪就发起，与反向重叠）、怎么知道某参数梯度算完（给 AccumulateGrad 挂 post hook）、有些参数没参与 forward（DFS 找未使用参数预标 ready）、跨 rank 桶顺序不一致会死锁（按 `next_bucket_` 严格顺序归约）、想自定义通信（CommHook 接口）、归约结果怎么回 `param.grad`（unflatten 写回或让 grad 直接是桶视图）。
@@ -136,13 +140,21 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    D1["autograd_hook(i)<br/>autograd 线程，lock mutex_"]
-    D2["mark_variable_ready(i)<br/>拷贝 grad 进桶<br/>（融合除法）<br/>bucket.pending -= 1"]
+    D1["autograd_hook(i)\
+autograd 线程，lock mutex_"]
+    D2["mark_variable_ready(i)\
+拷贝 grad 进桶\
+（融合除法）\
+bucket.pending -= 1"]
     D3{"pending == 0 ?"}
-    D4["mark_bucket_ready<br/>按 next_bucket_ 严格归约"]
-    D5["all_reduce_bucket<br/>run_comm_hook<br/>Future，异步不阻塞"]
+    D4["mark_bucket_ready\
+按 next_bucket_ 严格归约"]
+    D5["all_reduce_bucket\
+run_comm_hook\
+Future，异步不阻塞"]
     D6{"next_bucket_ == 全部桶?"}
-    D7["queue_callback<br/>finalize_backward"]
+    D7["queue_callback\
+finalize_backward"]
     D1 --> D2 --> D3
     D3 --"是"--> D4 --> D5 --> D6
     D3 --"否"--> D1

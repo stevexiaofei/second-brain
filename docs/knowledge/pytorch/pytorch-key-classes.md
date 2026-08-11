@@ -69,45 +69,63 @@ updated: 2026-08-11
 ```mermaid
 graph TD
     subgraph 表示层["表示层（c10）"]
-        TensorImpl["c10::TensorImpl<br/>底层表示"]
-        Storage["c10::Storage<br/>数据缓冲"]
-        ScalarType["c10::ScalarType<br/>dtype 枚举"]
-        Device["c10::Device<br/>设备抽象"]
+        TensorImpl["c10::TensorImpl\
+底层表示"]
+        Storage["c10::Storage\
+数据缓冲"]
+        ScalarType["c10::ScalarType\
+dtype 枚举"]
+        Device["c10::Device\
+设备抽象"]
         TensorImpl --> Storage
         TensorImpl --> ScalarType
         TensorImpl --> Device
     end
     subgraph 句柄与路由层["句柄与路由层（ATen）"]
-        ATenTensor["at::Tensor<br/>用户句柄"]
-        TensorIterator["at::TensorIterator<br/>广播/提升"]
-        Dispatcher["c10::Dispatcher<br/>算子路由"]
+        ATenTensor["at::Tensor\
+用户句柄"]
+        TensorIterator["at::TensorIterator\
+广播/提升"]
+        Dispatcher["c10::Dispatcher\
+算子路由"]
         ATenTensor -->|"intrusive_ptr"| TensorImpl
         ATenTensor --> Dispatcher
         TensorIterator --> Dispatcher
     end
     subgraph 自动微分层["自动微分层（torch/csrc/autograd）"]
-        Node["torch::autograd::Node<br/>反向节点"]
-        Engine["torch::autograd::Engine<br/>反向引擎"]
+        Node["torch::autograd::Node\
+反向节点"]
+        Engine["torch::autograd::Engine\
+反向引擎"]
         Engine --> Node
         Node -->|"apply"| ATenTensor
     end
     subgraph 编译与导出层["编译与导出层（JIT / FX / compile）"]
-        Graph["torch.jit Graph/Node/Value<br/>TorchScript SSA IR"]
-        FXGraph["torch.fx GraphModule/Graph/Node<br/>FX 图 IR"]
-        Compile["torch.compile<br/>Dynamo + Inductor"]
-        IValue["c10::IValue<br/>JIT 栈值类型"]
+        Graph["torch.jit Graph/Node/Value\
+TorchScript SSA IR"]
+        FXGraph["torch.fx GraphModule/Graph/Node\
+FX 图 IR"]
+        Compile["torch.compile\
+Dynamo + Inductor"]
+        IValue["c10::IValue\
+JIT 栈值类型"]
         Graph --> IValue
         Compile --> FXGraph
     end
     subgraph 分布式层["分布式层（c10d）"]
-        ProcessGroup["c10d::ProcessGroup<br/>进程组"]
-        Reducer["c10d::Reducer<br/>DDP 梯度归约"]
+        ProcessGroup["c10d::ProcessGroup\
+进程组"]
+        Reducer["c10d::Reducer\
+DDP 梯度归约"]
         Reducer --> ProcessGroup
     end
     subgraph Python 边界["Python 边界"]
-        PyTensor["torch.Tensor<br/>包装 _C.TensorBase"]
-        PyModule["torch.nn.Module<br/>网络基类"]
-        PyFunction["torch.autograd.Function<br/>自定义算子"]
+        PyTensor["torch.Tensor\
+包装 _C.TensorBase"]
+        PyModule["torch.nn.Module\
+网络基类"]
+        PyFunction["torch.autograd.Function\
+自定义算子"]
         PyTensor -->|"包装"| ATenTensor
         PyModule --> PyTensor
         PyFunction --> Node

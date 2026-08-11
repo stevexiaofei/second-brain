@@ -99,9 +99,13 @@ classDiagram
 ```mermaid
 flowchart LR
     subgraph 组合期
-        R["root Module<br/>_modules={...}"] --> A["子模块 A<br/>_parameters={W,b}"]
-        R --> B["子模块 B<br/>_buffers={running_mean}"]
-        R --> C["容器 Sequential<br/>_modules={0,1,2}"]
+        R["root Module\
+_modules={...}"] --> A["子模块 A\
+_parameters={W,b}"]
+        R --> B["子模块 B\
+_buffers={running_mean}"]
+        R --> C["容器 Sequential\
+_modules={0,1,2}"]
         C --> C0["层 0"]
         C --> C1["层 1"]
     end
@@ -110,7 +114,8 @@ flowchart LR
         R -->|"递归调用子模块 forward"| A
         R --> B
         R --> C
-        A -->|"autograd 隐式建图"| OUT["output tensor<br/>(grad_fn 链回参数)"]
+        A -->|"autograd 隐式建图"| OUT["output tensor\
+(grad_fn 链回参数)"]
     end
 ```
 

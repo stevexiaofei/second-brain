@@ -25,11 +25,16 @@ updated: 2026-08-11
 
 ```mermaid
 graph TD
-    L5["Python 用户层<br/>torch.nn / torch.optim / torch.distributed ..."]
-    L4["Python 绑定层<br/>torch._C（由 torch/csrc/ 生成）"]
-    L3["C++ 子系统层<br/>JIT / Autograd / Distributed / Dynamo / Inductor"]
-    L2["ATen 张量运算库<br/>aten/src/ATen（原生算子 + Dispatcher）"]
-    L1["c10 最小 C++ 核心库<br/>TensorImpl / Storage / Device / ScalarType"]
+    L5["Python 用户层\
+torch.nn / torch.optim / torch.distributed ..."]
+    L4["Python 绑定层\
+torch._C（由 torch/csrc/ 生成）"]
+    L3["C++ 子系统层\
+JIT / Autograd / Distributed / Dynamo / Inductor"]
+    L2["ATen 张量运算库\
+aten/src/ATen（原生算子 + Dispatcher）"]
+    L1["c10 最小 C++ 核心库\
+TensorImpl / Storage / Device / ScalarType"]
     L5 --> L4
     L4 --> L3
     L3 --> L2

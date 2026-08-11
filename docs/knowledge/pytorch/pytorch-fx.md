@@ -59,21 +59,27 @@ FX 是现代 PyTorch 编译栈的"普通话"。`torch.compile`（Dynamo）产出
 ```mermaid
 flowchart LR
     subgraph 捕获 Tracer
-        M["nn.Module<br/>(forward)"] -->|"Tracer.trace"| P["Proxy 占位输入"]
-        P -->|"执行 forward<br/>算子经 __torch_function__ 拦截"| G["Graph<br/>(Node 列表)"]
+        M["nn.Module\
+(forward)"] -->|"Tracer.trace"| P["Proxy 占位输入"]
+        P -->|"执行 forward\
+算子经 __torch_function__ 拦截"| G["Graph\
+(Node 列表)"]
     end
     subgraph 变换 Pass
-        G --> RW["图变换<br/>subgraph_rewriter / passes/"]
+        G --> RW["图变换\
+subgraph_rewriter / passes/"]
         RW --> G2["新 Graph"]
     end
     subgraph 代码生成 CodeGen
         G2 -->|"Graph.python_code"| SRC["Python forward 源码"]
-        SRC -->|"exec 绑定"| GM["GraphModule<br/>(nn.Module + 生成的 forward)"]
+        SRC -->|"exec 绑定"| GM["GraphModule\
+(nn.Module + 生成的 forward)"]
     end
     subgraph 执行
         GM -->|"gm(real_input)"| OUT["真实输出"]
     end
-    GM -.->|"可被 Dynamo/Inductor<br/>再次捕获编译"| COMPILE["torch.compile"]
+    GM -.->|"可被 Dynamo/Inductor\
+再次捕获编译"| COMPILE["torch.compile"]
 ```
 
 1. **Tracer** 用 `Proxy` 替换模块的输入参数，调用 `forward`。每个 `Proxy` 上的算子通过 `__torch_function__` 被 Tracer 拦截，emit 一个对应 `Node` 到 `Graph`。`call_module` 路径记录子模块调用，`get_attr` 记录参数/buffer 读取。

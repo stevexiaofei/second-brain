@@ -118,10 +118,14 @@ Python 侧 API 的最终归宿是 C++ 扩展模块 `torch._C`：
 
 ```mermaid
 graph TD
-    User["用户代码<br/>torch.nn / torch.optim / torch.compile ..."]
-    Init["torch/__init__.py<br/>暴露核心类型与子包命名空间"]
-    Tensor["torch/_tensor.py<br/>Tensor 包装 torch._C.TensorBase"]
-    C["torch._C<br/>C++ 扩展模块（由 torch/csrc 生成）"]
+    User["用户代码\
+torch.nn / torch.optim / torch.compile ..."]
+    Init["torch/__init__.py\
+暴露核心类型与子包命名空间"]
+    Tensor["torch/_tensor.py\
+Tensor 包装 torch._C.TensorBase"]
+    C["torch._C\
+C++ 扩展模块（由 torch/csrc 生成）"]
     User --> Init
     User --> Tensor
     Tensor --> C

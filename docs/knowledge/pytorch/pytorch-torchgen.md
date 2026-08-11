@@ -72,16 +72,35 @@ torchgen 把"声明"逐步翻译成"目标代码"，分四个阶段：
 
 ```mermaid
 flowchart TD
-    YAML["native_functions.yaml<br/>derivatives.yaml<br/>tags.yaml"] --> PARSE["yaml_utils.py<br/>加载与校验"]
-    PARSE --> MODEL["model.py<br/>NativeFunction / FunctionSchema / Type dataclass<br/>（无 C++ 类型，往返无损）"]
-    MODEL --> API["api/ emitters<br/>cpp · dispatcher · native · python<br/>meta · autograd · structured · functionalization<br/>ufunc · lazy"]
-    API --> DEST["dest/ emitters<br/>native_functions.py → NativeFunctions.h/.cpp<br/>register_dispatch_key.py → TORCH_LIBRARY_IMPL<br/>lazy_ir.py / lazy_ts_lowering.py → LazyTensor IR"]
-    DEST --> GEN["gen.py<br/>主编排器：组合上述为每算子×每分发键发射代码"]
-    GEN --> OUT1["torch/csrc/autograd/generated/<br/>VariableType_*.cpp · TraceType_*.cpp<br/>ADInplaceOrViewType_*.cpp · Functions.cpp<br/>python_functions_*.cpp"]
-    GEN --> OUT2["torch/csrc/aten/<br/>aten 内核绑定"]
-    GEN --> OUT3["torch/_C/__init__.pyi<br/>Python 绑定类型存根"]
-    GEN --> OUT4["c10/core/DispatchKey.h<br/>分发键表"]
-    GEN --> OUT5["树外后端桩（XLA / MPS / PrivateUse1-3）<br/>via gen_backend_stubs.py"]
+    YAML["native_functions.yaml\
+derivatives.yaml\
+tags.yaml"] --> PARSE["yaml_utils.py\
+加载与校验"]
+    PARSE --> MODEL["model.py\
+NativeFunction / FunctionSchema / Type dataclass\
+（无 C++ 类型，往返无损）"]
+    MODEL --> API["api/ emitters\
+cpp · dispatcher · native · python\
+meta · autograd · structured · functionalization\
+ufunc · lazy"]
+    API --> DEST["dest/ emitters\
+native_functions.py → NativeFunctions.h/.cpp\
+register_dispatch_key.py → TORCH_LIBRARY_IMPL\
+lazy_ir.py / lazy_ts_lowering.py → LazyTensor IR"]
+    DEST --> GEN["gen.py\
+主编排器：组合上述为每算子×每分发键发射代码"]
+    GEN --> OUT1["torch/csrc/autograd/generated/\
+VariableType_*.cpp · TraceType_*.cpp\
+ADInplaceOrViewType_*.cpp · Functions.cpp\
+python_functions_*.cpp"]
+    GEN --> OUT2["torch/csrc/aten/\
+aten 内核绑定"]
+    GEN --> OUT3["torch/_C/__init__.pyi\
+Python 绑定类型存根"]
+    GEN --> OUT4["c10/core/DispatchKey.h\
+分发键表"]
+    GEN --> OUT5["树外后端桩（XLA / MPS / PrivateUse1-3）\
+via gen_backend_stubs.py"]
 ```
 
 阶段解释：

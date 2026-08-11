@@ -43,12 +43,20 @@ updated: 2026-08-11
 
 ```mermaid
 flowchart LR
-    M["用户模型<br/>nn.Module + args"] --> EX["torch.export.export<br/>(_trace.py)"]
-    EX --> TR["追踪捕获 FX graph<br/>+ default_decompositions 规范化"]
-    TR --> EP["ExportedProgram<br/>(FX graph + ExportGraphSignature<br/>+ 状态 + ModuleCallEntry)"]
-    EP --> UF["unflatten.py<br/>恢复嵌套模块结构"]
-    EP --> SL["save / load<br/>serde schema 持久化"]
-    EP --> BE["交付后端编译器 /<br/>AOT-Inductor / C++ 运行时"]
+    M["用户模型\
+nn.Module + args"] --> EX["torch.export.export\
+(_trace.py)"]
+    EX --> TR["追踪捕获 FX graph\
++ default_decompositions 规范化"]
+    TR --> EP["ExportedProgram\
+(FX graph + ExportGraphSignature\
++ 状态 + ModuleCallEntry)"]
+    EP --> UF["unflatten.py\
+恢复嵌套模块结构"]
+    EP --> SL["save / load\
+serde schema 持久化"]
+    EP --> BE["交付后端编译器 /\
+AOT-Inductor / C++ 运行时"]
 ```
 
 ## 我的理解

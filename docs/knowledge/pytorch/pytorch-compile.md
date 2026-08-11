@@ -48,20 +48,27 @@ torch.compile 的端到端流水线如下：用户调用 `torch.compile(model)` 
 
 ```mermaid
 flowchart TD
-    U["用户代码: torch.compile(model)"] --> D0["安装 PEP 523 帧求值器<br/>(eval_frame.py)"]
-    D0 --> D1["首次运行: convert_frame → symbolic_convert<br/>符号化字节码, variables/ 跟踪"]
-    D1 --> D2["产出受 Guard 保护的 FX GraphModule<br/>(output_graph.py, guards.py)"]
+    U["用户代码: torch.compile(model)"] --> D0["安装 PEP 523 帧求值器\
+(eval_frame.py)"]
+    D0 --> D1["首次运行: convert_frame → symbolic_convert\
+符号化字节码, variables/ 跟踪"]
+    D1 --> D2["产出受 Guard 保护的 FX GraphModule\
+(output_graph.py, guards.py)"]
     D2 -->|"Guard 失败"| D1
     D2 -->|"Guard 通过"| BE{后端选择}
     BE -->|"默认"| I0["TorchInductor: compile_fx"]
     BE -->|"可选"| ALT["TensorRT / TVM / ONNX RT / TorchXLA ..."]
-    I0 --> I1["lowering.py: ATen 算子 → Inductor IR<br/>(ir.py / graph.py)"]
+    I0 --> I1["lowering.py: ATen 算子 → Inductor IR\
+(ir.py / graph.py)"]
     I1 --> I2["scheduler.py: 调度内核"]
-    I2 --> I3["fx_passes/: 前后梯度融合<br/>(fuse_attention, b2b_gemm, post_grad...)"]
-    I3 --> I4["codegen/: 生成内核<br/>triton.py(CUDA) / cpp.py(CPU) / cuda(CUTLASS) / rocm(CK)"]
+    I2 --> I3["fx_passes/: 前后梯度融合\
+(fuse_attention, b2b_gemm, post_grad...)"]
+    I3 --> I4["codegen/: 生成内核\
+triton.py(CUDA) / cpp.py(CPU) / cuda(CUTLASS) / rocm(CK)"]
     I4 --> I5["cudagraph_trees.py: 包装进 CUDA graph"]
     I5 --> I6["编译后的融合内核执行"]
-    I4 -.->|"AOT-Inductor"| AOT["aoti_eager / package / cpp_wrapper<br/>持久化产物, 无 Python 部署"]
+    I4 -.->|"AOT-Inductor"| AOT["aoti_eager / package / cpp_wrapper\
+持久化产物, 无 Python 部署"]
 ```
 
 ## 我的理解

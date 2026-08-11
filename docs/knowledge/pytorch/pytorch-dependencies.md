@@ -27,12 +27,29 @@ updated: 2026-08-11
 
 ```mermaid
 graph BT
-    c10["c10<br/>最小 C++ 核心库<br/>TensorImpl · Storage · Device · ScalarType<br/>零后端/Python 依赖"]
-    ATen["ATen<br/>张量运算库<br/>原生算子 + Dispatcher<br/>依赖 c10"]
-    caffe2["caffe2/CMakeLists.txt<br/>构建编排层<br/>组装 c10 + ATen + torch/csrc<br/>→ torch_cpu / torch_cuda / torch"]
-    csrc["torch/csrc<br/>Python↔C++ 绑定层<br/>JIT · autograd · distributed · Dynamo · AOTI<br/>依赖 c10 + ATen"]
-    C["torch._C<br/>Python 扩展模块<br/>由 torch/csrc 经 Module.cpp 生成"]
-    torch["torch.*<br/>Python 顶层包<br/>nn · optim · autograd · distributed<br/>jit · fx · _dynamo · _inductor"]
+    c10["c10\
+最小 C++ 核心库\
+TensorImpl · Storage · Device · ScalarType\
+零后端/Python 依赖"]
+    ATen["ATen\
+张量运算库\
+原生算子 + Dispatcher\
+依赖 c10"]
+    caffe2["caffe2/CMakeLists.txt\
+构建编排层\
+组装 c10 + ATen + torch/csrc\
+→ torch_cpu / torch_cuda / torch"]
+    csrc["torch/csrc\
+Python↔C++ 绑定层\
+JIT · autograd · distributed · Dynamo · AOTI\
+依赖 c10 + ATen"]
+    C["torch._C\
+Python 扩展模块\
+由 torch/csrc 经 Module.cpp 生成"]
+    torch["torch.*\
+Python 顶层包\
+nn · optim · autograd · distributed\
+jit · fx · _dynamo · _inductor"]
 
     c10 --> ATen
     ATen --> caffe2

@@ -23,10 +23,14 @@ updated: 2026-08-11
 
 ```mermaid
 graph TD
-    csrc["torch/csrc<br/>Python 绑定 + JIT/autograd/distributed"]
-    aten["ATen<br/>张量运算库 + 分发器"]
-    c10["c10<br/>最小核心库（零后端依赖）"]
-    caffe2["caffe2<br/>构建编排 + 遗留运行时"]
+    csrc["torch/csrc\
+Python 绑定 + JIT/autograd/distributed"]
+    aten["ATen\
+张量运算库 + 分发器"]
+    c10["c10\
+最小核心库（零后端依赖）"]
+    caffe2["caffe2\
+构建编排 + 遗留运行时"]
     csrc --> aten
     aten --> c10
     caffe2 -.->|"CMake 组装成 torch_cpu/torch_cuda/torch"| csrc

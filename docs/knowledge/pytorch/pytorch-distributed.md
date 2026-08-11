@@ -56,25 +56,38 @@ updated: 2026-08-11
 ```mermaid
 flowchart TB
     subgraph L4["上层并行范式"]
-        DDP["DDP<br/>nn.parallel.DistributedDataParallel<br/>梯度 all-reduce"]
-        FSDP["FSDP / FSDP2<br/>参数/梯度/优化器状态分片"]
-        RPC["RPC + RRef<br/>远程调用, 模型并行"]
-        PP["流水线并行<br/>pipelining/"]
+        DDP["DDP\
+nn.parallel.DistributedDataParallel\
+梯度 all-reduce"]
+        FSDP["FSDP / FSDP2\
+参数/梯度/优化器状态分片"]
+        RPC["RPC + RRef\
+远程调用, 模型并行"]
+        PP["流水线并行\
+pipelining/"]
     end
     subgraph L3["可组合抽象"]
-        DT["DTensor / DeviceMesh<br/>placement 多维拓扑 (TP/DP/PP)"]
-        DH["ddp_comm_hooks<br/>powerSGD/量化/混合精度"]
+        DT["DTensor / DeviceMesh\
+placement 多维拓扑 (TP/DP/PP)"]
+        DH["ddp_comm_hooks\
+powerSGD/量化/混合精度"]
     end
     subgraph L2["进程组与启动"]
-        PG_API["init_process_group / new_group<br/>distributed_c10d.py"]
+        PG_API["init_process_group / new_group\
+distributed_c10d.py"]
         TR["torchrun / rendezvous / elastic"]
-        CKPT["检查点 DTCP<br/>checkpoint/"]
+        CKPT["检查点 DTCP\
+checkpoint/"]
     end
     subgraph L1["c10d C++ 底座"]
-        PGC["ProcessGroup<br/>NCCL / Gloo / MPI / UCC"]
-        STORE["Store<br/>TCPStore / FileStore / HashStore"]
-        RED["Reducer<br/>梯度 bucketing/reduction"]
-        DA["分布式 autograd<br/>dist_engine"]
+        PGC["ProcessGroup\
+NCCL / Gloo / MPI / UCC"]
+        STORE["Store\
+TCPStore / FileStore / HashStore"]
+        RED["Reducer\
+梯度 bucketing/reduction"]
+        DA["分布式 autograd\
+dist_engine"]
     end
     L4 --> L3
     L3 --> L2

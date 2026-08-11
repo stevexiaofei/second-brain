@@ -90,12 +90,14 @@ flowchart LR
         M -->|"trace: 跑示例输入"| T["TracedModule"]
     end
     subgraph IR 与优化
-        S --> IR["C++ JIT IR<br/>(Graph/Node/Value)"]
+        S --> IR["C++ JIT IR\
+(Graph/Node/Value)"]
         T --> IR
         IR --> P1["canonicalize / constant_pooling"]
         P1 --> P2["peephole / fuse_linear / fold_conv_bn"]
         P2 --> P3["freeze_module / dead_code_elim"]
-        P3 --> FUSE["codegen fuser<br/>(CPU/CUDA/onednn)"]
+        P3 --> FUSE["codegen fuser\
+(CPU/CUDA/onednn)"]
     end
     subgraph 部署
         FUSE --> FB["序列化 flatbuffer"]
