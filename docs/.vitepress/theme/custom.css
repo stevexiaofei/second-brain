@@ -1,0 +1,4 @@
+:root { --vp-c-brand-1: #3b82f6; --vp-c-brand-2: #2563eb; }
+.hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin:28px 0 42px; }
+.action-button { display:inline-block; padding:10px 18px; border-radius:8px; background:var(--vp-c-brand-1); color:#fff!important; text-decoration:none; font-weight:600; }
+.action-button.secondary { background:var(--vp-c-bg-soft); color:var(--vp-c-text-1)!important; border:1px solid var(--vp-c-divider); }
