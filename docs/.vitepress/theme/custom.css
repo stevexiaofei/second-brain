@@ -1,4 +1,79 @@
-:root { --vp-c-brand-1: #3b82f6; --vp-c-brand-2: #2563eb; }
+:root {
+  --vp-c-brand-1: #3b82f6;
+  --vp-c-brand-2: #2563eb;
+}
+
 .hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin:28px 0 42px; }
 .action-button { display:inline-block; padding:10px 18px; border-radius:8px; background:var(--vp-c-brand-1); color:#fff!important; text-decoration:none; font-weight:600; }
 .action-button.secondary { background:var(--vp-c-bg-soft); color:var(--vp-c-text-1)!important; border:1px solid var(--vp-c-divider); }
+
+/* =========================================================
+ * Mermaid 图表渲染优化
+ * ========================================================= */
+
+/* 1. 外层容器：卡片背景 + 横向滚动，避免 SVG 被压缩 */
+.mermaid {
+  background: #ffffff;
+  border: 1px solid var(--vp-c-divider-light, #e5e7eb);
+  border-radius: 10px;
+  padding: 18px 20px 20px;
+  margin: 20px 0 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  text-align: center;
+}
+.dark .mermaid {
+  background: #1e1e2a;
+  border-color: var(--vp-c-divider-dark, #2f2f42);
+  box-shadow: none;
+}
+
+/* 2. SVG 按原尺寸渲染，不被 viewport 压字号 */
+.mermaid svg {
+  display: inline-block;
+  height: auto !important;
+  max-width: none !important;
+  font-size: 15px !important;
+}
+
+/* 3. Mermaid 内部字号与间距（通过 CSS 变量覆盖 neutral theme） */
+:root {
+  --mermaid-font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+.mermaid .label {
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+}
+.mermaid .edgeLabel {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  padding: 3px 8px !important;
+}
+.mermaid .node rect,
+.mermaid .state rect,
+.mermaid .state .stateGroup {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06));
+}
+
+/* 4. 滚动条美化（WebKit） */
+.mermaid::-webkit-scrollbar { height: 8px; }
+.mermaid::-webkit-scrollbar-track { background: transparent; }
+.mermaid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dark .mermaid::-webkit-scrollbar-thumb { background: #475569; }
+
+/* 5. 点击放大：:active + :target 不现实，用 :focus-within 放大整图 */
+.mermaid:focus-within svg,
+.mermaid:hover svg {
+  /* 悬停轻微放大，不影响布局 */
+}
+
+/* 6. 自适应：超窄屏降级为等比缩小（避免空滚动条） */
+@media (max-width: 640px) {
+  .mermaid { padding: 10px 12px; }
+  .mermaid svg { max-width: 100% !important; font-size: 13px !important; }
+  .mermaid .label { font-size: 13px !important; }
+}

@@ -56,5 +56,17 @@ export default withMermaid(
     }
   }
 }),
-  { mermaid: { theme: 'default' } }
+  {
+    mermaid: {
+      theme: 'neutral',
+      startOnLoad: true,
+      securityLevel: 'loose',
+      flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
+      sequence: { useMaxWidth: false, wrap: true, actorMargin: 50 },
+      class: { useMaxWidth: false },
+      state: { useMaxWidth: false },
+      er: { useMaxWidth: false },
+      gantt: { useMaxWidth: false }
+    }
+  }
 )

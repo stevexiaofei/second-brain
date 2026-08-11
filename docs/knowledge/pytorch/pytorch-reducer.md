@@ -91,64 +91,63 @@ flowchart TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Idle: 构造完成
-    Idle --> Forwarding: prepare_for_forward (num_iterations_++)
-    Forwarding --> BackwardPrep: prepare_for_backward (expect_autograd_hooks_=true, reset_bucket_counting, next_bucket_=0)
-    BackwardPrep --> Reducing: 首个 autograd_hook (num_bwd_calls_++, require_finalize_=true)
-    Reducing --> Reducing: mark_variable_ready: bucket.pending 归零则 mark_bucket_ready 再 all_reduce_bucket(异步 Future)
-    Reducing --> Finalizing: next_bucket_ 等于 buckets_.size() 时 queue_callback(finalize_backward)
-    Finalizing --> Idle: finalize_backward (标志复位, 写回 .grad)
+    direction LR
+    [*] --> Idle
+    Idle --> Forwarding: prepare_for_forward
+    Forwarding --> BackwardPrep: prepare_for_backward
+    BackwardPrep --> Reducing: 首个 autograd_hook
+    Reducing --> Reducing: bucket 就绪 → all_reduce
+    Reducing --> Finalizing: 全部桶归约
+    Finalizing --> Idle: finalize_backward
     note right of Reducing
         桶按 next_bucket_ 严格递增归约
-        all_reduce_bucket 立即返回 Future 不阻塞
-        通信与反向计算重叠
+        立即返回 Future，不阻塞反向
     end note
     note right of Finalizing
-        wait 每个 bucket.future_work
-        populate_bucket_views_out 写回
-        finalize_bucket_dense unflatten 到 .grad
+        等待每个 bucket.future_work
+        结果 unflatten 写回 .grad
     end note
 ```
 
+> 每个状态转移同步修改的标志/计数器，见上文 "状态机: bool 标志 + 计数器" 表格。
+
 ### 核心流程：构造 → forward → backward → finalize
+
+**（1）五阶段高层概览**
+
+```mermaid
+flowchart LR
+    A["A 构造期(一次性)"] --> B["B forward"]
+    B --> C["C prepare_for_backward"]
+    C --> D["D 反向中(事件驱动)"]
+    D --> E["E finalize_backward"]
+    E -.->|下一迭代| B
+```
+
+| 阶段 | 关键动作 |
+|------|----------|
+| **A 构造期** | `initialize_buckets`（建桶 + variable_locators_）；为每个参数的 AccumulateGrad 注册 `autograd_hook` 并用 `grad_accumulators_` 强引用保活 |
+| **B forward** | `prepare_for_forward`，`num_iterations_++` |
+| **C prepare_for_backward** | `expect_autograd_hooks_=true`，重置桶计数（`next_bucket_=0`，每桶 pending=参数个数）；可选 `search_unused_parameters` DFS 预标未使用参数 ready |
+| **D 反向中（事件驱动，核心）** | 见下方调用链详图 |
+| **E finalize** | 对每桶 `future_work.wait()` → 写回 `bucket_views_out` → `finalize_bucket_dense` unflatten 到 `.grad` → 复位状态标志 |
+
+**（2）阶段 D 事件驱动调用链（反向核心）**
 
 ```mermaid
 flowchart TD
-    subgraph A["阶段A 构造期(一次性) reducer.cpp:90-248"]
-        A1["initialize_buckets<br/>建 buckets_ + variable_locators_"]
-        A2["for 每个参数:<br/>grad_accumulator.add_post_hook(autograd_hook)<br/>grad_accumulators_ 强引用保活"]
-        A1 --> A2
-    end
-    subgraph B["阶段B forward(每迭代)"]
-        B1["prepare_for_forward<br/>num_iterations_++"]
-    end
-    subgraph C["阶段C prepare_for_backward"]
-        C1["expect_autograd_hooks_=true<br/>reset_bucket_counting<br/>(next_bucket_=0, 每桶 pending=变量数)"]
-        C2{"dynamic_graph_find_unused?"}
-        C3["search_unused_parameters<br/>DFS autograd 图找未使用参数"]
-        C1 --> C2
-        C2 -->|是| C3
-    end
-    subgraph D["阶段D 反向进行中(事件驱动, 核心)"]
-        D1["autograd_hook(index)<br/>[autograd 线程, lock(mutex_)]"]
-        D2["mark_variable_ready(index)<br/>拷 grad 进桶(融合除法)<br/>--bucket.pending"]
-        D3{"bucket.pending==0?"}
-        D4["mark_bucket_ready(bucket_index)<br/>严格按 next_bucket_ 顺序"]
-        D5["all_reduce_bucket<br/>bucket.future_work=run_comm_hook<br/>(异步 Future, 不阻塞)"]
-        D6{"next_bucket_==buckets_.size()?"}
-        D7["Engine::queue_callback(finalize_backward)"]
-        D1 --> D2 --> D3
-        D3 -->|是| D4 --> D5 --> D6
-        D6 -->|是| D7
-        D6 -->|否| D1
-    end
-    subgraph E["阶段E finalize_backward(引擎回调)"]
-        E1["for each bucket:<br/>future_work.wait()<br/>populate_bucket_views_out<br/>finalize_bucket_dense(unflatten 写回 .grad)"]
-        E2["expect_autograd_hooks_=false<br/>require_finalize_=false"]
-        E1 --> E2
-    end
-    A --> B --> C --> D --> E
-    E -.->|下一迭代| B
+    D1["autograd_hook(i)<br/>autograd 线程，lock mutex_"]
+    D2["mark_variable_ready(i)<br/>拷贝 grad 进桶<br/>（融合除法）<br/>bucket.pending -= 1"]
+    D3{"pending == 0 ?"}
+    D4["mark_bucket_ready<br/>按 next_bucket_ 严格归约"]
+    D5["all_reduce_bucket<br/>run_comm_hook<br/>Future，异步不阻塞"]
+    D6{"next_bucket_ == 全部桶?"}
+    D7["queue_callback<br/>finalize_backward"]
+    D1 --> D2 --> D3
+    D3 --"是"--> D4 --> D5 --> D6
+    D3 --"否"--> D1
+    D6 --"是"--> D7
+    D6 --"否"--> D1
 ```
 
 **两处关键异步点**：
