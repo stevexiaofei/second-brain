@@ -77,3 +77,201 @@
   .mermaid svg { max-width: 100% !important; font-size: 13px !important; }
   .mermaid .label { font-size: 13px !important; }
 }
+
+/* =========================================================
+ * HTML 内嵌图（替换 Mermaid 的手写 Flow / Steps / Cards）
+ *   - .diagram         外层：卡片容器 + 滚动
+ *   - .h-flow           横向节点流（节点 → 箭头 → 节点 …）
+ *   - .v-steps          纵向步骤图
+ *   - .d-node / .d-node-active / .d-node-start… 节点样式
+ *   - .d-arrow / .d-arrow-loop / .d-label         箭头与标签
+ *   - .d-note           旁白小卡片
+ * ========================================================= */
+
+.diagram {
+  background: #ffffff;
+  border: 1px solid var(--vp-c-divider-light, #e5e7eb);
+  border-radius: 12px;
+  padding: 22px 22px 24px;
+  margin: 20px 0 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--vp-c-text-1);
+}
+.dark .diagram {
+  background: #1e1e2a;
+  border-color: var(--vp-c-divider-dark, #2f2f42);
+  box-shadow: none;
+}
+.diagram::-webkit-scrollbar { height: 8px; }
+.diagram::-webkit-scrollbar-track { background: transparent; }
+.diagram::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark .diagram::-webkit-scrollbar-thumb { background: #475569; }
+
+/* ------- 节点 ------- */
+.d-node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #eef2ff;
+  border: 1.5px solid #c7d2fe;
+  color: #312e81;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 96px;
+  flex: 0 0 auto;
+  box-shadow: 0 1px 2px rgba(99,102,241,0.08);
+}
+.dark .d-node {
+  background: #2a2d55; border-color: #4338ca; color: #e0e7ff;
+  box-shadow: none;
+}
+.d-node-start {
+  background: #dcfce7; border-color: #86efac; color: #14532d;
+}
+.dark .d-node-start {
+  background: #1a3b2a; border-color: #15803d; color: #bbf7d0;
+}
+.d-node-active {
+  background: #fff7ed; border-color: #fdba74; color: #7c2d12;
+}
+.dark .d-node-active {
+  background: #3d2a1a; border-color: #c2410c; color: #ffedd5;
+}
+.d-node-decide {
+  background: #fef3c7; border-color: #fcd34d; color: #78350f;
+  border-radius: 6px;
+  transform: rotate(0deg); /* 让菱形视觉效果靠 border-radius 变体近似 */
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  padding: 22px 18px;
+}
+.dark .d-node-decide {
+  background: #3d3416; border-color: #a16207; color: #fef3c7;
+}
+
+/* ------- 横向流程 .h-flow ------- */
+.h-flow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: nowrap;
+  min-width: min-content;
+  padding: 6px 4px;
+}
+.d-arrow {
+  flex: 0 0 auto;
+  color: var(--vp-c-text-2);
+  font-size: 18px;
+  letter-spacing: 2px;
+  user-select: none;
+}
+.d-arrow::before {
+  content: "──▶";
+  color: #94a3b8;
+}
+.d-arrow-loop::before {
+  content: "⟲";
+  font-size: 22px;
+  color: #94a3b8;
+}
+.d-label {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  max-width: 220px;
+  white-space: normal;
+  text-align: left;
+}
+.dark .d-label {
+  color: #cbd5e1; background: #2a2d3a; border-color: #475569;
+}
+
+/* ------- 纵向步骤 .v-steps ------- */
+.v-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 6px 4px;
+  position: relative;
+}
+.v-steps::before {
+  content: "";
+  position: absolute;
+  left: 25px;
+  top: 26px;
+  bottom: 26px;
+  width: 2px;
+  background: linear-gradient(180deg, #c7d2fe 0%, #a5b4fc 100%);
+}
+.dark .v-steps::before { background: linear-gradient(180deg, #4338ca 0%, #6366f1 100%); }
+.v-steps .step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 10px 0;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+.v-steps .step-dot {
+  flex: 0 0 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  border: 2px solid #6366f1;
+  color: #4338ca;
+  font-weight: 700;
+  font-size: 17px;
+}
+.dark .v-steps .step-dot {
+  background: #312e81; border-color: #818cf8; color: #e0e7ff;
+}
+.v-steps .step-body {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider-light);
+}
+.dark .v-steps .step-body {
+  background: #23232e; border-color: #3a3a50;
+}
+.v-steps .step-body b { color: var(--vp-c-text-1); }
+.v-steps .step-body small { display:block; margin-top: 4px; color: var(--vp-c-text-2); }
+
+/* ------- 旁白小卡 ------- */
+.d-note {
+  margin: 14px 0 0 0;
+  padding: 10px 14px;
+  border-left: 4px solid #fbbf24;
+  background: #fffbeb;
+  border-radius: 6px;
+  color: #78350f;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.dark .d-note {
+  background: #3d3416; color: #fde68a; border-left-color: #ca8a04;
+}
+.d-note b { color: inherit; font-weight: 600; }
+
+/* 小屏 */
+@media (max-width: 640px) {
+  .diagram { padding: 14px 14px 18px; font-size: 14px; }
+  .d-node { padding: 8px 14px; min-width: 72px; font-size: 14px; }
+  .v-steps .step-dot { width: 42px; height: 42px; font-size: 14px; }
+  .v-steps::before { left: 20px; }
+}
