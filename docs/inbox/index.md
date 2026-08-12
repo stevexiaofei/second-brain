@@ -19,6 +19,7 @@
 - [DFD（数据流图）](./dfd.md) — 描述数据流动与加工的结构化分析工具，含分层展开和平衡原则
 - [DDIM (Denoising Diffusion Implicit Models)](./ddim-paper.md) — 扩散模型加速采样论文笔记，含公式 (11) 解释、KL 散度在变分推断中的角色、定理 1 完整证明
 - [uv — 极速 Python 包管理工具](./uv-python-package-manager.md) — Astral 出品的 Rust 实现一体化 Python 工具链，替代 pip/venv/poetry/pyenv/pipx/twine，含常用命令、对比表、典型工作流
+- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 12 个值得精读的 AI 开源项目、Top 5 学习路线、Design Pattern 对照表、源码精读方法
 
 ## Example
 

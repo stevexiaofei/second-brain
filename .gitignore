@@ -7,3 +7,4 @@ docs/.vitepress/dist/
 .env.*
 .vscode/
 .idea/
+_tmp_screenshot/
