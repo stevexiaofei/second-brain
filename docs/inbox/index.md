@@ -21,6 +21,7 @@
 - [uv — 极速 Python 包管理工具](./uv-python-package-manager.md) — Astral 出品的 Rust 实现一体化 Python 工具链，替代 pip/venv/poetry/pyenv/pipx/twine，含常用命令、对比表、典型工作流
 - [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 12 个值得精读的 AI 开源项目、Top 5 学习路线、Design Pattern 对照表、源码精读方法
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — RISC-V Vector Extension 的核心概念、编程模型、intrinsics 命名和算子开发流程
+- [Second Brain 迭代路线图](./second-brain-iteration-roadmap.md) — 现状盘点、四阶段迭代计划（内容闭环/外部打通/AI 深化/发布治理）与优先级建议
 
 ## Example
 
