@@ -21,35 +21,23 @@ updated: 2026-08-11
 
 四个模块的依赖关系（实线 = 运行时依赖，虚线 = 构建时编排）：
 
-<div class="diagram">
-  <div class="v-steps">
-    <div class="step-row">
-      <div class="step-dot" style="background:#e0f2fe;border-color:#0284c7;color:#075985;">A</div>
-      <div class="step-body">
-        <b>torch/csrc — Python↔C++ 绑定 & 顶层子系统</b>
-        <small>Python 绑定（注册到 <code>torch._C</code>）、JIT 编译器、Autograd 引擎、Distributed(c10d+RPC)、Dynamo、AOTI/Inductor、libtorch C++ 前端 API。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#ecfeff;border-color:#0891b2;color:#164e63;">B</div>
-      <div class="step-body">
-        <b>ATen — 张量运算库 + Dispatcher</b>
-        <small>native/ 下各后端算子实现（CPU/CUDA/MPS/…），Dispatcher 按 <code>DispatchKeySet</code> 路由内核；<code>TensorIterator</code> 处理广播/类型提升。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#f0fdfa;border-color:#0d9488;color:#134e4a;">C</div>
-      <div class="step-body">
-        <b>c10 — 最小核心库（零后端 / 零 Python 依赖）</b>
-        <small><code>TensorImpl</code> / <code>Storage</code> / <code>Device</code> / <code>ScalarType</code> / <code>DispatchKey</code> / <code>intrusive_ptr</code> / <code>SmallVector</code> / 数值类型（Half/BFloat16/Float8）。</small>
-      </div>
-    </div>
-  </div>
-  <div class="d-note">
-    <b>运行时依赖（实线）：</b>torch/csrc → ATen → c10（上层依赖下层，c10 无依赖）。<br/>
-    <b>构建时编排（虚线）：</b><code>caffe2/CMakeLists.txt</code> 把 c10 + ATen + torch/csrc 源码组装为 <code>torch_cpu / torch_cuda / torch</code> 库，并触发 torchgen 代码生成；同时提供少量遗留运行时（序列化 / 线程池 / 移动端 perfkernels）。
-  </div>
-</div>
+```mermaid
+flowchart TD
+    sA["<b>A · torch/csrc — Python↔C++ 绑定 & 顶层子系统</b><br/><small>Python 绑定（注册到 <code>torch._C</code>）、JIT 编译器、Autograd 引擎、Distributed(c10d+RPC)、Dynamo、AOTI/Inductor、libtorch C++ 前端 API。</small>"]
+    sB["<b>B · ATen — 张量运算库 + Dispatcher</b><br/><small>native/ 下各后端算子实现（CPU/CUDA/MPS/…），Dispatcher 按 <code>DispatchKeySet</code> 路由内核；<code>TensorIterator</code> 处理广播/类型提升。</small>"]
+    sC["<b>C · c10 — 最小核心库（零后端 / 零 Python 依赖）</b><br/><small><code>TensorImpl</code> / <code>Storage</code> / <code>Device</code> / <code>ScalarType</code> / <code>DispatchKey</code> / <code>intrusive_ptr</code> / <code>SmallVector</code> / 数值类型（Half/BFloat16/Float8）。</small>"]
+    sA --> sB --> sC
+    class sA,sB,sC step
+
+classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **运行时依赖（实线）：** torch/csrc → ATen → c10（上层依赖下层，c10 无依赖）。
+> **构建时编排（虚线）：** `caffe2/CMakeLists.txt` 把 c10 + ATen + torch/csrc 源码组装为 `torch_cpu / torch_cuda / torch` 库，并触发 torchgen 代码生成；同时提供少量遗留运行时（序列化 / 线程池 / 移动端 perfkernels）。
 
 ### 1. c10 — 最小 C++ 核心库
 

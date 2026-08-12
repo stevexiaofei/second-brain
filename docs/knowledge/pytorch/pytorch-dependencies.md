@@ -25,55 +25,25 @@ updated: 2026-08-11
 
 ### 模块依赖链（自底向上）
 
-<div class="diagram">
-  <div class="v-steps">
-    <div class="step-row">
-      <div class="step-dot">6</div>
-      <div class="step-body">
-        <b><code>torch.*</code> — Python 顶层包</b>
-        <small>用户可见的 API：<code>nn</code> · <code>optim</code> · <code>autograd</code> · <code>distributed</code> · <code>jit</code> · <code>fx</code> · <code>_dynamo</code> · <code>_inductor</code> · <code>export</code>。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">5</div>
-      <div class="step-body">
-        <b><code>torch._C</code> — Python 扩展模块</b>
-        <small>CPython 扩展，单一入口文件 <code>torch/csrc/Module.cpp</code> 注册所有子系统到命名空间。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">4</div>
-      <div class="step-body">
-        <b><code>torch/csrc</code> — Python↔C++ 绑定 & 子系统</b>
-        <small>JIT · autograd 引擎 · distributed(c10d+RPC) · Dynamo · AOTI/Inductor · libtorch C++ 前端。<b>运行时依赖：c10 + ATen。</b></small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#fff7ed;border-color:#f97316;color:#9a3412;">3</div>
-      <div class="step-body">
-        <b><code>caffe2/CMakeLists.txt</code> — 构建编排层 ⚠️ 非运行时依赖</b>
-        <small>把 c10 + ATen + torch/csrc 源码组装为 <code>torch_cpu / torch_cuda / torch</code>；触发 torchgen 代码生成；叠加第三方后端（CUDA/ROCm/MKL）。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">2</div>
-      <div class="step-body">
-        <b>ATen — 张量运算库</b>
-        <small>native/ 各后端算子 + Dispatcher 路由。<b>依赖：c10。</b></small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#f0fdf4;border-color:#16a34a;color:#14532d;">1</div>
-      <div class="step-body">
-        <b>c10 — 最小 C++ 核心库（地基）</b>
-        <small><code>TensorImpl</code> / <code>Storage</code> / <code>Device</code> / <code>ScalarType</code> / <code>DispatchKey</code> / <code>intrusive_ptr</code>。<b>零后端、零 Python、零第三方依赖。</b></small>
-      </div>
-    </div>
-  </div>
-  <div class="d-note">
-    <b>编译/链接顺序 = 依赖方向：</b>自底向上（1→2→3→4→5→6）。c10 是地基，这也是为什么它的零依赖约束被写进 <code>c10/CMakeLists.txt</code>——一旦被后端/Python 污染，整个构建链都被拖进依赖。
-  </div>
-</div>
+```mermaid
+flowchart TD
+    n6["<b>torch.*</b> — Python 顶层包<br/><small>用户可见的 API：<code>nn</code> · <code>optim</code> · <code>autograd</code> · <code>distributed</code> · <code>jit</code> · <code>fx</code> · <code>_dynamo</code> · <code>_inductor</code> · <code>export</code>。</small>"]:::step
+    n5["<b>torch._C</b> — Python 扩展模块<br/><small>CPython 扩展，单一入口文件 <code>torch/csrc/Module.cpp</code> 注册所有子系统到命名空间。</small>"]:::step
+    n4["<b>torch/csrc</b> — Python↔C++ 绑定 & 子系统<br/><small>JIT · autograd 引擎 · distributed(c10d+RPC) · Dynamo · AOTI/Inductor · libtorch C++ 前端。<b>运行时依赖：c10 + ATen。</b></small>"]:::step
+    n3["<b>caffe2/CMakeLists.txt</b> — 构建编排层 ⚠️ 非运行时依赖<br/><small>把 c10 + ATen + torch/csrc 源码组装为 <code>torch_cpu / torch_cuda / torch</code>；触发 torchgen 代码生成；叠加第三方后端（CUDA/ROCm/MKL）。</small>"]:::action
+    n2["<b>ATen</b> — 张量运算库<br/><small>native/ 各后端算子 + Dispatcher 路由。<b>依赖：c10。</b></small>"]:::step
+    n1["<b>c10</b> — 最小 C++ 核心库（地基）<br/><small><code>TensorImpl</code> / <code>Storage</code> / <code>Device</code> / <code>ScalarType</code> / <code>DispatchKey</code> / <code>intrusive_ptr</code>。<b>零后端、零 Python、零第三方依赖。</b></small>"]:::branchNo
+
+    n6 --> n5 --> n4 --> n3 --> n2 --> n1
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **编译/链接顺序 = 依赖方向：**自底向上（1→2→3→4→5→6）。c10 是地基，这也是为什么它的零依赖约束被写进 `c10/CMakeLists.txt`——一旦被后端/Python 污染，整个构建链都被拖进依赖。
 
 链路要点：
 

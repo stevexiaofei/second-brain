@@ -46,48 +46,23 @@ autograd 是性能热点，重活在 C++。每种关键类型都有 C++ 实现�
 
 ### 前向 → DAG 构建 → 反向 → 引擎执行
 
-<div class="diagram">
-  <div class="v-steps">
-    <div class="step-row">
-      <div class="step-dot" style="background:#ecfdf5;border-color:#10b981;color:#064e3b;">①</div>
-      <div class="step-body">
-        <b>前向传播（define-by-run 建 DAG）</b>
-        <small>
-          <code>a = tensor(requires_grad=True)</code> → <code>b = a * 2</code> → 算子建 <code>MulBackward0</code> 节点，<code>b.grad_fn = MulBackward0</code>，边指向 a 的 <code>AccumulateGrad</code>；<br/>
-          <code>c = b.sum()</code> → 建 <code>SumBackward0</code>，<code>c.grad_fn = SumBackward0</code>。<br/>
-          <b>最终 DAG：</b><code>SumBackward0 → MulBackward0 → AccumulateGrad(a)</code>。
-        </small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#eff6ff;border-color:#3b82f6;color:#1e3a8a;">②</div>
-      <div class="step-body">
-        <b><code>c.backward()</code> → ImperativeEngine（C++）启动</b>
-        <small>对 DAG 做<b>拓扑排序</b>，入队所有就绪节点。默认种子梯度 = 1（标量输出）。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#eef2ff;border-color:#6366f1;color:#3730a3;">③</div>
-      <div class="step-body">
-        <b>逆拓扑执行 <code>Node.apply()</code></b>
-        <small>
-          <b>Step 1：</b><code>SumBackward0.apply(grad=1.0)</code> → 返回对 <code>b</code> 的梯度；<br/>
-          <b>Step 2：</b><code>MulBackward0.apply(grad_b)</code>，从 <code>SavedVariable</code> 读前向张量并<b>校验 <code>version_counter</code></b>（就地修改直接报错）→ 返回对 <code>a</code> 的梯度。
-        </small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#fef3c7;border-color:#f59e0b;color:#78350f;">④</div>
-      <div class="step-body">
-        <b>AccumulateGrad 写回 <code>.grad</code>，完成</b>
-        <small>叶子梯度到齐后 <code>AccumulateGrad.apply</code> 把梯度累积到 <code>a.grad</code>；所有节点跑完 <code>backward()</code> 返回。默认 <code>retain_graph=False</code>，DAG 反向后被释放。</small>
-      </div>
-    </div>
-  </div>
-  <div class="d-note">
-    <b>引擎调度细节：</b>拓扑排序 + 就绪队列 + 多线程（<code>engine.cpp</code>）；节点所有输入梯度到齐才入队；<code>InputBuffer</code> 负责多路梯度的<b>累积求和</b>（即链式法则中 $\sum_i \partial L/\partial y_i \cdot \partial y_i/\partial x$ 的累加部分）。
-  </div>
-</div>
+```mermaid
+flowchart TD
+    s1["<b>① 前向传播（define-by-run 建 DAG）</b><br/><small><code>a = tensor(requires_grad=True)</code> → <code>b = a * 2</code> → 算子建 <code>MulBackward0</code> 节点，<code>b.grad_fn = MulBackward0</code>，边指向 a 的 <code>AccumulateGrad</code>；<br/><code>c = b.sum()</code> → 建 <code>SumBackward0</code>，<code>c.grad_fn = SumBackward0</code>。<br/><b>最终 DAG：</b><code>SumBackward0 → MulBackward0 → AccumulateGrad(a)</code>。</small>"]
+    s2["<b>② <code>c.backward()</code> → ImperativeEngine（C++）启动</b><br/><small>对 DAG 做<b>拓扑排序</b>，入队所有就绪节点。默认种子梯度 = 1（标量输出）。</small>"]
+    s3["<b>③ 逆拓扑执行 <code>Node.apply()</code></b><br/><small><b>Step 1：</b><code>SumBackward0.apply(grad=1.0)</code> → 返回对 <code>b</code> 的梯度；<br/><b>Step 2：</b><code>MulBackward0.apply(grad_b)</code>，从 <code>SavedVariable</code> 读前向张量并<b>校验 <code>version_counter</code></b>（就地修改直接报错）→ 返回对 <code>a</code> 的梯度。</small>"]
+    s4["<b>④ AccumulateGrad 写回 <code>.grad</code>，完成</b><br/><small>叶子梯度到齐后 <code>AccumulateGrad.apply</code> 把梯度累积到 <code>a.grad</code>；所有节点跑完 <code>backward()</code> 返回。默认 <code>retain_graph=False</code>，DAG 反向后被释放。</small>"]
+    s1 --> s2 --> s3 --> s4
+    class s1,s2,s3,s4 step
+
+classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **引擎调度细节：** 拓扑排序 + 就绪队列 + 多线程（`engine.cpp`）；节点所有输入梯度到齐才入队；`InputBuffer` 负责多路梯度的**累积求和**（即链式法则中 $\sum_i \partial L/\partial y_i \cdot \partial y_i/\partial x$ 的累加部分）。
 
 引擎的关键点：
 

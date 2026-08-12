@@ -23,48 +23,24 @@ updated: 2026-08-11
 
 自底向上，PyTorch 可划分为五层。上层依赖下层，最底层 `c10` 不依赖任何后端或 Python：
 
-<div class="diagram">
-  <div class="v-steps" style="--dot-bg:#eef2ff;--dot-border:#6366f1;">
-    <div class="step-row">
-      <div class="step-dot" style="background:#eef2ff;border-color:#6366f1;color:#4338ca;">L5</div>
-      <div class="step-body">
-        <b>Python 用户层</b>
-        <small><code>torch.nn</code> · <code>torch.optim</code> · <code>torch.distributed</code> · <code>torch.compile</code> · <code>torch.export</code> 等纯 Python 子包。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#e0e7ff;border-color:#4f46e5;color:#3730a3;">L4</div>
-      <div class="step-body">
-        <b>Python 绑定层 · <code>torch._C</code></b>
-        <small>由 <code>torch/csrc/Module.cpp</code> 统一注册所有 C++ 子系统到 CPython 扩展模块。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#ddd6fe;border-color:#7c3aed;color:#4c1d95;">L3</div>
-      <div class="step-body">
-        <b>C++ 子系统层 · <code>torch/csrc</code></b>
-        <small>JIT / Autograd 引擎 / Distributed(c10d+RPC) / Dynamo / Inductor / libtorch C++ 前端 API。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#f3e8ff;border-color:#a855f7;color:#581c87;">L2</div>
-      <div class="step-body">
-        <b>ATen 张量运算库 · <code>aten/src/ATen</code></b>
-        <small>原生算子实现（native/） + <code>Dispatcher</code>（基于 <code>DispatchKeySet</code> 路由后端内核）。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#faf5ff;border-color:#c084fc;color:#6b21a8;">L1</div>
-      <div class="step-body">
-        <b>c10 最小 C++ 核心库</b>
-        <small><code>TensorImpl</code> / <code>Storage</code> / <code>Device</code> / <code>ScalarType</code> / <code>DispatchKey</code> / <code>intrusive_ptr</code> · 零后端、零 Python 依赖。</small>
-      </div>
-    </div>
-  </div>
-  <div class="d-note">
-    <b>依赖方向：</b>L5 → L4 → L3 → L2 → L1（上层依赖下层）。c10 是地基，所有编译/链接顺序先编 c10，再 ATen，再 torch/csrc，最后拼成 <code>torch</code> 库与 <code>torch._C</code> 扩展。
-  </div>
-</div>
+```mermaid
+flowchart TD
+    L5["<b>L5 · Python 用户层</b><br/><small><code>torch.nn</code> · <code>torch.optim</code> · <code>torch.distributed</code> · <code>torch.compile</code> · <code>torch.export</code> 等纯 Python 子包。</small>"]
+    L4["<b>L4 · Python 绑定层 · <code>torch._C</code></b><br/><small>由 <code>torch/csrc/Module.cpp</code> 统一注册所有 C++ 子系统到 CPython 扩展模块。</small>"]
+    L3["<b>L3 · C++ 子系统层 · <code>torch/csrc</code></b><br/><small>JIT / Autograd 引擎 / Distributed(c10d+RPC) / Dynamo / Inductor / libtorch C++ 前端 API。</small>"]
+    L2["<b>L2 · ATen 张量运算库 · <code>aten/src/ATen</code></b><br/><small>原生算子实现（native/） + <code>Dispatcher</code>（基于 <code>DispatchKeySet</code> 路由后端内核）。</small>"]
+    L1["<b>L1 · c10 最小 C++ 核心库</b><br/><small><code>TensorImpl</code> / <code>Storage</code> / <code>Device</code> / <code>ScalarType</code> / <code>DispatchKey</code> / <code>intrusive_ptr</code> · 零后端、零 Python 依赖。</small>"]
+    L5 --> L4 --> L3 --> L2 --> L1
+    class L5,L4,L3,L2,L1 step
+
+classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **依赖方向：** L5 → L4 → L3 → L2 → L1（上层依赖下层）。c10 是地基，所有编译/链接顺序先编 c10，再 ATen，再 torch/csrc，最后拼成 `torch` 库与 `torch._C` 扩展。
 
 ### 分发机制（Dispatch）
 

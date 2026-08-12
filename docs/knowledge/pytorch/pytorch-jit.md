@@ -30,50 +30,27 @@ TorchScript 是 PyTorch 从"研究友好"走向"可部署"的桥梁。它让训�
 
 ### JIT IR（`torch/csrc/jit/ir/ir.h`）
 
-<div class="diagram">
-  <div style="display:grid; grid-template-columns:repeat(4,minmax(200px,1fr)); gap:16px;">
-    <div class="d-node" style="flex-direction:column; align-items:stretch; padding:14px; text-align:left; min-width:0; white-space:normal;">
-      <b style="text-align:center; display:block; padding-bottom:6px; border-bottom:1px solid #c7d2fe; margin-bottom:8px;">Graph</b>
-      <div style="font-size:13.5px; line-height:1.65; font-weight:400;">
-        整张计算图容器<br/>
-        · <code>inputs</code> / <code>outputs</code>：显式 I/O Value<br/>
-        · <code>block</code>：一个根 Block<br/>
-        · <code>nodes()</code>：遍历所有节点
-      </div>
-    </div>
-    <div class="d-node" style="flex-direction:column; align-items:stretch; padding:14px; text-align:left; min-width:0; white-space:normal;">
-      <b style="text-align:center; display:block; padding-bottom:6px; border-bottom:1px solid #c7d2fe; margin-bottom:8px;">Block</b>
-      <div style="font-size:13.5px; line-height:1.65; font-weight:400;">
-        节点序列容器<br/>
-        · <code>nodes</code>：Node 的有序列表<br/>
-        · 自己的 <code>inputs</code> / <code>outputs</code><br/>
-        · 能被 <code>If</code>/<code>Loop</code> 节点内嵌 → 支持控制流
-      </div>
-    </div>
-    <div class="d-node" style="flex-direction:column; align-items:stretch; padding:14px; text-align:left; min-width:0; white-space:normal;">
-      <b style="text-align:center; display:block; padding-bottom:6px; border-bottom:1px solid #c7d2fe; margin-bottom:8px;">Node</b>
-      <div style="font-size:13.5px; line-height:1.65; font-weight:400;">
-        一个算子/原语<br/>
-        · <code>kind</code>：Symbol（如 <code>aten::add</code>、<code>prim::If</code>）<br/>
-        · <code>inputs</code> / <code>outputs</code>：Value 边<br/>
-        · <code>blocks</code>：内嵌 Block（表达控制流）<br/>
-        · <code>attributes</code>：常量 / 子图元数据
-      </div>
-    </div>
-    <div class="d-node" style="flex-direction:column; align-items:stretch; padding:14px; text-align:left; min-width:0; white-space:normal;">
-      <b style="text-align:center; display:block; padding-bottom:6px; border-bottom:1px solid #c7d2fe; margin-bottom:8px;">Value</b>
-      <div style="font-size:13.5px; line-height:1.65; font-weight:400;">
-        SSA 值（use-def 链）<br/>
-        · <code>node</code>：产出它的 Node<br/>
-        · <code>type</code>：张量/标量/元组类型<br/>
-        · <code>uses</code>：其他 Node 对它的消费列表
-      </div>
-    </div>
-  </div>
-  <div class="d-note" style="margin-top:16px;">
-    <b>组合关系：</b>Graph ≡ 1 个 Block → 多个 Node，Node 产出/消费多个 Value，且 Node 可再内嵌 Block（<code>prim::If</code> 的 then/else、<code>prim::Loop</code> 的 body）——这就是 scripting 能完整保留 Python 控制流的 IR 基础。
-  </div>
-</div>
+```mermaid
+flowchart LR
+    Graph["<b>Graph</b><br/><small>整张计算图容器</small><br/>· <code>inputs</code> / <code>outputs</code>：显式 I/O Value<br/>· <code>block</code>：一个根 Block<br/>· <code>nodes()</code>：遍历所有节点"]:::step
+    Block["<b>Block</b><br/><small>节点序列容器</small><br/>· <code>nodes</code>：Node 的有序列表<br/>· 自己的 <code>inputs</code> / <code>outputs</code><br/>· 能被 <code>If</code>/<code>Loop</code> 节点内嵌 → 支持控制流"]:::step
+    Node["<b>Node</b><br/><small>一个算子/原语</small><br/>· <code>kind</code>：Symbol（如 <code>aten::add</code>、<code>prim::If</code>）<br/>· <code>inputs</code> / <code>outputs</code>：Value 边<br/>· <code>blocks</code>：内嵌 Block（表达控制流）<br/>· <code>attributes</code>：常量 / 子图元数据"]:::step
+    Value["<b>Value</b><br/><small>SSA 值（use-def 链）</small><br/>· <code>node</code>：产出它的 Node<br/>· <code>type</code>：张量/标量/元组类型<br/>· <code>uses</code>：其他 Node 对它的消费列表"]:::step
+
+    Graph -- "持有 1 个根" --> Block
+    Block -- "有序包含" --> Node
+    Node -- "产出/消费" --> Value
+    Node -- "可内嵌" --> Block
+    Graph -. "inputs/outputs 是" .-> Value
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **组合关系：** Graph ≡ 1 个 Block → 多个 Node，Node 产出/消费多个 Value，且 Node 可再内嵌 Block（`prim::If` 的 then/else、`prim::Loop` 的 body）——这就是 scripting 能完整保留 Python 控制流的 IR 基础。
 
 - **`Graph`**：整张计算图，有显式 inputs/outputs 与一个根 `Block`。
 - **`Node`**：一个算子节点，`kind` 是 interned symbol（如 `aten::add`、`prim::If`、`prim::Loop`），含属性（常量、子图引用）。
@@ -97,45 +74,45 @@ TorchScript 是 PyTorch 从"研究友好"走向"可部署"的桥梁。它让训�
 
 ### 捕获 → IR → 优化 → 部署的完整管线
 
-<div class="diagram">
-  <div style="display:grid; grid-template-columns:repeat(3,minmax(240px,1fr)); gap:14px; align-items:stretch;">
+```mermaid
+flowchart LR
+    subgraph CAP["① 捕获（两条路径）"]
+        CAP_in["<b>nn.Module / Python fn</b>"]:::step
+        CAP_script["<b>@script：</b>解析 Python AST → ScriptModule<br/><small>完整控制流</small>"]:::branchNo
+        CAP_trace["<b>trace：</b>跑示例输入 → TracedModule<br/><small>只记录执行路径</small>"]:::branchNo
+    end
 
-    <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:10px; background:linear-gradient(180deg,#f0fdfa 0%, #ecfeff 100%); border:1px solid #99f6e4;">
-      <b style="color:#0f766e;">① 捕获（两条路径）</b>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <div>
-          <span class="d-node d-node-start" style="width:100%; display:flex;">nn.Module / Python fn</span>
-        </div>
-      </div>
-      <div class="h-flow" style="gap:6px; flex-wrap:wrap; padding:0;">
-        <span class="d-label" style="border-color:#14b8a6; background:#ccfbf1; color:#115e59; max-width:220px;">@script：解析 Python AST → ScriptModule（完整控制流）</span>
-        <span class="d-label" style="border-color:#0891b2; background:#cffafe; color:#164e63; max-width:220px;">trace：跑示例输入 → TracedModule（只记录执行路径）</span>
-      </div>
-    </div>
+    subgraph IR["② IR & 优化（共用 C++ JIT IR）"]
+        IR1["<b>Step 1：</b>生成 JIT IR（Graph / Node / Value / Block）"]:::step
+        IR2["<b>Step 2：</b>canonicalize / constant_pooling"]:::step
+        IR3["<b>Step 3：</b>peephole · fuse_linear · fold_conv_bn"]:::step
+        IR4["<b>Step 4：</b>freeze_module · dead_code_elim"]:::step
+        IR5["<b>Step 5：</b>codegen fuser（CPU / CUDA / onednn）"]:::action
+    end
 
-    <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:10px; background:linear-gradient(180deg,#eef2ff 0%, #e0e7ff 100%); border:1px solid #c7d2fe;">
-      <b style="color:#3730a3;">② IR & 优化（共用 C++ JIT IR）</b>
-      <div class="h-flow" style="flex-direction:column; align-items:stretch; gap:8px; padding:0;">
-        <span class="d-node" style="justify-content:flex-start;"><b>Step 1：</b>生成 JIT IR（Graph / Node / Value / Block）</span>
-        <span class="d-node" style="justify-content:flex-start;"><b>Step 2：</b>canonicalize / constant_pooling</span>
-        <span class="d-node" style="justify-content:flex-start;"><b>Step 3：</b>peephole · fuse_linear · fold_conv_bn</span>
-        <span class="d-node" style="justify-content:flex-start;"><b>Step 4：</b>freeze_module · dead_code_elim</span>
-        <span class="d-node d-node-active" style="justify-content:flex-start;"><b>Step 5：</b>codegen fuser（CPU / CUDA / onednn）</span>
-      </div>
-    </div>
+    subgraph DEP["③ 部署（无 Python）"]
+        DEP_ser["<b>序列化为 flatbuffer</b><br/><small>含 IR + 权重 + schema 版本</small>"]:::step
+        DEP_libtorch["→ C++ <b>libtorch 解释器</b>（服务端推理）"]:::branchNo
+        DEP_mobile["→ 移动端 <b>lite interpreter</b>（selective build 裁剪）"]:::branchNo
+        DEP_serve["→ TorchServe / 自定义硬件后端委托"]:::branchNo
+    end
 
-    <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:10px; background:linear-gradient(180deg,#fff7ed 0%, #ffedd5 100%); border:1px solid #fdba74;">
-      <b style="color:#9a3412;">③ 部署（无 Python）</b>
-      <span class="d-node" style="justify-content:flex-start;">序列化为 <b>flatbuffer</b>（含 IR + 权重 + schema 版本）</span>
-      <div class="h-flow" style="flex-direction:column; align-items:stretch; gap:6px; padding:0;">
-        <span class="d-label" style="max-width:none;">→ C++ <b>libtorch 解释器</b>（服务端推理）</span>
-        <span class="d-label" style="max-width:none;">→ 移动端 <b>lite interpreter</b>（selective build 裁剪）</span>
-        <span class="d-label" style="max-width:none;">→ TorchServe / 自定义硬件后端委托</span>
-      </div>
-    </div>
+    CAP_in -- "@script" --> CAP_script
+    CAP_in -- "trace" --> CAP_trace
+    CAP_script --> IR1
+    CAP_trace --> IR1
+    IR1 --> IR2 --> IR3 --> IR4 --> IR5
+    IR5 --> DEP_ser
+    DEP_ser --> DEP_libtorch
+    DEP_ser --> DEP_mobile
+    DEP_ser --> DEP_serve
 
-  </div>
-</div>
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
 
 ### scripting vs tracing 的取舍
 

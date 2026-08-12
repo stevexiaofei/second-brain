@@ -26,6 +26,22 @@ Use normal Markdown links to files that actually exist. Do not invent links.
 ## Diagrams
 Do not use ASCII art or character-drawn boxes to simulate diagrams. Use Mermaid fenced code blocks (```mermaid) for any structural diagram (ER, UML class, DFD, flowchart, sequence, etc.). Mermaid is rendered natively by VitePress/GitHub and stays editable as text. Only fall back to ASCII when the diagram is genuinely a tiny inline sketch (≤3 lines) inside prose.
 
+**Never use hand-written HTML/CSS for flow diagrams.** The legacy `.diagram / .d-node / .d-arrow / .d-label / .v-steps / .h-flow / .d-note` classes in `docs/.vitepress/theme/custom.css` are deprecated and must not appear in new notes. Reasons:
+- Character arrows (`──▶`) cannot align to box edges; nodes with multi-line `<small>` subtitles drift vertically.
+- `clip-path: polygon(...)` on `.d-node-decide` is a rotated rectangle — arrows have no edge to dock to.
+- `flex-wrap` + `overflow-x: auto` makes inter-row arrows misroute in long flows.
+- Mermaid's vector engine places arrowheads on actual node edges, with no font / CSS dependency.
+
+**Required conventions for every Mermaid block in `docs/**`:**
+1. End every flowchart with the shared `classDef` block (copy verbatim from [docs/.vitepress/mermaid-style.md](docs/.vitepress/mermaid-style.md) — 5 lines: `step` / `action` / `decide` / `branchNo` / `branchYes`).
+2. Tag nodes with the matching class: `id["text"]:::step`, `id{"text"}:::decide`, etc. Do not invent ad-hoc colors per note.
+3. For `flowchart LR` long content, switch to `flowchart TD` to avoid horizontal wrap. Use `subgraph` to group siblings.
+4. Use `markdown-it` line break `<br/>` inside node text. Do not embed raw HTML `<div>`/`<span>` for styling.
+5. Side notes (former `.d-note`) become a Markdown blockquote (`>`) immediately below the Mermaid block.
+6. If you must deviate (e.g. truly novel diagram type), document the new classDef in `mermaid-style.md` so future notes stay consistent.
+
+**Mermaid performance caveat** (already in Lessons Learned): enabling Mermaid globally bumps VitePress build from ~8s to ~33s. The shared style file exists precisely so we don't pay that cost per-note.
+
 ## Math formulas
 Use LaTeX syntax for all mathematical formulas and symbols: `$...$` for inline, `$$...$$` for block. KaTeX renders them automatically in VitePress. Do not use backticks (e.g. `q_σ`) or plain text for math symbols — they will display as raw characters. Examples: write `$\sigma$` not `\`σ\``, write `$q_\sigma(x_{1:T} \| x_0)$` not `\`q_σ(x_{1:T} | x_0)\``.
 

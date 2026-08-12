@@ -42,9 +42,9 @@ export default withMermaid(
       '/inbox/': [{ text: 'Inbox', items: [{ text: 'Overview', link: '/inbox/' }] }]
     },
     search: { provider: 'local' },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/YOUR_USERNAME/second-brain' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/stevexiaofei/second-brain' }],
     editLink: {
-      pattern: 'https://github.com/YOUR_USERNAME/second-brain/edit/main/docs/:path',
+      pattern: 'https://github.com/stevexiaofei/second-brain/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     },
     outline: { level: [2, 3] },
@@ -63,11 +63,13 @@ export default withMermaid(
         fontSize: '20px',
         fontFamily: '"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif',
         noteFontSize: '16px',
-        labelFontSize: '18px'
+        labelFontSize: '18px',
+        edgeLabelBackground: '#f1f5f9',
+        tertiaryColor: '#f1f5f9'
       },
       startOnLoad: true,
       securityLevel: 'loose',
-      flowchart: { useMaxWidth: false, htmlLabels: false, curve: 'basis' },
+      flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
       sequence: { useMaxWidth: false, wrap: true, actorMargin: 50 },
       class: { useMaxWidth: false },
       state: { useMaxWidth: false },

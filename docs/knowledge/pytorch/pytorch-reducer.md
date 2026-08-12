@@ -24,26 +24,19 @@ updated: 2026-08-11
 ### 定位：事件驱动的归约协调器
 用户写 `nn.parallel.DistributedDataParallel(model)` 时，构造函数经 `_ddp_init_helper` 在 C++ 侧 `new c10d::Reducer(...)`。Python 的 `DistributedDataParallel` 只是一层薄包装，真正的活儿都在 Reducer 里。它被动等 autograd 钩子告诉它"某参数梯度好了"，把这些事件翻译成"某桶可以 all-reduce 了"，反向结束时统一收尾。
 
-<div class="diagram">
-  <div class="h-flow" style="flex-wrap:wrap; justify-content:center; align-items:stretch;">
-    <span class="d-node d-node-start" style="min-width:140px;">用户代码</span>
-    <span class="d-arrow"></span>
-    <span class="d-node" style="min-width:280px;">
-      <b>DistributedDataParallel</b>（Python 薄包装）<br/>
-      <small style="opacity:0.8; font-weight:400;"><code>_ddp_init_helper</code> · <code>_pre_forward</code> · <code>_post_forward</code></small>
-    </span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-active" style="min-width:320px;">
-      <b>c10d::Reducer</b>（本文档主角）<br/>
-      <small style="opacity:0.8; font-weight:400;">分桶 · 注册 autograd hook · 按序 all-reduce</small>
-    </span>
-    <span class="d-arrow"></span>
-    <span class="d-node" style="min-width:200px;">
-      <b>ProcessGroup</b><br/>
-      <small style="opacity:0.8; font-weight:400;">后端：NCCL / Gloo / MPI / UCC</small>
-    </span>
-  </div>
-</div>
+```mermaid
+flowchart LR
+    U["用户代码"]
+    D["<b>DistributedDataParallel</b><br/><small>Python 薄包装 · _ddp_init_helper / _pre_forward / _post_forward</small>"]
+    R["<b>c10d::Reducer</b>（本文档主角）<br/><small>分桶 · 注册 autograd hook · 按序 all-reduce</small>"]:::action
+    P["<b>ProcessGroup</b><br/><small>后端：NCCL / Gloo / MPI / UCC</small>"]
+    U --> D --> R --> P
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
 
 它要解决的七个问题：逐个 allreduce 太慢（合并成桶）、等全部梯度再通信浪费 GPU（桶一就绪就发起，与反向重叠）、怎么知道某参数梯度算完（给 AccumulateGrad 挂 post hook）、有些参数没参与 forward（DFS 找未使用参数预标 ready）、跨 rank 桶顺序不一致会死锁（按 `next_bucket_` 严格顺序归约）、想自定义通信（CommHook 接口）、归约结果怎么回 `param.grad`（unflatten 写回或让 grad 直接是桶视图）。
 
@@ -103,33 +96,30 @@ updated: 2026-08-11
 - `bucket.pending`：桶内还差几个梯度就绪，每个 `mark_variable_ready` 递减，归零触发 `mark_bucket_ready`。
 - `numGradHooksTriggeredMap_`：static_graph 首迭代统计每参数 hook 触发次数，后续迭代倒计数。
 
-<div class="diagram">
-  <div class="h-flow">
-    <span class="d-node d-node-start">Idle</span>
-    <span class="d-label">prepare_for_forward<br/>num_iterations_++</span>
-    <span class="d-arrow"></span>
-    <span class="d-node">Forwarding</span>
-    <span class="d-label">prepare_for_backward<br/>标志复位, next_bucket_=0</span>
-    <span class="d-arrow"></span>
-    <span class="d-node">BackwardPrep</span>
-    <span class="d-label">首个 autograd_hook<br/>require_finalize_=true</span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-active">Reducing</span>
-    <span class="d-arrow-loop" title="自环"></span>
-    <span class="d-label">桶 pending 归零 →<br/>all_reduce_bucket Future</span>
-  </div>
-  <div class="h-flow" style="margin-top:10px; justify-content:flex-end;">
-    <span class="d-label">queue_callback → finalize_backward</span>
-    <span class="d-arrow"></span>
-    <span class="d-node">Finalizing</span>
-    <span class="d-label">wait future_work<br/>unflatten 写回 .grad</span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-start">Idle</span>
-  </div>
-  <div class="d-note">
-    <b>归约约束：</b>桶按 <code>next_bucket_</code> 严格递增归约，避免跨 rank 同一时刻在 allreduce 不同桶导致死锁；<code>all_reduce_bucket</code> 立即返回 Future 不阻塞，通信与反向计算重叠。
-  </div>
-</div>
+```mermaid
+flowchart LR
+    I1(["Idle"]):::step
+    F["Forwarding"]:::step
+    B["BackwardPrep"]:::step
+    R["Reducing"]:::action
+    FI(["Finalizing"]):::step
+    I2(["Idle"]):::step
+
+    I1 -- "prepare_for_forward<br/>num_iterations_++" --> F
+    F -- "prepare_for_backward<br/>标志复位, next_bucket_=0" --> B
+    B -- "首个 autograd_hook<br/>require_finalize_=true" --> R
+    R -- "桶 pending 归零 →<br/>all_reduce_bucket Future" --> R
+    R -- "queue_callback → finalize_backward" --> FI
+    FI -- "wait future_work<br/>unflatten 写回 .grad" --> I2
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **归约约束**：桶按 `next_bucket_` 严格递增归约，避免跨 rank 同一时刻在 allreduce 不同桶导致死锁；`all_reduce_bucket` 立即返回 Future 不阻塞，通信与反向计算重叠。
 
 > 每个状态转移同步修改的标志/计数器，见上文 "状态机: bool 标志 + 计数器" 表格。
 
@@ -137,81 +127,57 @@ updated: 2026-08-11
 
 **（1）五阶段高层概览**
 
-<div class="diagram">
-  <div class="v-steps">
-    <div class="step-row">
-      <div class="step-dot">A</div>
-      <div class="step-body">
-        <b>构造期（一次性）</b>
-        <small><code>initialize_buckets</code> 建桶 + <code>variable_locators_</code> 反查表；为每个参数的 <code>AccumulateGrad</code> 注册 <code>autograd_hook</code>，用 <code>grad_accumulators_</code> 强引用保活。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">B</div>
-      <div class="step-body">
-        <b>Forward（每迭代）</b>
-        <small><code>prepare_for_forward</code> 被 <code>DistributedDataParallel._pre_forward</code> 调用，<code>num_iterations_++</code>，决定是否采集运行时桶就绪统计。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">C</div>
-      <div class="step-body">
-        <b>Prepare for Backward</b>
-        <small><code>expect_autograd_hooks_ = true</code>，<code>reset_bucket_counting</code> 归零 <code>next_bucket_</code>、每桶 <code>pending</code> = 参数个数；<code>find_unused_parameters</code> 模式下 <code>search_unused_parameters</code> 做 DFS 预标 ready。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">D</div>
-      <div class="step-body">
-        <b>反向进行中（事件驱动 · 核心）</b>
-        <small>autograd 每算完一个参数梯度就触发 <code>autograd_hook</code>，Reducer 递减桶倒计数；桶一旦就绪按 <code>next_bucket_</code> 严格顺序发起 <code>all_reduce_bucket</code>（立即返回 Future，不阻塞）。详见下方调用链。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot">E</div>
-      <div class="step-body">
-        <b>Finalize Backward（引擎回调）</b>
-        <small>所有桶归约排队后，<code>Engine::queue_callback</code> 把 <code>finalize_backward</code> 推迟到反向全部结束再跑：等待每个 <code>bucket.future_work</code> → <code>populate_bucket_views_out</code> → <code>finalize_bucket_dense</code> unflatten 写回 <code>.grad</code> → 标志复位 → 进入下一迭代。</small>
-      </div>
-    </div>
-  </div>
-</div>
+```mermaid
+flowchart TD
+    A["<b>A · 构造期（一次性）</b><br/><small>initialize_buckets 建桶 + variable_locators_ 反查表；为每参数 AccumulateGrad 注册 autograd_hook，用 grad_accumulators_ 强引用保活</small>"]
+    B["<b>B · Forward（每迭代）</b><br/><small>prepare_for_forward 被 DistributedDataParallel._pre_forward 调用，num_iterations_++，决定是否采集运行时桶就绪统计</small>"]
+    C["<b>C · Prepare for Backward</b><br/><small>expect_autograd_hooks_ = true，reset_bucket_counting 归零 next_bucket_、每桶 pending = 参数个数；find_unused_parameters 模式下 search_unused_parameters 做 DFS 预标 ready</small>"]
+    D["<b>D · 反向进行中（事件驱动 · 核心）</b><br/><small>autograd 每算完一个参数梯度就触发 autograd_hook，Reducer 递减桶倒计数；桶一旦就绪按 next_bucket_ 严格顺序发起 all_reduce_bucket（立即返回 Future，不阻塞）</small>"]:::action
+    E["<b>E · Finalize Backward（引擎回调）</b><br/><small>所有桶归约排队后，Engine::queue_callback 把 finalize_backward 推迟到反向全部结束再跑：等待每个 bucket.future_work → populate_bucket_views_out → finalize_bucket_dense unflatten 写回 .grad → 标志复位 → 进入下一迭代</small>"]
+    A --> B --> C --> D --> E
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
 
 **（2）阶段 D 事件驱动调用链（反向核心）**
 
-<div class="diagram">
-  <div class="h-flow" style="flex-wrap:wrap; align-items:stretch;">
-    <span class="d-node">① autograd_hook(i)<br/><small style="opacity:0.75; font-weight:400;">autograd 线程 · lock mutex_</small></span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-active">② mark_variable_ready<br/><small style="opacity:0.75; font-weight:400;">拷贝 grad 进桶(融合除法) · pending -= 1</small></span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-decide">③ pending == 0?</span>
-  </div>
-  <div class="h-flow" style="margin-top:10px; flex-wrap:wrap;">
-    <span class="d-label" style="border-color:#86efac; background:#f0fdf4; color:#166534;">否：继续等待下一个梯度</span>
-    <span style="flex:1 1 auto;"></span>
-    <span class="d-label" style="border-color:#fdba74; background:#fff7ed; color:#9a3412;">是：桶就绪</span>
-  </div>
-  <div class="h-flow" style="margin-top:6px; flex-wrap:wrap;">
-    <span class="d-node">④ mark_bucket_ready<br/><small style="opacity:0.75; font-weight:400;">严格按 next_bucket_ 顺序</small></span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-active">⑤ all_reduce_bucket<br/><small style="opacity:0.75; font-weight:400;">run_comm_hook · Future 异步</small></span>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-decide">⑥ 全部桶归约完?</span>
-  </div>
-  <div class="h-flow" style="margin-top:10px; flex-wrap:wrap;">
-    <span class="d-label">否：等下一个桶就绪（反向继续跑）</span>
-    <span style="flex:1 1 auto;"></span>
-    <span class="d-label" style="border-color:#c7d2fe; background:#eef2ff; color:#3730a3;">是 → Engine::queue_callback(finalize_backward)</span>
-  </div>
-  <div class="d-note">
-    <b>两层异步：</b>桶级 <code>all_reduce_bucket</code> 返回 Future 不阻塞反向；收尾 <code>finalize_backward</code> 经引擎回调推迟到所有反向节点跑完，通信 / 反向最大重叠。
-  </div>
-</div>
+```mermaid
+flowchart TD
+    H["① autograd_hook(i)<br/><small>autograd 线程 · lock mutex_</small>"]
+    M["② mark_variable_ready<br/><small>拷贝 grad 进桶(融合除法) · pending −= 1</small>"]
+    P{"③ pending == 0?"}
+    R["④ mark_bucket_ready<br/><small>严格按 next_bucket_ 顺序</small>"]
+    A["⑤ all_reduce_bucket<br/><small>run_comm_hook · Future 异步</small>"]
+    Q{"⑥ 全部桶归约完?"}
+    W1["否:继续等待下一个梯度"]:::labelNo
+    W2["否:等下一个桶就绪(反向继续跑)"]:::labelNo
+    FY["是 → Engine::queue_callback(finalize_backward)"]:::labelYes
 
-**两处关键异步点**：
-1. **桶级异步**：`all_reduce_bucket` 立即返回 `Future`，autograd 线程不阻塞，继续算下一个梯度。
-2. **收尾异步**：`finalize_backward` 不在最后一个桶就绪时立即调用，而是经 `Engine::queue_callback` 推迟到 autograd 引擎**所有反向计算**结束后回调，让通信与计算最大化重叠。
+    H --> M --> P
+    P -- "否" --> W1
+    P -- "是" --> R
+    R --> A --> Q
+    Q -- "否" --> W2
+    Q -- "是" --> FY
+
+    classDef start fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef active fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef labelNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef labelYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+    class H,R start
+    class M,A active
+    class P,Q decide
+```
+
+> **两层异步**: 桶级 `all_reduce_bucket` 返回 `Future` 不阻塞反向; 收尾 `finalize_backward` 经引擎回调推迟到所有反向节点跑完, 通信 / 反向最大重叠。
+
+**两处关键异步点**:
+1. **桶级异步**:`all_reduce_bucket` 立即返回 `Future`,autograd 线程不阻塞,继续算下一个梯度。
+2. **收尾异步**:`finalize_backward` 不在最后一个桶就绪时立即调用,而是经 `Engine::queue_callback` 推迟到 autograd 引擎**所有反向计算**结束后回调,让通信与计算最大化重叠。
 
 ### 并发与同步
 - **线程模型**：autograd 线程（执行反向、触发 `autograd_hook`，Reducer 绝大多数逻辑在此）、autograd 引擎回调线程（`finalize_backward`）、通信后端线程（NCCL watchdog/工作线程）。

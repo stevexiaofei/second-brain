@@ -53,49 +53,23 @@ updated: 2026-08-11
 
 整个分布式栈自底向上分为四层：c10d 通信底座（ProcessGroup + Store + Reducer）→ 进程组/rendezvous 与 torchrun 启动 → DDP/FSDP/RPC 三大并行范式 → DTensor/DeviceMesh 可组合抽象 + 弹性/检查点/流水线工程能力。
 
-<div class="diagram">
-  <div class="v-steps">
-    <div class="step-row">
-      <div class="step-dot" style="background:#fdf2f8;border-color:#db2777;color:#831843;">L4</div>
-      <div class="step-body">
-        <b>上层并行范式（Python API）</b>
-        <small>
-          <b>DDP</b>（<code>nn.parallel.DistributedDataParallel</code>，梯度 all-reduce）·
-          <b>FSDP / FSDP2</b>（参数 / 梯度 / 优化器状态分片）·
-          <b>RPC + RRef</b>（远程调用 / 模型并行）·
-          <b>流水线并行</b>（<code>pipelining/</code>）。
-        </small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#fdf4ff;border-color:#a855f7;color:#581c87;">L3</div>
-      <div class="step-body">
-        <b>可组合抽象</b>
-        <small><b>DTensor / DeviceMesh</b>：placement 表达多维拓扑（TP / DP / PP），FSDP2 与 tensor parallel 都建立其上；<b>ddp_comm_hooks</b>：PowerSGD / 量化 / 混合精度等自定义通信。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#eff6ff;border-color:#3b82f6;color:#1e3a8a;">L2</div>
-      <div class="step-body">
-        <b>进程组与启动</b>
-        <small><code>init_process_group</code> / <code>new_group</code>（<code>distributed_c10d.py</code>）；<b>torchrun / rendezvous / elastic</b> 弹性启动；<b>DTCP</b> 分布式检查点（<code>checkpoint/</code>）。</small>
-      </div>
-    </div>
-    <div class="step-row">
-      <div class="step-dot" style="background:#ecfdf5;border-color:#10b981;color:#064e3b;">L1</div>
-      <div class="step-body">
-        <b>c10d C++ 底座（最终所有通信下沉到这里）</b>
-        <small>
-          <b>ProcessGroup</b>（NCCL / Gloo / MPI / UCC 多后端）·
-          <b>Store</b>（TCPStore / FileStore / HashStore 做 rendezvous 与 KV）·
-          <b>Reducer</b>（DDP 梯度分桶与按序归约）·
-          <b>分布式 autograd 引擎</b>（RPC 场景的跨 rank 反向传播）。
-        </small>
-      </div>
-    </div>
-  </div>
-  <div class="d-note"><b>调用方向自顶向下：</b>L4 并行原语用 L3 抽象组合，再经 L2 进程组调度，最终落到 L1 c10d C++ 库完成通信。c10d 的 Store + ProcessGroup + Reducer 是这套四层栈的"三件套"地基。</div>
-</div>
+```mermaid
+flowchart TD
+    l4["<b>上层并行范式（Python API）</b><br/><small><b>DDP</b>（<code>nn.parallel.DistributedDataParallel</code>，梯度 all-reduce）·<b>FSDP / FSDP2</b>（参数 / 梯度 / 优化器状态分片）·<b>RPC + RRef</b>（远程调用 / 模型并行）·<b>流水线并行</b>（<code>pipelining/</code>）。</small>"]:::step
+    l3["<b>可组合抽象</b><br/><small><b>DTensor / DeviceMesh</b>：placement 表达多维拓扑（TP / DP / PP），FSDP2 与 tensor parallel 都建立其上；<b>ddp_comm_hooks</b>：PowerSGD / 量化 / 混合精度等自定义通信。</small>"]:::step
+    l2["<b>进程组与启动</b><br/><small><code>init_process_group</code> / <code>new_group</code>（<code>distributed_c10d.py</code>）；<b>torchrun / rendezvous / elastic</b> 弹性启动；<b>DTCP</b> 分布式检查点（<code>checkpoint/</code>）。</small>"]:::step
+    l1["<b>c10d C++ 底座（最终所有通信下沉到这里）</b><br/><small><b>ProcessGroup</b>（NCCL / Gloo / MPI / UCC 多后端）·<b>Store</b>（TCPStore / FileStore / HashStore 做 rendezvous 与 KV）·<b>Reducer</b>（DDP 梯度分桶与按序归约）·<b>分布式 autograd 引擎</b>（RPC 场景的跨 rank 反向传播）。</small>"]:::branchNo
+
+    l4 --> l3 --> l2 --> l1
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **调用方向自顶向下：**L4 并行原语用 L3 抽象组合，再经 L2 进程组调度，最终落到 L1 c10d C++ 库完成通信。c10d 的 Store + ProcessGroup + Reducer 是这套四层栈的"三件套"地基。
 
 ## 我的理解
 

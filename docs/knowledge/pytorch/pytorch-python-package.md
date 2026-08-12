@@ -116,21 +116,24 @@ Python 侧是用户接触 PyTorch 的第一界面。理解包结构能帮你快�
 
 Python 侧 API 的最终归宿是 C++ 扩展模块 `torch._C`：
 
-<div class="diagram">
-  <div class="h-flow" style="flex-wrap:wrap; justify-content:center;">
-    <span class="d-node d-node-start" style="min-width:160px;">① 用户代码<br/><small style="opacity:0.75; font-weight:400;">nn / optim / compile / export …</small></span>
-    <span class="d-arrow"></span>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <span class="d-node" style="min-width:260px;">② <code>torch/__init__.py</code><br/><small style="opacity:0.8; font-weight:400;">暴露核心 Tensor / dtype / 模式上下文 · 组织子包命名空间</small></span>
-      <span class="d-node d-node-active" style="min-width:260px;">③ <code>torch/_tensor.py</code><br/><small style="opacity:0.8; font-weight:400;">Python Tensor 继承 <code>torch._C.TensorBase</code> + 运算符/视图/backward()</small></span>
-    </div>
-    <span class="d-arrow"></span>
-    <span class="d-node d-node-start" style="min-width:180px; background:#1e293b; border-color:#334155; color:#e2e8f0;">④ <code>torch._C</code><br/><small style="opacity:0.75; font-weight:400;">CPython 扩展模块<br/>由 <code>torch/csrc/Module.cpp</code> 生成</small></span>
-  </div>
-  <div class="d-note" style="margin-top:18px;">
-    <b>算子下发路径：</b><code>torch.some_op()</code> → <code>torch/_VF.py</code>（代理 <code>_VariableFunctions</code> 绕过 mypy） → <code>torch._C</code> → ATen Dispatcher → native 内核。<code>Tensor</code> 方法（<code>.cuda()</code>、<code>.requires_grad_()</code>、<code>.to()</code>、<code>.backward()</code>）直接由 <code>torch/_tensor.py</code> 掉到 <code>_C.TensorBase</code> 的 C++ 实现。
-  </div>
-</div>
+```mermaid
+flowchart LR
+    A["① 用户代码<br/><small>nn / optim / compile / export …</small>"]
+    B["② torch/__init__.py<br/><small>暴露核心 Tensor / dtype / 模式上下文 · 组织子包命名空间</small>"]
+    C["③ torch/_tensor.py<br/><small>Python Tensor 继承 torch._C.TensorBase + 运算符/视图/backward()</small>"]:::action
+    D["④ torch._C<br/><small>CPython 扩展模块 · 由 torch/csrc/Module.cpp 生成</small>"]
+    A --> B
+    A --> C
+    B --> D
+    C --> D
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+```
+
+> **算子下发路径**：`torch.some_op()` → `torch/_VF.py`(代理 `_VariableFunctions` 绕过 mypy)→ `torch._C` → ATen Dispatcher → native 内核。`Tensor` 方法(`.cuda()`、`.requires_grad_()`、`.to()`、`.backward()`)直接由 `torch/_tensor.py` 掉到 `_C.TensorBase` 的 C++ 实现。
 
 `Tensor` 类（`torch/_tensor.py`）继承 `torch._C.TensorBase`，在 Python 层补充算术运算符、索引、视图、`backward()` 等方法；算子的实际计算经 `_VF` 或 `torch._C._VariableFunctions` 下沉到 ATen 分发器。
 
