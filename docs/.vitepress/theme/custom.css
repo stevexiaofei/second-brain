@@ -1,7 +1,58 @@
+/* =========================================================
+ * 布局紧凑化：缩小侧边栏宽度，增大内容区
+ * ========================================================= */
+
 :root {
   --vp-c-brand-1: #3b82f6;
   --vp-c-brand-2: #2563eb;
+  --vp-sidebar-width: 12rem;
+  --vp-sidebar-width-mobile: 12rem;
+  --vp-content-width: 860px;
 }
+
+/* 侧边栏条目更紧凑 */
+.VPSidebarItem .text {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* 侧边栏容器按内容高度收缩 */
+.VPSidebar {
+  height: auto !important;
+  min-height: 0 !important;
+}
+.VPSidebar .curtain {
+  display: none !important;
+}
+
+/* 页面内容区上下边距缩小 */
+.VPDoc {
+  padding-top: 1rem;
+}
+
+/* 减少 h1/h2/h3 间距 */
+.VPDoc h1 { margin-top: 0; }
+.VPDoc h2 { margin-top: 2rem; }
+.VPDoc h3 { margin-top: 1.5rem; }
+.VPDoc h4 { margin-top: 1.2rem; }
+
+/* 减少段落间距 */
+.VPDoc p { margin: 0.6rem 0; }
+.VPDoc ul, .VPDoc ol { margin: 0.6rem 0; }
+.VPDoc li { margin: 0.2rem 0; }
+
+/* 表格紧凑 */
+.VPDoc table { margin: 0.6rem 0; }
+.VPDoc th, .VPDoc td { padding: 0.3rem 0.8rem; }
+
+/* 代码块紧凑 */
+.VPDoc div[class*='language-'] { margin: 0.6rem 0; }
+
+/* 引用紧凑 */
+.VPDoc blockquote { margin: 0.6rem 0; padding: 0.4rem 0.8rem; }
+
+/* 图片/图表紧凑 */
+.VPDoc img { margin: 0.6rem 0; }
 
 .hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin:28px 0 42px; }
 .action-button { display:inline-block; padding:10px 18px; border-radius:8px; background:var(--vp-c-brand-1); color:#fff!important; text-decoration:none; font-weight:600; }

@@ -5,7 +5,7 @@ status: seed
 tags: [AI, Open Source, Source Code, Design Pattern, Software Engineering]
 created: 2026-08-12
 updated: 2026-08-12
-source: 与 ChatGPT 的对话整理（https://chatgpt.com/share/6a7c1287-8e34-83e8-87f9-a0fce9641689）
+source: "与 ChatGPT 的对话整理"
 ---
 
 # AI 开源项目源码精读指南
@@ -191,7 +191,7 @@ class Worker:
 flowchart TD
     ROOT["AI Software Engineering"] --> FW["Framework"]
     ROOT --> RT["Runtime"]
-    ROOT -> DS["Distributed"]
+    ROOT --> DS["Distributed"]
 
     FW --> MM["MMEngine"]
     RT --> ORT["ONNX Runtime"]

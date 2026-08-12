@@ -39,7 +39,16 @@ export default withMermaid(
       '/projects/': [{ text: 'Projects', items: [{ text: 'Overview', link: '/projects/' }] }],
       '/ideas/': [{ text: 'Ideas', items: [{ text: 'Overview', link: '/ideas/' }] }],
       '/reading/': [{ text: 'Reading', items: [{ text: 'Overview', link: '/reading/' }] }],
-      '/inbox/': [{ text: 'Inbox', items: [{ text: 'Overview', link: '/inbox/' }] }]
+      '/inbox/': [{ text: 'Inbox', items: [
+        { text: 'Overview', link: '/inbox/' },
+        { text: 'Second Brain 工作流', link: '/inbox/second-brain-workflow' },
+        { text: 'ER 图', link: '/inbox/er-diagram' },
+        { text: 'UML 类图', link: '/inbox/uml-class-diagram' },
+        { text: 'DFD 数据流图', link: '/inbox/dfd' },
+        { text: 'DDIM 论文', link: '/inbox/ddim-paper' },
+        { text: 'uv Python 包管理', link: '/inbox/uv-python-package-manager' },
+        { text: 'AI 开源项目源码精读', link: '/inbox/ai-open-source-source-reading' }
+      ]}]
     },
     search: { provider: 'local' },
     socialLinks: [{ icon: 'github', link: 'https://github.com/stevexiaofei/second-brain' }],
