@@ -47,7 +47,8 @@ export default withMermaid(
         { text: 'DFD 数据流图', link: '/inbox/dfd' },
         { text: 'DDIM 论文', link: '/inbox/ddim-paper' },
         { text: 'uv Python 包管理', link: '/inbox/uv-python-package-manager' },
-        { text: 'AI 开源项目源码精读', link: '/inbox/ai-open-source-source-reading' }
+        { text: 'AI 开源项目源码精读', link: '/inbox/ai-open-source-source-reading' },
+        { text: 'RVV 算子开发', link: '/inbox/rvv-operator-development' }
       ]}]
     },
     search: { provider: 'local' },
@@ -63,27 +64,27 @@ export default withMermaid(
     config: (md) => {
       md.use(texmath, { engine: katex, delimiters: 'dollars', katexOptions: { throwOnError: false } })
     }
+  },
+  // vitepress-plugin-mermaid 通过 withMermaid(config) 增强 UserConfig，
+  // mermaid 配置必须作为 defineConfig 的顶层字段，而不是第二个参数。
+  mermaid: {
+    theme: 'neutral',
+    themeVariables: {
+      fontSize: '20px',
+      fontFamily: '"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif',
+      noteFontSize: '16px',
+      labelFontSize: '18px',
+      edgeLabelBackground: '#f1f5f9',
+      tertiaryColor: '#f1f5f9'
+    },
+    startOnLoad: true,
+    securityLevel: 'loose',
+    flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
+    sequence: { useMaxWidth: false, wrap: true, actorMargin: 50 },
+    class: { useMaxWidth: false },
+    state: { useMaxWidth: false },
+    er: { useMaxWidth: false },
+    gantt: { useMaxWidth: false }
   }
-}),
-  {
-    mermaid: {
-      theme: 'neutral',
-      themeVariables: {
-        fontSize: '20px',
-        fontFamily: '"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif',
-        noteFontSize: '16px',
-        labelFontSize: '18px',
-        edgeLabelBackground: '#f1f5f9',
-        tertiaryColor: '#f1f5f9'
-      },
-      startOnLoad: true,
-      securityLevel: 'loose',
-      flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
-      sequence: { useMaxWidth: false, wrap: true, actorMargin: 50 },
-      class: { useMaxWidth: false },
-      state: { useMaxWidth: false },
-      er: { useMaxWidth: false },
-      gantt: { useMaxWidth: false }
-    }
-  }
+  })
 )
