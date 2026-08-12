@@ -136,6 +136,15 @@ flowchart LR
     end
 ```
 
+**怎么理解 Mask**：RVV 的 mask 本质是"给向量运算加一个条件开关"。向量指令一次处理多个元素，但有时只想操作满足条件的那些：
+
+- **比较指令**（如"每个元素是否 > 0"）逐元素比较，得到一串真/假，存入 v0
+- **带 mask 的运算指令**（如 `vfadd_vv_f32m1_m`）只对 mask 位为 1 的元素执行运算，为 0 的元素跳过或保持原值
+
+打个比方：一排抽屉要贴标签，比较指令负责"检查哪些抽屉里的数大于 0"并打勾，v0 就是记录打勾结果的本子，最后带 mask 的运算只对打了勾的抽屉动手。这就是 **predication（断言执行）**：把"条件判断"和"数据计算"解耦——先算条件得 mask，再做带条件的数据运算。
+
+Mask 也很省空间：**一个元素只占 1 bit**。SEW=8 时 8 个元素 = 8 bit = 1 字节 mask；VLEN=128 时 v0 整个寄存器 128 bit 全用来存 mask，就是 128 个勾/叉。
+
 ```c
 // 比较 a[i] > b[i] 得到 mask
 vbool32_t mask = vmfgt_vv_f32m1_b32(a, b, vl);
@@ -147,11 +156,39 @@ Mask 类型与 SEW/LMUL 对应关系：
 
 | Mask 类型 | 每个 bit 对应 | 适用 SEW/LMUL 组合 |
 |---|---|---|
-| `vbool1_t` | 1 bit 元素 | e8,mf8 |
-| `vbool8_t` | 8 bit 元素 | e8,m1; e16,mf2; e32,mf4; e64,mf8 |
-| `vbool16_t` | 16 bit 元素 | e16,m1; e32,mf2; e64,mf4 |
-| `vbool32_t` | 32 bit 元素 | e32,m1; e64,mf2 |
+| `vbool1_t` | 1 bit 元素 | e8,m8 |
+| `vbool8_t` | 8 bit 元素 | e8,m1; e16,m2; e32,m4; e64,m8 |
+| `vbool16_t` | 16 bit 元素 | e16,m1; e32,m2; e64,m4 |
+| `vbool32_t` | 32 bit 元素 | e32,m1; e64,m2 |
 | `vbool64_t` | 64 bit 元素 | e64,m1 |
+
+**vboolN_t 命名规则**：`vboolN_t` 里的 **N = SEW / LMUL**，即"每个 mask 位对应的逻辑数据位宽"。当 LMUL = m1 时恰好 N = SEW：上面代码里 float32（e32,m1）的比较返回 `vbool32_t`，一一对应。
+
+**配对规律：$N = \dfrac{SEW}{LMUL}$**。表格列出的组合遵循精确配对，而非任意"容量够用"：
+
+$$\frac{VLEN}{N} = \frac{LMUL \times VLEN}{SEW} \iff N = \frac{SEW}{LMUL}$$
+
+含义：**一个 mask 寄存器的位数（$\frac{VLEN}{N}$）恰好等于一个数据向量寄存器组的元素数（$\frac{LMUL \times VLEN}{SEW}$）**——mask 与数据"一组配一组"，不多不少。逐行验证（注意第三列是 m1/m2/m4/m8，**不是**分数 LMUL）：
+
+| Mask 类型 (N) | 组合 | SEW / LMUL |
+|---|---|---|
+| vbool8_t | e8,m1 | 8/1 = 8 ✓ |
+| vbool8_t | e16,m2 | 16/2 = 8 ✓ |
+| vbool8_t | e32,m4 | 32/4 = 8 ✓ |
+| vbool8_t | e64,m8 | 64/8 = 8 ✓ |
+| vbool16_t | e16,m1 | 16/1 = 16 ✓ |
+| vbool16_t | e32,m2 | 32/2 = 16 ✓ |
+| vbool16_t | e64,m4 | 64/4 = 16 ✓ |
+| vbool32_t | e32,m1 | 32/1 = 32 ✓ |
+| vbool32_t | e64,m2 | 64/2 = 32 ✓ |
+| vbool64_t | e64,m1 | 64/1 = 64 ✓ |
+| vbool1_t | e8,m8 | 8/8 = 1 ✓ |
+
+（更正记录：此表早前被误写为 `mf2/mf4/mf8` 分数 LMUL，并据此错推成 $N = SEW \times LMUL$；核对 RISC-V intrinsics 规范后确认为 `m2/m4/m8`，规律是 $N = \frac{SEW}{LMUL}$。）
+
+**vbool1_t 特例**：N = 1，容量 $\frac{VLEN}{1} = VLEN$ 个 mask 位，**要用满整个 v0 寄存器**。唯一组合是 e8,m8（SEW 最小 8、LMUL 最大 8 → 8/8 = 1）：VLEN=128 时数据是 8 个寄存器里的 128 个 8 位元素，恰好需要 128 个 mask 位填满 v0。它是"元素最多、规模最大"的场景，日常很少用（一般不会把 8 位数据配到 m8）；mask 自身的位运算（`vmand`/`vmxor` 等）也以 vboolN_t 为操作数。
+
+一句话总结：`vboolN_t` = "一个 bit 管一个元素"的开关表，N = $\frac{SEW}{LMUL}$，恰好让 mask 位数 = 数据元素数。
 
 ## 向量寄存器组织
 
