@@ -49,7 +49,9 @@ export default withMermaid(
         { text: 'uv Python 包管理', link: '/inbox/uv-python-package-manager' },
         { text: 'AI 开源项目源码精读', link: '/inbox/ai-open-source-source-reading' },
         { text: 'RVV 算子开发', link: '/inbox/rvv-operator-development' },
-        { text: '迭代路线图', link: '/inbox/second-brain-iteration-roadmap' }
+        { text: '迭代路线图', link: '/inbox/second-brain-iteration-roadmap' },
+        { text: '分布式存储知识地图', link: '/inbox/distributed-storage-knowledge-map' },
+        { text: 'RVV 算子设计大赛', link: '/inbox/rvv-operator-challenge' }
       ]}]
     },
     search: { provider: 'local' },

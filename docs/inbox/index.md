@@ -22,6 +22,8 @@
 - [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 12 个值得精读的 AI 开源项目、Top 5 学习路线、Design Pattern 对照表、源码精读方法
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — RISC-V Vector Extension 的核心概念、编程模型、intrinsics 命名和算子开发流程
 - [Second Brain 迭代路线图](./second-brain-iteration-roadmap.md) — 现状盘点、四阶段迭代计划（内容闭环/外部打通/AI 深化/发布治理）与优先级建议
+- [分布式存储系统知识地图](./distributed-storage-knowledge-map.md) — 面向 AI 训练与多云场景的存储知识体系：三大类型、一致性、对象存储、并行文件系统、多级缓存、存储网络协议、学习路径
+- [RVV 算子设计大赛备考指南](./rvv-operator-challenge.md) — 基于大赛三张设计图（Local Buffer/Mode/Intrinsics/DAG）的 Softmax 实战，含标准 RVV 与 FP16 3D 版本实现
 
 ## Example
 
