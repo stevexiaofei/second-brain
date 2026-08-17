@@ -429,7 +429,7 @@ Tensor → Shape → Reduction Axis → Memory Layout → Vectorization Axis
 ## Related
 
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — 标准 RVV 的 SEW/LMUL/stripmining 基础，与本文的定制硬件抽象互补
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — Triton/llama.cpp 等项目的 kernel 优化方法论
+- [AI 开源项目源码精读指南](../ai/ai-open-source-source-reading.md) — Triton/llama.cpp 等项目的 kernel 优化方法论
 
 ## References
 

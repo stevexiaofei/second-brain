@@ -28,32 +28,49 @@ export default withMermaid(
       { text: 'Inbox', link: '/inbox/' }
     ],
     sidebar: {
-      '/knowledge/': [{ text: 'Knowledge', items: [
-        { text: 'Overview', link: '/knowledge/' },
-        { text: 'AI', link: '/knowledge/ai/' },
-        { text: 'Autonomous Driving', link: '/knowledge/autonomous-driving/' },
-        { text: 'Engineering', link: '/knowledge/engineering/' },
-        { text: 'Mathematics', link: '/knowledge/mathematics/' },
-        { text: 'PyTorch', link: '/knowledge/pytorch/' }
+      '/knowledge/': [
+        { text: 'Knowledge', items: [
+          { text: 'Overview', link: '/knowledge/' }
+        ]},
+        { text: 'AI', items: [
+          { text: 'Overview', link: '/knowledge/ai/' },
+          { text: 'GRPO', link: '/knowledge/ai/grpo' },
+          { text: 'PPO', link: '/knowledge/ai/ppo' },
+          { text: 'DDIM 论文', link: '/knowledge/ai/ddim-paper' },
+          { text: 'AI 开源源码精读', link: '/knowledge/ai/ai-open-source-source-reading' },
+          { text: 'Semantica 知识图谱', link: '/knowledge/ai/semantica' }
+        ]},
+        { text: 'Autonomous Driving', items: [
+          { text: 'Overview', link: '/knowledge/autonomous-driving/' }
+        ]},
+        { text: 'Engineering', items: [
+          { text: 'Overview', link: '/knowledge/engineering/' },
+          { text: 'RVV 算子开发', link: '/knowledge/engineering/rvv-operator-development' },
+          { text: 'RVV 算子设计大赛', link: '/knowledge/engineering/rvv-operator-challenge' },
+          { text: '分布式存储知识地图', link: '/knowledge/engineering/distributed-storage-knowledge-map' },
+          { text: 'Fenwick Tree 加权采样', link: '/knowledge/engineering/fenwick-tree-weighted-sampling' },
+          { text: 'uv Python 包管理', link: '/knowledge/engineering/uv-python-package-manager' },
+          { text: 'ER 图', link: '/knowledge/engineering/er-diagram' },
+          { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
+          { text: 'DFD 数据流图', link: '/knowledge/engineering/dfd' },
+          { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' }
+        ]},
+        { text: 'Mathematics', items: [
+          { text: 'Overview', link: '/knowledge/mathematics/' }
+        ]},
+        { text: 'PyTorch', items: [
+          { text: 'Overview', link: '/knowledge/pytorch/' }
+        ]}
+      ],
+      '/projects/': [{ text: 'Projects', items: [
+        { text: 'Overview', link: '/projects/' },
+        { text: 'Second Brain 工作流', link: '/projects/second-brain-workflow' },
+        { text: '迭代路线图', link: '/projects/second-brain-iteration-roadmap' }
       ]}],
-      '/projects/': [{ text: 'Projects', items: [{ text: 'Overview', link: '/projects/' }] }],
       '/ideas/': [{ text: 'Ideas', items: [{ text: 'Overview', link: '/ideas/' }] }],
       '/reading/': [{ text: 'Reading', items: [{ text: 'Overview', link: '/reading/' }] }],
       '/inbox/': [{ text: 'Inbox', items: [
-        { text: 'Overview', link: '/inbox/' },
-        { text: 'Second Brain 工作流', link: '/inbox/second-brain-workflow' },
-        { text: 'ER 图', link: '/inbox/er-diagram' },
-        { text: 'UML 类图', link: '/inbox/uml-class-diagram' },
-        { text: 'DFD 数据流图', link: '/inbox/dfd' },
-        { text: 'DDIM 论文', link: '/inbox/ddim-paper' },
-        { text: 'uv Python 包管理', link: '/inbox/uv-python-package-manager' },
-        { text: 'AI 开源项目源码精读', link: '/inbox/ai-open-source-source-reading' },
-        { text: 'RVV 算子开发', link: '/inbox/rvv-operator-development' },
-        { text: '迭代路线图', link: '/inbox/second-brain-iteration-roadmap' },
-        { text: '分布式存储知识地图', link: '/inbox/distributed-storage-knowledge-map' },
-        { text: 'RVV 算子设计大赛', link: '/inbox/rvv-operator-challenge' },
-        { text: 'Fenwick Tree 加权采样', link: '/inbox/fenwick-tree-weighted-sampling' },
-        { text: 'Semantica 知识图谱', link: '/inbox/semantica' }
+        { text: 'Overview', link: '/inbox/' }
       ]}]
     },
     search: { provider: 'local' },

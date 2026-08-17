@@ -264,7 +264,7 @@ flowchart TD
 
 - 存储三大类型与接口语义（本文第一节）
 - 分布式系统基础：CAP、一致性模型、Raft/Paxos
-- 推荐：《数据密集型应用系统设计》第 5-9 章（副本、分区、事务、一致性）、[DDIM 笔记里的数学基础](../inbox/ddim-paper.md)与分布式部分无关但保持体系
+- 推荐：《数据密集型应用系统设计》第 5-9 章（副本、分区、事务、一致性）、[DDIM 笔记里的数学基础](../ai/ddim-paper.md)与分布式部分无关但保持体系
 
 ### 阶段二：动手实践（2-4 周）
 
@@ -314,10 +314,10 @@ flowchart TD
 
 ## Related
 
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 源码精读方法论（阶段三可复用）
+- [AI 开源项目源码精读指南](../ai/ai-open-source-source-reading.md) — 源码精读方法论（阶段三可复用）
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — 存储服务端高性能计算（RDMA/向量化）相关
-- [PyTorch](../knowledge/pytorch/) — 存储的下游消费者（DataLoader、checkpoint、DDP）
-- [Second Brain 迭代路线图](./second-brain-iteration-roadmap.md) — 本文可作为"自动驾驶/数据流水线"方向的内容种子
+- [PyTorch](../pytorch/) — 存储的下游消费者（DataLoader、checkpoint、DDP）
+- [Second Brain 迭代路线图](../../projects/second-brain-iteration-roadmap.md) — 本文可作为"自动驾驶/数据流水线"方向的内容种子
 
 ## References
 

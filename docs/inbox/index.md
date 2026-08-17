@@ -13,19 +13,11 @@
 
 ## Notes
 
-- [Second Brain 使用工作流](./second-brain-workflow.md) — 从 capture 到 knowledge 的完整流程、目录用途、与 TRAE 协作的常用指令
-- [ER 图（实体-关系图）](./er-diagram.md) — 数据库概念设计的图形化工具，描述实体、属性、关系和基数
-- [UML 类图（Class Diagram）](./uml-class-diagram.md) — 面向对象设计的静态结构图，含六种类关系（依赖/关联/聚合/组合/实现/继承）
-- [DFD（数据流图）](./dfd.md) — 描述数据流动与加工的结构化分析工具，含分层展开和平衡原则
-- [DDIM (Denoising Diffusion Implicit Models)](./ddim-paper.md) — 扩散模型加速采样论文笔记，含公式 (11) 解释、KL 散度在变分推断中的角色、定理 1 完整证明
-- [uv — 极速 Python 包管理工具](./uv-python-package-manager.md) — Astral 出品的 Rust 实现一体化 Python 工具链，替代 pip/venv/poetry/pyenv/pipx/twine，含常用命令、对比表、典型工作流
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 12 个值得精读的 AI 开源项目、Top 5 学习路线、Design Pattern 对照表、源码精读方法
-- [RVV 算子开发必备基础知识](./rvv-operator-development.md) — RISC-V Vector Extension 的核心概念、编程模型、intrinsics 命名和算子开发流程
-- [Second Brain 迭代路线图](./second-brain-iteration-roadmap.md) — 现状盘点、四阶段迭代计划（内容闭环/外部打通/AI 深化/发布治理）与优先级建议
-- [分布式存储系统知识地图](./distributed-storage-knowledge-map.md) — 面向 AI 训练与多云场景的存储知识体系：三大类型、一致性、对象存储、并行文件系统、多级缓存、存储网络协议、学习路径
-- [RVV 算子设计大赛备考指南](./rvv-operator-challenge.md) — 基于大赛三张设计图（Local Buffer/Mode/Intrinsics/DAG）的 Softmax 实战，含标准 RVV 与 FP16 3D 版本实现
-- [Fenwick Tree 与动态加权采样](./fenwick-tree-weighted-sampling.md) — 树状数组原理（lowbit、更新/查询/二分定位）与 O(logN) 加权采样实现
-- [Semantica — AI Agent 的开源知识图谱基础设施](./semantica.md) — Graph-Native 存储与推理层：知识图谱、决策智能、PROV-O 溯源、确定性推理（Rete/Datalog/SPARQL）
+> Inbox 已清空（2026-08-12 消化）。
+>
+> 已迁移到 Knowledge 的稳定笔记见 [Knowledge 目录](../knowledge/)；项目类内容见 [Projects](../projects/)。
+>
+> 新内容直接以链接形式记录在下方，稳定后迁移到 `knowledge/`。
 
 ## Example
 

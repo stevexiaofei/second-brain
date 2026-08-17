@@ -398,11 +398,11 @@ $$
 
 ## Related Knowledge
 
-- [DDPM](../knowledge/ai/ddpm.md) — TODO（DDIM 的前置论文）
-- [Score Matching](../knowledge/ai/score-matching.md) — TODO（DDIM 与之理论契合）
-- [ELBO / VLB](../knowledge/ai/elbo.md) — TODO（公式 11 的本质）
+- [DDPM](./ddpm.md) — TODO（DDIM 的前置论文）
+- [Score Matching](./score-matching.md) — TODO（DDIM 与之理论契合）
+- [ELBO / VLB](./elbo.md) — TODO（公式 11 的本质）
 - [KL 散度](./kl-divergence.md) — TODO（拆出独立 concept 笔记）
-- [VAE](../knowledge/ai/vae.md) — TODO（变分推断的另一种应用，Forward/Reverse KL 的选择差异）
+- [VAE](./vae.md) — TODO（变分推断的另一种应用，Forward/Reverse KL 的选择差异）
 
 ## Open Questions
 

@@ -305,9 +305,9 @@ ai-source-reading/
 
 ## Related
 
-- [PyTorch](../knowledge/pytorch/) — 本项目的 PyTorch 知识体系，是源码精读的前置基础
-- [Transformer](../knowledge/ai/) — Transformers 库背后的模型架构
-- [PPO](../knowledge/ai/) — DeepSpeed 相关的 RL 训练
+- [PyTorch](../pytorch/) — 本项目的 PyTorch 知识体系，是源码精读的前置基础
+- [Transformer](./) — Transformers 库背后的模型架构
+- [PPO](./ppo.md) — DeepSpeed 相关的 RL 训练
 
 ## References
 
