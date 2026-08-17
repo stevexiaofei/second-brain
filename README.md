@@ -41,6 +41,10 @@ Build:
 npm run docs:build
 ```
 
+## Deployed Site
+
+<https://stevexiaofei.github.io/second-brain/>
+
 ## Workflow
 
 1. Put rough thoughts into `docs/inbox/`.
