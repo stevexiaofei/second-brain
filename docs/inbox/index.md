@@ -25,6 +25,9 @@
 - [高斯分布](./gaussian-distribution.md) — 正态分布的直觉、参数、标准化和常见性质
   - 来源：GitBook 数学基础
   - 关键词：`N(μ, σ²)`、标准正态、Z-score、68-95-99.7 经验法则
+- [思维链（CoT）论文详解](./chain-of-thought-papers.md) — 从 CoT 原始论文到 Self-Consistency、ToT、ReAct、Reflexion、STaR 的完整演进
+  - 来源：论文综述
+  - 关键词：`CoT`、`Zero-shot CoT`、`Self-Consistency`、`Tree of Thoughts`、`ReAct`、`Reflexion`、`STaR`、推理时计算
 
 > 已迁移到 Knowledge：[[拉格朗日乘子与约束优化]]、[[高斯分布]]、[[状态价值与 Bellman 方程]]
 
