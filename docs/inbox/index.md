@@ -19,6 +19,17 @@
 >
 > 新内容直接以链接形式记录在下方，稳定后迁移到 `knowledge/`。
 
+- [拉格朗日乘子与约束优化](./lagrange-multipliers-and-constrained-optimization.md) — 约束优化的核心直觉、标准步骤和常见误区
+  - 来源：Khan Academy + Data Stories
+  - 关键词：`∇f = λ∇g`、约束曲线/曲面、等高线相切、KKT 入门
+- [高斯分布](./gaussian-distribution.md) — 正态分布的直觉、参数、标准化和常见性质
+  - 来源：GitBook 数学基础
+  - 关键词：`N(μ, σ²)`、标准正态、Z-score、68-95-99.7 经验法则
+
+> 已迁移到 Knowledge：[[拉格朗日乘子与约束优化]]、[[高斯分布]]、[[状态价值与 Bellman 方程]]
+
+
+
 ## Example
 
 ```text

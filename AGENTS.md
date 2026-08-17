@@ -38,6 +38,9 @@ Inbox is temporary. Understand → search → detect duplicates → classify →
 
 When creating or moving a note into `docs/inbox/`, always also add a link entry to the `Notes` section of `docs/inbox/index.md`. VitePress does not auto-scan directories; without an index entry the page is built but unreachable from navigation. Same rule applies when moving a note out of inbox: remove its entry from `docs/inbox/index.md`.
 
+## Navigation entries
+Any note created or moved under `docs/knowledge/` (or any VitePress content directory) MUST also be registered in the sidebar in `docs/.vitepress/config.mts` AND listed in the parent directory's `index.md`. VitePress does not auto-scan directories — without both entries the page is built but has no sidebar entrance. Same rule applies when removing a note: remove its sidebar and index entries.
+
 ## Experience
 For engineering/debugging notes capture Environment, Symptoms, Investigation, Root Cause, Solution, Why, Lessons Learned.
 

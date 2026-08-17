@@ -137,6 +137,17 @@ flowchart LR
 - 多部分上传（Multipart Upload）：大对象并发分片上传
 - 服务器端清单（Inventory）：枚举对象做成本分析
 
+#### S3 语义实操要点（阶段二 boto3 直接用到）
+
+- **读写模型**：PUT/GET/HEAD/List 均为 HTTP REST；键是扁平命名空间（"目录"只是键前缀，靠 `/` 拼接模拟）
+- **Multipart Upload**：>100MB 建议分片（每片 5MB-5GB），支持并发与断点续传；`UploadPart` → `CompleteMultipartUpload`，失败可 `Abort`
+- **ETag**：单文件上传为内容 MD5，分片上传为各分片 MD5 的派生值——用于端到端完整性校验
+- **版本控制**：开启后每个 Key 保留多版本，`Delete` 变成插入删除标记，可恢复误删
+- **一致性模型**：主流对象存储已普遍"写后读强一致"（Put 成功后立即可读）；但 List/多云网关可能仍有延迟，**跨区域复制（CRR）仍是最终一致**——PACELC 的实例
+- **条件写 / 乐观并发**：`If-Match`（ETag 前置条件）实现"无覆盖写"，`If-None-Match` 实现"仅创建"
+- **签名**：AWS SigV4 对请求签名，各家 S3 兼容层几乎都支持
+- **生命周期**：按规则自动转档/过期删除，是降本的核心手段（对应下一节）
+
 ### 降本路径（JD 重点"容量使用率优化"）
 
 1. **冷热分层**：标准 → IA → Archive → 冷归档，按访问频率自动下沉
@@ -156,6 +167,14 @@ flowchart LR
 | **GPFS（Scale）** | 分布式（NSD 组） | 条带化 + 复制/EC | 强一致、企业级、AI 场景增长 | 金融、AI、HPC |
 | **CephFS** | 动态子树分区 MDS | RADOS 对象（PG） | 开源、与 Ceph 生态统一 | 开源 AI 集群 |
 | **BeeGFS** | 分布式元数据 | 条带化 | 易部署、性能好 | 教育、中大规模 |
+
+### Lustre 架构与条带化（阶段三精读铺垫）
+
+- **组件**：MGS（管理）→ MDS（元数据）+ OST（数据对象）+ 客户端（POSIX）
+- **条带化（striping）**：一个文件按 `stripe_size`（默认 1MB）切成块，`stripe_count` 块分布到多个 OST——大文件并行读写、聚合带宽
+- **stripe_count = 1**：小文件默认单 OST，避免过多 OST 交互的元数据开销
+- **锁管理（LDLM）**：客户端缓存与一致性靠分布式锁（锁回调/取消），高并发写同一文件时的瓶颈所在
+- **AI 场景认知**：HPC 重顺序大文件，条带化收益大；AI 小文件数据集反而要控制 stripe，避免放大元数据压力（对应上表"元数据洪峰"优化）
 
 ### AI 训练场景的瓶颈与优化（JD 明确要求）
 
@@ -262,9 +281,44 @@ flowchart TD
 
 ### 阶段一：理论基础（1-2 周）
 
-- 存储三大类型与接口语义（本文第一节）
-- 分布式系统基础：CAP、一致性模型、Raft/Paxos
-- 推荐：《数据密集型应用系统设计》第 5-9 章（副本、分区、事务、一致性）、[DDIM 笔记里的数学基础](../ai/ddim-paper.md)与分布式部分无关但保持体系
+存储理论横跨"存储类型 + 分布式系统 + 存储引擎 + 网络 + 性能"五块，建议按序建立：
+
+**0. 存储三大类型与接口语义**（本文第一节）——块/文件/对象的粒度、接口、语义与适用场景，建立全局坐标系
+
+**1. 分布式系统核心理论**（重点，见 [分布式系统核心理论基础](../distributed-systems/distributed-systems-foundations.md)）
+
+- 系统模型：同步/异步/部分同步、崩溃/拜占庭、网络分区
+- CAP / PACELC：分区时 C 与 A 取舍、无分区时延迟与一致性权衡
+- FLP 不可能性：为什么共识必须依赖超时/租约
+- 一致性模型谱系：线性一致性 → 顺序 → 因果 → 最终一致
+- 共识算法：Raft（选举/日志复制/安全）、Paxos、Quorum（$W+R>N$）
+- 时钟与排序：Lamport / 向量时钟 / HLC
+- 复制与分区：单 Leader / 多 Leader / 无 Leader、范围 vs 哈希分区、一致性哈希
+- 分布式事务：2PC / 3PC / Saga / 幂等重试
+- 故障检测：心跳、租约、fencing、脑裂处理
+
+**2. 存储引擎理论**
+
+- LSM-Tree vs B-Tree：写放大/读放大/空间放大的权衡（对象存储元数据、RocksDB、KV 存储的底层）
+- LSM 写路径：WAL → memtable → 不可变 SSTable → 后台 compaction
+- Compaction 策略：Size-tiered（吞吐优先）vs Leveled（读放大更小），直接决定写放大量级
+- Bloom filter：先查布隆再查 SSTable，point lookup 跳过大量无命中文件
+- 日志结构存储（WAL）、数据压缩、去重、哈希索引
+- 纠删码数学：$(k+m)$ 分片、恢复能力与存储开销的关系
+
+**3. 网络与 I/O 理论**
+
+- TCP 延迟构成：RTT、带宽延迟积（BDP）、TCP 流控 vs RDMA
+- RDMA 原理：内核旁路（kernel bypass）、零拷贝、硬件卸载
+- NVMe 队列模型 vs SATA：队列深度与 IOPS 的关系
+
+**4. 性能建模**
+
+- Roofline 模型：算力 vs 带宽的边界
+- Amdahl 定律、Little's Law：吞吐与延迟的关系
+- 数量级直觉：内存 μs、NVMe 数十 μs、网络 ms、对象存储几十 ms
+
+**推荐阅读**：《数据密集型应用系统设计》第 5-9 章（副本、分区、事务、一致性）；论文 [Raft](https://raft.github.io/)、[FLP](https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf)；[DDIM 笔记里的数学基础](../ai/ddim-paper.md)与分布式部分无关但保持体系。
 
 ### 阶段二：动手实践（2-4 周）
 

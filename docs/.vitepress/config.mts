@@ -38,10 +38,22 @@ export default withMermaid(
           { text: 'PPO', link: '/knowledge/ai/ppo' },
           { text: 'DDIM 论文', link: '/knowledge/ai/ddim-paper' },
           { text: 'AI 开源源码精读', link: '/knowledge/ai/ai-open-source-source-reading' },
-          { text: 'Semantica 知识图谱', link: '/knowledge/ai/semantica' }
+          { text: 'Semantica 知识图谱', link: '/knowledge/ai/semantica' },
+          { text: 'nanobot 阅读指南', link: '/knowledge/ai/nanobot-source-reading-guide' },
+          { text: 'nanobot 架构总览', link: '/knowledge/ai/nanobot-architecture-overview' },
+          { text: 'nanobot AgentLoop/Runner', link: '/knowledge/ai/nanobot-agentloop-runner' },
+          { text: 'nanobot ContextBuilder', link: '/knowledge/ai/nanobot-contextbuilder' },
+          { text: 'nanobot Providers', link: '/knowledge/ai/nanobot-providers-registry' },
+          { text: 'nanobot Tool Registry', link: '/knowledge/ai/nanobot-tool-registry' },
+          { text: 'nanobot Channel Manager', link: '/knowledge/ai/nanobot-channel-manager' }
         ]},
         { text: 'Autonomous Driving', items: [
-          { text: 'Overview', link: '/knowledge/autonomous-driving/' }
+          { text: 'Overview', link: '/knowledge/autonomous-driving/' },
+          { text: '训练数据管理', link: '/knowledge/autonomous-driving/data-management' }
+        ]},
+        { text: 'Distributed Systems', items: [
+          { text: 'Overview', link: '/knowledge/distributed-systems/' },
+          { text: '核心理论基础', link: '/knowledge/distributed-systems/distributed-systems-foundations' }
         ]},
         { text: 'Engineering', items: [
           { text: 'Overview', link: '/knowledge/engineering/' },
