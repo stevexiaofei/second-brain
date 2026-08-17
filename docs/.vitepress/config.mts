@@ -51,7 +51,9 @@ export default withMermaid(
         { text: 'RVV 算子开发', link: '/inbox/rvv-operator-development' },
         { text: '迭代路线图', link: '/inbox/second-brain-iteration-roadmap' },
         { text: '分布式存储知识地图', link: '/inbox/distributed-storage-knowledge-map' },
-        { text: 'RVV 算子设计大赛', link: '/inbox/rvv-operator-challenge' }
+        { text: 'RVV 算子设计大赛', link: '/inbox/rvv-operator-challenge' },
+        { text: 'Fenwick Tree 加权采样', link: '/inbox/fenwick-tree-weighted-sampling' },
+        { text: 'Semantica 知识图谱', link: '/inbox/semantica' }
       ]}]
     },
     search: { provider: 'local' },

@@ -24,6 +24,8 @@
 - [Second Brain 迭代路线图](./second-brain-iteration-roadmap.md) — 现状盘点、四阶段迭代计划（内容闭环/外部打通/AI 深化/发布治理）与优先级建议
 - [分布式存储系统知识地图](./distributed-storage-knowledge-map.md) — 面向 AI 训练与多云场景的存储知识体系：三大类型、一致性、对象存储、并行文件系统、多级缓存、存储网络协议、学习路径
 - [RVV 算子设计大赛备考指南](./rvv-operator-challenge.md) — 基于大赛三张设计图（Local Buffer/Mode/Intrinsics/DAG）的 Softmax 实战，含标准 RVV 与 FP16 3D 版本实现
+- [Fenwick Tree 与动态加权采样](./fenwick-tree-weighted-sampling.md) — 树状数组原理（lowbit、更新/查询/二分定位）与 O(logN) 加权采样实现
+- [Semantica — AI Agent 的开源知识图谱基础设施](./semantica.md) — Graph-Native 存储与推理层：知识图谱、决策智能、PROV-O 溯源、确定性推理（Rete/Datalog/SPARQL）
 
 ## Example
 
