@@ -28,6 +28,9 @@
 - [思维链（CoT）论文详解](./chain-of-thought-papers.md) — 从 CoT 原始论文到 Self-Consistency、ToT、ReAct、Reflexion、STaR 的完整演进
   - 来源：论文综述
   - 关键词：`CoT`、`Zero-shot CoT`、`Self-Consistency`、`Tree of Thoughts`、`ReAct`、`Reflexion`、`STaR`、推理时计算
+- [AI Infra 方向论文地图](./ai-infra-papers-map.md) — Kernel→Compiler→Runtime→Serving→Cluster 的论文阅读路线（vLLM/FlashAttention/Triton/Sarathi/DistServe）
+  - 来源：ChatGPT 对话整理
+  - 关键词：`AI Infra`、`vLLM`、`FlashAttention`、`Triton`、`Sarathi-Serve`、`DistServe`、`ZeRO`、`Megatron`
 
 > 已迁移到 Knowledge：[[拉格朗日乘子与约束优化]]、[[高斯分布]]、[[状态价值与 Bellman 方程]]
 
