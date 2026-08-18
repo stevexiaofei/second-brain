@@ -1,6 +1,8 @@
 # 🧠 My Second Brain
 
-A personal knowledge system built with Markdown, Git, GitHub, VitePress and TRAE.
+A personal knowledge system built with Markdown, Git, GitHub, VitePress and AI assistants (TRAE / Claude Code).
+
+Shared prompt templates live in [prompts/](prompts/). Claude compatibility wrappers live in [.claude/](.claude/) and TRAE wrappers live in [.trae/](.trae/).
 
 ## Philosophy
 
@@ -13,7 +15,7 @@ Capture / Learn / Think
           ↓
        📥 Inbox
           ↓
-        TRAE
+     AI Assistant
    ↙       ↓       ↘
 Search   Organize   Connect
           ↓
@@ -48,10 +50,10 @@ npm run docs:build
 ## Workflow
 
 1. Put rough thoughts into `docs/inbox/`.
-2. Ask TRAE to organize them.
+2. Ask an AI assistant (TRAE or Claude Code) to organize them.
 3. Move stable knowledge into `docs/knowledge/`.
 4. Link related notes.
 5. Commit and push.
 6. GitHub Actions deploys the Wiki.
 
-Markdown is the source of truth. HTML is the presentation layer. Git is the memory. TRAE is the assistant.
+Markdown is the source of truth. HTML is the presentation layer. Git is the memory. AI assistants are the helpers.

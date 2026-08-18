@@ -5,6 +5,8 @@
 ## Areas
 
 - [AI](./ai/)
+- [Prompts](../../prompts/)
+- [Claude Compatibility Layer](../../.claude/README.md)
 - [Autonomous Driving](./autonomous-driving/)
 - [Distributed Systems](./distributed-systems/)
 - [Engineering](./engineering/)

@@ -14,6 +14,9 @@ source: 与 TRAE 的对话整理
 
 Second Brain 不是笔记本，是「外置大脑」。原则（见 [AGENTS.md](../../AGENTS.md)）：
 
+> 这份工作流最初按 TRAE 写，但同样适用于 Claude Code；下文中的“TRAE”可以理解为“你正在使用的 AI assistant”。
+
+
 - Markdown 是真理之源，HTML 只是呈现层
 - 原子化：一概念一文
 - 先进 [inbox](../inbox/index.md)，后整理到 knowledge
@@ -26,7 +29,7 @@ Capture / Learn / Think
        ↓
     📥 Inbox              ← 任何碎片先丢这里
        ↓
-     TRAE                 ← 搜索 → 去重 → 分类 → 连接
+     AI assistant         ← 搜索 → 去重 → 分类 → 连接
        ↓
   🧠 Knowledge            ← 按领域归档到 docs/knowledge/
        ↓
@@ -49,9 +52,11 @@ Capture / Learn / Think
 
 模板 6 类：[concept](../../templates/concept.md)、[paper](../../templates/paper.md)、[experience](../../templates/experience.md)、[idea](../../templates/idea.md)、[book](../../templates/book.md)、[project](../../templates/project.md)。
 
+共享 AI prompt 模板见 [prompts/](../../prompts/)；TRAE 兼容层见 [.trae/agents/](../../.trae/agents/)；Claude 兼容层见 [.claude/agents/](../../.claude/agents/)。
+
 ## 日常工作流场景
 
-每个场景的对话样例都是"你口述 → TRAE 执行"的真实交互形态，不需要复制对话原文，TRAE 会按模板把结构化结论落到 Markdown。
+每个场景的对话样例都是"你口述 → TRAE 执行"的真实交互形态，不需要复制对话原文，AI assistant 会按模板把结构化结论落到 Markdown。
 
 ### 场景 1：读论文
 
@@ -426,7 +431,7 @@ TRAE：
 3. **严格区分三层**：代码事实 / 我的理解 / 推测（符合 AGENTS.md 的 Personal understanding）
 4. **看不懂的留 Open Questions**：不要硬编造解释，下次读到相关模块时回填
 
-## 与 TRAE 协作的常用指令
+## 与 AI assistant 协作的常用指令
 
 | 你说 | TRAE 做 |
 |---|---|

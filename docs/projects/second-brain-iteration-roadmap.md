@@ -13,6 +13,8 @@ updated: 2026-08-12
 
 当前 second-brain 的**系统和规则层已经很完整**（VitePress + 模板 + `.trae/agents` + AGENTS.md + GitHub Actions），迭代的短板在**内容闭环**和**自动化**——下一步的核心是"把知识流动起来"而不是继续堆规则。
 
+> 这份路线图以 TRAE 为历史背景，但同样适用于 Claude Code；把它理解成一套 AI assistant 的工作流设计即可。
+
 ## 为什么需要迭代
 
 - inbox 里 8 篇 seed 笔记没有"消化 → 沉淀"的闭环，会越积越多
@@ -55,9 +57,9 @@ flowchart LR
 
 ### 阶段三：AI 深度集成（差异化优势）
 
-1. **agent 工作流固化**：taker（捕获）→ connector（建链）→ architect（归档）流水线写成可复现指令，每周让 TRAE 跑一遍
-2. **语义搜索 / RAG**：VitePress 本地搜索只是关键词匹配；加 embedding 索引脚本把全部 `.md` 向量化，TRAE 提问时先检索自己的知识库
-3. **技能沉淀**：`proxy-web-fetch` 已有先例，weread、arXiv、RSS 等都可沉淀为 `.trae/skills/`
+1. **agent 工作流固化**：taker（捕获）→ connector（建链）→ architect（归档）流水线写成可复现指令，每周让 AI assistant 跑一遍（TRAE / Claude Code 均可）
+2. **语义搜索 / RAG**：VitePress 本地搜索只是关键词匹配；加 embedding 索引脚本把全部 `.md` 向量化，AI assistant 提问时先检索自己的知识库
+3. **技能沉淀**：`proxy-web-fetch` 已有先例，weread、arXiv、RSS 等都可沉淀为共享 workflow / skill，并分别适配 `.trae/` 与 `.claude/` 入口；共享 prompt 模板统一放在 `prompts/`，两边都可通过兼容层引用
 
 ### 阶段四：发布与治理（锦上添花）
 
@@ -86,7 +88,7 @@ flowchart LR
 
 ## 我的理解
 
-迭代的本质不是换工具，而是**把"收集"变成"流动"**。这个仓库最不缺的是规则（AGENTS.md、模板、agents），最缺的是让规则运转起来的内容管线。下一步所有动作都应围绕：让笔记从 inbox → knowledge 有明确出口，让空目录有种子内容，让 TRAE 从"被动执行"变成"每周例行"。
+迭代的本质不是换工具，而是**把"收集"变成"流动"**。这个仓库最不缺的是规则（AGENTS.md、模板、agents），最缺的是让规则运转起来的内容管线。下一步所有动作都应围绕：让笔记从 inbox → knowledge 有明确出口，让空目录有种子内容，让 AI assistant 从"被动执行"变成"每周例行"。
 
 ## Related
 
