@@ -71,7 +71,24 @@ export default withMermaid(
           { text: 'Overview', link: '/knowledge/mathematics/' }
         ]},
         { text: 'PyTorch', items: [
-          { text: 'Overview', link: '/knowledge/pytorch/' }
+          { text: 'Overview', link: '/knowledge/pytorch/' },
+          { text: '01 架构总览', link: '/knowledge/pytorch/torch-compile-wiki/01-architecture-overview' },
+          { text: '02 torch.compile 入口', link: '/knowledge/pytorch/torch-compile-wiki/02-torch-compile-entry' },
+          { text: '03 TorchDynamo 前端', link: '/knowledge/pytorch/torch-compile-wiki/03-torchdynamo-frontend' },
+          { text: '04 Guard 系统', link: '/knowledge/pytorch/torch-compile-wiki/04-guard-system' },
+          { text: '05 缓存机制', link: '/knowledge/pytorch/torch-compile-wiki/05-cache-mechanism' },
+          { text: '06 图断裂', link: '/knowledge/pytorch/torch-compile-wiki/06-graph-break' },
+          { text: '07 AOTAutograd 中间层', link: '/knowledge/pytorch/torch-compile-wiki/07-aotautograd' },
+          { text: '08 前向/反向分区策略', link: '/knowledge/pytorch/torch-compile-wiki/08-partition-strategy' },
+          { text: '09 TorchInductor 后端', link: '/knowledge/pytorch/torch-compile-wiki/09-torchinductor-backend' },
+          { text: '10 Lowering: FX → IR', link: '/knowledge/pytorch/torch-compile-wiki/10-lowering-fx-to-ir' },
+          { text: '11 调度器与融合', link: '/knowledge/pytorch/torch-compile-wiki/11-scheduler-fusion' },
+          { text: '12 代码生成', link: '/knowledge/pytorch/torch-compile-wiki/12-code-generation' },
+          { text: '13 完整编译流程', link: '/knowledge/pytorch/torch-compile-wiki/13-full-compile-pipeline' },
+          { text: '14 配置与模式', link: '/knowledge/pytorch/torch-compile-wiki/14-config-and-modes' },
+          { text: '15 torch.fx 专题', link: '/knowledge/pytorch/torch-compile-wiki/15-torch-fx-special' },
+          { text: '16 TorchDynamo 深入', link: '/knowledge/pytorch/torch-compile-wiki/16-torchdynamo-deep' },
+          { text: '17 torch.compile 后端', link: '/knowledge/pytorch/torch-compile-wiki/17-compile-backend' }
         ]}
       ],
       '/projects/': [{ text: 'Projects', items: [
