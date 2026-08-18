@@ -8,6 +8,7 @@
 - [整体架构](./pytorch-architecture/) — 五层分层、分发机制、新旧编译栈
 - [C++ 核心模块](./pytorch-cpp-core/) — c10、ATen、caffe2、torch/csrc 四大模块
 - [Python 包结构](./pytorch-python-package/) — torch 顶层包与子包职责
+- [FlashAttention PyTorch ATen 接入层](../ai/flash-attention-pytorch-aten-integration.md) — ATen backend、参数检查、RNG、ALiBi、dense / varlen 派发
 
 ## 主要子系统
 

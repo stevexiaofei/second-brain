@@ -14,6 +14,14 @@
 - [nanobot Tool Registry 源码精读](./nanobot-tool-registry.md) — tool call 的 coerce/cast/validate 三段式、schema 缓存、ToolResult
 - [nanobot Channel Manager 源码精读](./nanobot-channel-manager.md) — 渠道插件发现、outbound 分发、流式 delta 合并、重试去重
 - [Semantica — AI Agent 的知识图谱基础设施](./semantica.md) — Graph-Native 存储与推理层、决策智能、PROV-O 溯源
+- [FlashAttention 阅读导览](./flash-attention-reading-guide.md) — FlashAttention 的回看路线图：训练态、推理态、总图、专题笔记的入口
+- [FlashAttention 术语表与关键状态表](./flash-attention-glossary-and-state-table.md) — `softmax_lse`、`rng_state`、`cache_seqlens`、`block_table` 等核心状态索引
+- [FlashAttention 系统地图](./flash-attention-system-map.md) — 论文→接口→C++→kernel→ATen→模型层→测试的完整闭环
+- [FlashAttention 源码精读](./flash-attention-source-reading.md) — 论文→接口→C++→CUDA→kernel 的完整链路、在线 softmax、work partitioning、KV cache
+- [FlashAttention 接口与 Autograd](./flash-attention-interface-and-autograd.md) — Python API、autograd Function、ctx 保存、packed / varlen / KV cache
+- [FlashAttention Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md) — params、launch template、tile 计算、online softmax、split-KV 调度
+- [FlashAttention Kernel 细节补充](./flash-attention-kernel-details.md) — dropouts、split combine、sequence-parallel、tile 级 RNG 语义
+- [FlashAttention PyTorch ATen 接入层](./flash-attention-pytorch-aten-integration.md) — ATen backend、参数检查、RNG、ALiBi、dense / varlen 派发
 - [状态价值与 Bellman 方程](./state-values-and-bellman-equation.md) — MDP 中状态价值函数、Bellman 期望方程与最优方程
 
 ## Large Language Models
