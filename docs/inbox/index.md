@@ -31,6 +31,14 @@
 - [AI Infra 方向论文地图](./ai-infra-papers-map.md) — Kernel→Compiler→Runtime→Serving→Cluster 的论文阅读路线（vLLM/FlashAttention/Triton/Sarathi/DistServe）
   - 来源：ChatGPT 对话整理
   - 关键词：`AI Infra`、`vLLM`、`FlashAttention`、`Triton`、`Sarathi-Serve`、`DistServe`、`ZeRO`、`Megatron`
+- [FlashAttention 三篇论文精读导览](./flashattention-paper-series.md) — 从 IO-aware、online softmax、work partitioning 到 Hopper 异步流水线的系列原理导览
+  - 来源：arXiv 2205.14135 / 2307.08691 / 2407.08608
+  - 关键词：`IO complexity`、`online softmax`、`sequence parallelism`、`sliced-Q`、`split-KV`、`TMA`、`WGMMA`、`FP8`
+- [MongoDB 与 PyMongo 入门指南](./mongodb-pymongo-getting-started.md) — 面向 Python 用户的文档模型、CRUD、索引、聚合与建模入门
+  - 来源：MongoDB 官方文档
+  - 关键词：`MongoDB`、`PyMongo`、`CRUD`、`ObjectId`、`index`、`aggregation`、`embedding`
+
+> 已迁移到 Knowledge：[[拉格朗日乘子与约束优化]]、[[高斯分布]]、[[状态价值与 Bellman 方程]]
 
 > 已迁移到 Knowledge：[[拉格朗日乘子与约束优化]]、[[高斯分布]]、[[状态价值与 Bellman 方程]]
 

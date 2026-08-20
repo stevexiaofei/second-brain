@@ -1,9 +1,10 @@
-# Shared AI Prompt Templates
+# Prompts
 
-These files are the canonical prompt templates shared by TRAE and Claude Code.
+Shared canonical prompt templates for TRAE and Claude Code.
 
-## Templates
+## Notes
 
 - [Knowledge Taker](./knowledge-taker.md) — rough input → structured knowledge
 - [Knowledge Architect](./knowledge-architect.md) — existing knowledge → better structure
 - [Knowledge Connector](./knowledge-connector.md) — knowledge → connections
+- [Codebase Reading Guide](./codebase-reading-guide.md) — new repository / subsystem reading workflow

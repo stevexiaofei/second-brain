@@ -7,3 +7,4 @@ Canonical prompt templates live in [prompts/](../../prompts/). Copy the shared t
 - `knowledge-taker.md`: rough input → structured knowledge
 - `knowledge-architect.md`: existing knowledge → better structure
 - `knowledge-connector.md`: knowledge → connections
+- `codebase-reader.md`: new repository / subsystem reading workflow

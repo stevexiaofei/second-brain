@@ -8,3 +8,5 @@ docs/.vitepress/dist/
 .vscode/
 .idea/
 _tmp_screenshot/
+.claude/worktrees/
+.claude/test.txt
