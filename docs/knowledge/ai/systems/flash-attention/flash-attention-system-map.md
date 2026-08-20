@@ -243,8 +243,8 @@ flowchart TD
 - [FlashAttention 源码精读](./flash-attention-source-reading.md)
 - [FlashAttention 接口与 Autograd](./flash-attention-interface-and-autograd.md)
 - [FlashAttention Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md)
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md)
-- [PyTorch C++ 核心模块](../pytorch/pytorch-cpp-core.md)
+- [AI 开源项目源码精读指南](../ai-open-source-source-reading.md)
+- [PyTorch C++ 核心模块](../../../pytorch/pytorch-cpp-core.md)
 
 ## References
 

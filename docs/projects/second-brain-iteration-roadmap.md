@@ -93,6 +93,6 @@ flowchart LR
 ## Related
 
 - [Second Brain 工作流](./second-brain-workflow.md) — capture 到 knowledge 的完整流程
-- [AI 开源项目源码精读指南](../knowledge/ai/ai-open-source-source-reading.md) — knowledge/ai 扩展的方向参考
+- [AI 开源项目源码精读指南](../knowledge/ai/systems/ai-open-source-source-reading.md) — knowledge/ai 扩展的方向参考
 - [uv — 极速 Python 包管理工具](../knowledge/engineering/uv-python-package-manager.md) — 工具链自动化的基础
 - [RVV 算子开发必备基础知识](../knowledge/engineering/rvv-operator-development.md) — 建议沉淀到 knowledge/hpc/ 的候选笔记

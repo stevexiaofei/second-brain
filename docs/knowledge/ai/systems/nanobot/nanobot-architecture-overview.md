@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Agents, Architecture, Nanobot, Runtime, WebUI, Gateway]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\nanobot.py
   - d:\project\nanobot\nanobot\agent\loop.py
@@ -106,7 +106,7 @@ Channel 只往 bus 发 inbound、AgentLoop 只消费 inbound 发 outbound、Chan
 
 ### 3.3 AgentLoop 的七阶段管线
 
-`_process_message()`（[loop.py#L1446-L1564](file:///d:/project/nanobot/nanobot/agent/loop.py#L1446-L1564)）是 nanobot 对"一轮对话"的完整定义：
+`_process_message()`（`loop.py#L1446-L1564`（`d:/project/nanobot/nanobot/agent/loop.py#L1446-L1564`））是 nanobot 对"一轮对话"的完整定义：
 
 ```text
 restore（恢复 session/checkpoint）
@@ -120,7 +120,7 @@ restore（恢复 session/checkpoint）
 
 ### 3.4 AgentRunner 的迭代循环
 
-`_run_core()`（[runner.py#L419-L873](file:///d:/project/nanobot/nanobot/agent/runner.py#L419-L873)）是唯一真正的"模型循环"：
+`_run_core()`（`runner.py#L419-L873`（`d:/project/nanobot/nanobot/agent/runner.py#L419-L873`））是唯一真正的"模型循环"：
 
 ```text
 请求模型 → 有 tool call？→ 执行工具 → 结果回写 → 再请求模型
@@ -165,5 +165,5 @@ restore（恢复 session/checkpoint）
 - [nanobot Tool Registry 源码精读](./nanobot-tool-registry.md)
 - [nanobot Providers Registry 源码精读](./nanobot-providers-registry.md)
 - [nanobot Channel Manager 源码精读](./nanobot-channel-manager.md)
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md)
-- [AI 索引](./index.md)
+- [AI 开源项目源码精读指南](../ai-open-source-source-reading.md)
+- [AI 索引](../../index.md)

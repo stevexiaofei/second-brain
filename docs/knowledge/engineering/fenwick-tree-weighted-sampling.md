@@ -324,7 +324,7 @@ Fenwick Tree 的优雅在于：它**没有任何"树"的显式形态**——不�
 ## Related
 
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — 并行归约（vsum/vredsum）与树状归约同源，均为 $\log N$ 级树形聚合
-- [AI 开源项目源码精读指南](../ai/ai-open-source-source-reading.md) — Prioritized Replay（优先经验回放）依赖加权采样，是 RL 代码精读时的关联点
+- [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — Prioritized Replay（优先经验回放）依赖加权采样，是 RL 代码精读时的关联点
 
 ## References
 

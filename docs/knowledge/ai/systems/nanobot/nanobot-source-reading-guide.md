@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Agents, Source Code, Architecture, Nanobot, Python, WebUI, MCP]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\__main__.py
   - d:\project\nanobot\nanobot\nanobot.py
@@ -30,7 +30,7 @@ nanobot 是一个**自托管的个人 AI Agent Runtime**。读它源码的关键
 
 1. [nanobot 核心架构总览](./nanobot-architecture-overview.md) — 目录地图 + 分层图
 2. [nanobot AgentLoop 与 AgentRunner 源码精读](./nanobot-agentloop-runner.md) — 主线
-3. 官方 [docs/architecture.md](file:///d:/project/nanobot/docs/architecture.md)
+3. 官方 `docs/architecture.md`（`d:/project/nanobot/docs/architecture.md`）
 
 回答三个问题：
 - 消息从哪进？（bus）
@@ -39,9 +39,9 @@ nanobot 是一个**自托管的个人 AI Agent Runtime**。读它源码的关键
 
 ## 第 1 步：读入口，验证直觉（10 分钟）
 
-- [`nanobot/__main__.py`](file:///d:/project/nanobot/nanobot/__main__.py)：只是把入口交给 CLI。
-- [`nanobot/nanobot.py`](file:///d:/project/nanobot/nanobot/nanobot.py)：`Nanobot` 类，Python SDK facade，`run()` / `run_streamed()` 一次性封装，`from_config` 从配置构建。
-- [`nanobot/cli/commands.py`](file:///d:/project/nanobot/nanobot/cli/commands.py)：`onboard` / `agent` / `gateway` / `webui` / `trigger` / `channels_status` 等命令。
+- ``nanobot/__main__.py``（`d:/project/nanobot/nanobot/__main__.py`）：只是把入口交给 CLI。
+- ``nanobot/nanobot.py``（`d:/project/nanobot/nanobot/nanobot.py`）：`Nanobot` 类，Python SDK facade，`run()` / `run_streamed()` 一次性封装，`from_config` 从配置构建。
+- ``nanobot/cli/commands.py``（`d:/project/nanobot/nanobot/cli/commands.py`）：`onboard` / `agent` / `gateway` / `webui` / `trigger` / `channels_status` 等命令。
 
 ## 第 2 步：读核心链路（1-2 小时，最重要）
 
@@ -118,5 +118,5 @@ nanobot 的实际核心很小：
 - [nanobot Tool Registry 源码精读](./nanobot-tool-registry.md)
 - [nanobot Providers Registry 源码精读](./nanobot-providers-registry.md)
 - [nanobot Channel Manager 源码精读](./nanobot-channel-manager.md)
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md)
-- [AI 索引](./index.md)
+- [AI 开源项目源码精读指南](../ai-open-source-source-reading.md)
+- [AI 索引](../../index.md)

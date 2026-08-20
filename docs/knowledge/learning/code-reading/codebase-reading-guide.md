@@ -118,7 +118,7 @@ flowchart TD
 
 ## 关联
 
-- [FlashAttention 阅读导览](./flash-attention-reading-guide.md)
-- [FlashAttention 术语表与关键状态表](./flash-attention-glossary-and-state-table.md)
-- [FlashAttention 系统地图](./flash-attention-system-map.md)
-- [FlashAttention 源码精读](./flash-attention-source-reading.md)
+- [FlashAttention 阅读导览](../../ai/systems/flash-attention/flash-attention-reading-guide.md)
+- [FlashAttention 术语表与关键状态表](../../ai/systems/flash-attention/flash-attention-glossary-and-state-table.md)
+- [FlashAttention 系统地图](../../ai/systems/flash-attention/flash-attention-system-map.md)
+- [FlashAttention 源码精读](../../ai/systems/flash-attention/flash-attention-source-reading.md)

@@ -135,4 +135,5 @@ AI Cluster
 - [RVV 算子开发必备基础知识](../knowledge/engineering/rvv-operator-development.md) — FlashAttention/Triton 思路与 RVV kernel 优化的相通点
 - [RVV 算子设计大赛备考指南](../knowledge/engineering/rvv-operator-challenge.md) — 算子实现经验
 - [分布式存储系统知识地图](../knowledge/engineering/distributed-storage-knowledge-map.md) — AI Infra 的另一面（数据层）
-- [思维链（CoT）论文详解](./chain-of-thought-papers.md) — 算法层论文的另一条主线
+- [FlashAttention 三篇论文精读导览](../knowledge/ai/systems/flash-attention/flashattention-paper-series.md) — Kernel / IO-aware 主线的深入入口
+- [思维链（CoT）论文详解](../knowledge/ai/foundations/reasoning/chain-of-thought-papers.md) — 算法层论文的另一条主线

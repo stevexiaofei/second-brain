@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, RL, MDP, Value Function, Bellman Equation]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - https://github.com/MathFoundationRL/Book-Mathematical-Foundation-of-Reinforcement-Learning/blob/main/3%20-%20Chapter%202%20State%20Values%20and%20Bellman%20Equation.pdf
 ---
@@ -111,4 +111,4 @@ Bellman 方程的精髓就是：**把长期回报写成“现在 + 未来”的�
 
 - [PPO](./ppo.md)
 - [GRPO](./grpo.md)
-- [数学索引](../mathematics/index.md)
+- [数学索引](../../../mathematics/index.md)

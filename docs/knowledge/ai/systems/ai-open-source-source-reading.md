@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Open Source, Source Code, Design Pattern, Software Engineering]
 created: 2026-08-12
-updated: 2026-08-12
+updated: 2026-08-20
 source: "与 ChatGPT 的对话整理"
 ---
 
@@ -305,9 +305,9 @@ ai-source-reading/
 
 ## Related
 
-- [PyTorch](../pytorch/) — 本项目的 PyTorch 知识体系，是源码精读的前置基础
-- [Transformer](./) — Transformers 库背后的模型架构
-- [PPO](./ppo.md) — DeepSpeed 相关的 RL 训练
+- [PyTorch](../../pytorch/) — 本项目的 PyTorch 知识体系，是源码精读的前置基础
+- **Transformer** — Transformers 库背后的模型架构，尚待形成独立笔记
+- [PPO](../foundations/reinforcement-learning/ppo.md) — DeepSpeed 相关的 RL 训练
 
 ## References
 

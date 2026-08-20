@@ -539,10 +539,10 @@ mindmap
 
 ## Related
 
-- [GRPO](./../knowledge/ai/grpo.md) — 今天推理模型（R1 等）的训练方法，是 CoT 洞察的训练层实现
-- [PPO](./../knowledge/ai/ppo.md) — 推理模型 RL 训练的另一个核心算法
-- [AI 开源项目源码精读指南](./../knowledge/ai/ai-open-source-source-reading.md) — 推理类项目的源码阅读方法论
-- [AI 索引](./../knowledge/ai/index.md)
+- [GRPO](../reinforcement-learning/grpo.md) — 今天推理模型（R1 等）的训练方法，是 CoT 洞察的训练层实现
+- [PPO](../reinforcement-learning/ppo.md) — 推理模型 RL 训练的另一个核心算法
+- [AI 开源项目源码精读指南](../../systems/ai-open-source-source-reading.md) — 推理类项目的源码阅读方法论
+- [AI 索引](../../index.md)
 
 ## References
 

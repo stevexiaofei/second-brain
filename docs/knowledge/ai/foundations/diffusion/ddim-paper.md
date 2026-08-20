@@ -6,7 +6,7 @@ authors: [Jiaming Song, Chenlin Meng, Stefano Ermon]
 year: 2020
 tags: [Diffusion, Generative, DDIM, Variational, KL]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-20
 source: 与 DeepSeek 的对话整理（https://chat.deepseek.com/share/kanpr0fferkd76bwlz）
 arxiv: 2010.02502v4
 ---
@@ -398,11 +398,13 @@ $$
 
 ## Related Knowledge
 
-- [DDPM](./ddpm.md) — TODO（DDIM 的前置论文）
-- [Score Matching](./score-matching.md) — TODO（DDIM 与之理论契合）
-- [ELBO / VLB](./elbo.md) — TODO（公式 11 的本质）
-- [KL 散度](./kl-divergence.md) — TODO（拆出独立 concept 笔记）
-- [VAE](./vae.md) — TODO（变分推断的另一种应用，Forward/Reverse KL 的选择差异）
+以下前置主题尚未形成独立笔记：
+
+- **DDPM**：DDIM 的前置论文
+- **Score Matching**：DDIM 与之存在理论联系
+- **ELBO / VLB**：理解公式 11 的本质
+- **KL 散度**：理解变分目标的基础
+- **VAE**：比较变分推断及 Forward / Reverse KL 的选择
 
 ## Open Questions
 

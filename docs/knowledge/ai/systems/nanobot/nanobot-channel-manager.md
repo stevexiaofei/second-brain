@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Channels, WebUI, Chat Apps, Gateway, Nanobot, Message Routing, Source Code]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\channels\manager.py
 ---
@@ -19,14 +19,14 @@ source:
 
 ## 1. 核心数据与常量
 
-[manager.py#L59-L67](file:///d:/project/nanobot/nanobot/channels/manager.py#L59-L67)：
+`manager.py#L59-L67`（`d:/project/nanobot/nanobot/channels/manager.py#L59-L67`）：
 
 ```python
 _SEND_RETRY_DELAYS = (1, 2, 4)   # 指数退避：1s, 2s, 4s
 _BOOL_CAMEL_ALIASES = {"send_progress": "sendProgress", ...}  # JSON config 兼容 camelCase
 ```
 
-实例状态字典（[manager.py#L129-L136](file:///d:/project/nanobot/nanobot/channels/manager.py#L129-L136)）：
+实例状态字典（`manager.py#L129-L136`（`d:/project/nanobot/nanobot/channels/manager.py#L129-L136`））：
 
 | 字段 | 作用 |
 |---|---|
@@ -40,7 +40,7 @@ _BOOL_CAMEL_ALIASES = {"send_progress": "sendProgress", ...}  # JSON config 兼�
 
 ## 2. 初始化：`_init_channels()`（插件扫描）
 
-[manager.py#L221-L298](file:///d:/project/nanobot/nanobot/channels/manager.py#L221-L298)：
+`manager.py#L221-L298`（`d:/project/nanobot/nanobot/channels/manager.py#L221-L298`）：
 
 ```python
 def _init_channels(self):
@@ -60,13 +60,13 @@ def _init_channels(self):
 
 ### `_build_channel()` 的特例：websocket
 
-[manager.py#L162-L219](file:///d:/project/nanobot/nanobot/channels/manager.py#L162-L219)：websocket 渠道特殊，它要 `build_gateway_services` 构建整套 WebUI 网关服务（静态资源、session API、cron API、MCP 状态等）再作为 channel 注入——**WebUI 本质上是一个渠道**。
+`manager.py#L162-L219`（`d:/project/nanobot/nanobot/channels/manager.py#L162-L219`）：websocket 渠道特殊，它要 `build_gateway_services` 构建整套 WebUI 网关服务（静态资源、session API、cron API、MCP 状态等）再作为 channel 注入——**WebUI 本质上是一个渠道**。
 
 ## 3. 生命周期：start / stop
 
 ### `start_all()`
 
-[manager.py#L577-L595](file:///d:/project/nanobot/nanobot/channels/manager.py#L577-L595)：
+`manager.py#L577-L595`（`d:/project/nanobot/nanobot/channels/manager.py#L577-L595`）：
 
 ```python
 async def start_all(self):
@@ -77,17 +77,17 @@ async def start_all(self):
     await asyncio.gather(*tasks, return_exceptions=True)  # channel 常驻，正常永不返回
 ```
 
-每个 channel 的 `start()` 内部通常是一个长循环（监听平台消息）。`_start_channel` 捕获异常并写入 `_channel_errors`（[manager.py#L360-L376](file:///d:/project/nanobot/nanobot/channels/manager.py#L360-L376)）。
+每个 channel 的 `start()` 内部通常是一个长循环（监听平台消息）。`_start_channel` 捕获异常并写入 `_channel_errors`（`manager.py#L360-L376`（`d:/project/nanobot/nanobot/channels/manager.py#L360-L376`））。
 
 ### `stop_all()` / 热开关
 
-`stop_all`（[manager.py#L641-L654](file:///d:/project/nanobot/nanobot/channels/manager.py#L641-L654)）取消 dispatcher + 逐个停 channel。`apply_channel_feature_action`（[manager.py#L408-L575](file:///d:/project/nanobot/nanobot/channels/manager.py#L408-L575)）支持 **WebUI 里不重启启停渠道**：disable 走 `_stop_channel` + 移除；enable 重新构建实例并 `_start_channel_task`。
+`stop_all`（`manager.py#L641-L654`（`d:/project/nanobot/nanobot/channels/manager.py#L641-L654`））取消 dispatcher + 逐个停 channel。`apply_channel_feature_action`（`manager.py#L408-L575`（`d:/project/nanobot/nanobot/channels/manager.py#L408-L575`））支持 **WebUI 里不重启启停渠道**：disable 走 `_stop_channel` + 移除；enable 重新构建实例并 `_start_channel_task`。
 
 ## 4. Outbound 分发循环（核心）
 
 ### `_dispatch_outbound()`
 
-[manager.py#L683-L766](file:///d:/project/nanobot/nanobot/channels/manager.py#L683-L766)：
+`manager.py#L683-L766`（`d:/project/nanobot/nanobot/channels/manager.py#L683-L766`）：
 
 ```python
 while True:
@@ -110,7 +110,7 @@ while True:
 
 ### 流式 delta 合并（降低 API 调用）
 
-`_coalesce_stream_deltas`（[manager.py#L849-L912](file:///d:/project/nanobot/nanobot/channels/manager.py#L849-L912)）：
+`_coalesce_stream_deltas`（`manager.py#L849-L912`（`d:/project/nanobot/nanobot/channels/manager.py#L849-L912`））：
 
 ```python
 # 把队列里连续的同 (channel, chat_id, stream_id) 的 delta 拼成一条
@@ -122,7 +122,7 @@ while True:
 
 ### 发送重试
 
-`_send_with_retry`（[manager.py#L914-L972](file:///d:/project/nanobot/nanobot/channels/manager.py#L914-L972)）：
+`_send_with_retry`（`manager.py#L914-L972`（`d:/project/nanobot/nanobot/channels/manager.py#L914-L972`））：
 
 ```python
 while True:
@@ -140,11 +140,11 @@ while True:
 
 ### 去重抑制
 
-`_should_suppress_outbound`（[manager.py#L661-L681](file:///d:/project/nanobot/nanobot/channels/manager.py#L661-L681)）：对回复的**原文消息**（`origin_message_id`）算内容 SHA1 指纹，同指纹不重复发——防止模型在同一会话里把同一段话发两次。
+`_should_suppress_outbound`（`manager.py#L661-L681`（`d:/project/nanobot/nanobot/channels/manager.py#L661-L681`））：对回复的**原文消息**（`origin_message_id`）算内容 SHA1 指纹，同指纹不重复发——防止模型在同一会话里把同一段话发两次。
 
 ## 5. `_send_once`：事件 → 渠道方法分发
 
-[manager.py#L824-L847](file:///d:/project/nanobot/nanobot/channels/manager.py#L824-L847)：
+`manager.py#L824-L847`（`d:/project/nanobot/nanobot/channels/manager.py#L824-L847`）：
 
 ```python
 event = outbound_event_from_message(msg)
@@ -161,7 +161,7 @@ elif not isinstance(event, StreamedResponseEvent):             → channel.send(
 
 ## 6. 状态查询：`get_status()`
 
-[manager.py#L978-L1012](file:///d:/project/nanobot/nanobot/channels/manager.py#L978-L1012)：
+`manager.py#L978-L1012`（`d:/project/nanobot/nanobot/channels/manager.py#L978-L1012`）：
 
 ```python
 for runtime_name, (owner, instance_id) in runtime_specs.items():
@@ -193,11 +193,11 @@ AgentLoop._prepare_outbound → OutboundMessage(channel=..., chat_id=...)
 
 | 问题 | 位置 |
 |---|---|
-| 插件如何被发现和延迟加载 | `_init_channels` + `discover_plugins`（[manager.py#L221-L298](file:///d:/project/nanobot/nanobot/channels/manager.py#L221-L298)） |
-| WebUI 为什么是渠道 | `_build_channel` 的 websocket 分支（[manager.py#L171-L202](file:///d:/project/nanobot/nanobot/channels/manager.py#L171-L202)） |
-| delta 合并怎么保证顺序 | `_coalesce_stream_deltas` + pending 缓冲（[manager.py#L849-L912](file:///d:/project/nanobot/nanobot/channels/manager.py#L849-L912)） |
-| 什么错误可重试 | `channel.should_retry_send_error`（[manager.py#L938-L946](file:///d:/project/nanobot/nanobot/channels/manager.py#L938-L946)） |
-| 渠道状态机 | `get_status`（[manager.py#L978-L1012](file:///d:/project/nanobot/nanobot/channels/manager.py#L978-L1012)） |
+| 插件如何被发现和延迟加载 | `_init_channels` + `discover_plugins`（`manager.py#L221-L298`（`d:/project/nanobot/nanobot/channels/manager.py#L221-L298`）） |
+| WebUI 为什么是渠道 | `_build_channel` 的 websocket 分支（`manager.py#L171-L202`（`d:/project/nanobot/nanobot/channels/manager.py#L171-L202`）） |
+| delta 合并怎么保证顺序 | `_coalesce_stream_deltas` + pending 缓冲（`manager.py#L849-L912`（`d:/project/nanobot/nanobot/channels/manager.py#L849-L912`）） |
+| 什么错误可重试 | `channel.should_retry_send_error`（`manager.py#L938-L946`（`d:/project/nanobot/nanobot/channels/manager.py#L938-L946`）） |
+| 渠道状态机 | `get_status`（`manager.py#L978-L1012`（`d:/project/nanobot/nanobot/channels/manager.py#L978-L1012`）） |
 
 ## 9. 常见坑点
 
@@ -210,4 +210,4 @@ AgentLoop._prepare_outbound → OutboundMessage(channel=..., chat_id=...)
 
 - [nanobot AgentLoop 与 AgentRunner 源码精读](./nanobot-agentloop-runner.md) — outbound 消息的源头
 - [nanobot 源码阅读指南](./nanobot-source-reading-guide.md)
-- [AI 索引](./index.md)
+- [AI 索引](../../index.md)

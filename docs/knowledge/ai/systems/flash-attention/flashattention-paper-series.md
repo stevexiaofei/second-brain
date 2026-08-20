@@ -1,7 +1,7 @@
 ---
 title: FlashAttention 三篇论文精读导览
 type: paper
-status: reading
+status: seed
 authors: [Tri Dao, Daniel Y. Fu, Stefano Ermon, Atri Rudra, Christopher Ré, Jay Shah, Ganesh Bikshandi, Ying Zhang, Vijay Thakkar, Pradeep Ramani]
 year: 2022
 tags: [FlashAttention, Attention, GPU, Kernel, IO-aware, Hopper, CUDA]
@@ -1082,12 +1082,12 @@ combine:
 
 对应已有源码笔记：
 
-- [FlashAttention 源码精读](../knowledge/ai/flash-attention-source-reading.md)
-- [FlashAttention 系统地图](../knowledge/ai/flash-attention-system-map.md)
-- [FlashAttention 接口与 Autograd](../knowledge/ai/flash-attention-interface-and-autograd.md)
-- [FlashAttention Kernel 与 Launch 机制](../knowledge/ai/flash-attention-kernel-and-launch.md)
-- [FlashAttention Kernel 细节补充](../knowledge/ai/flash-attention-kernel-details.md)
-- [FlashAttention PyTorch ATen 接入层](../knowledge/ai/flash-attention-pytorch-aten-integration.md)
+- [FlashAttention 源码精读](./flash-attention-source-reading.md)
+- [FlashAttention 系统地图](./flash-attention-system-map.md)
+- [FlashAttention 接口与 Autograd](./flash-attention-interface-and-autograd.md)
+- [FlashAttention Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md)
+- [FlashAttention Kernel 细节补充](./flash-attention-kernel-details.md)
+- [FlashAttention PyTorch ATen 接入层](./flash-attention-pytorch-aten-integration.md)
 
 ---
 
@@ -1207,10 +1207,10 @@ combine:
 
 ## 关联知识
 
-- [FlashAttention 阅读导览](../knowledge/ai/flash-attention-reading-guide.md)
-- [FlashAttention 术语表与关键状态表](../knowledge/ai/flash-attention-glossary-and-state-table.md)
-- [FlashAttention 系统地图](../knowledge/ai/flash-attention-system-map.md)
-- [AI Infra 方向论文地图](./ai-infra-papers-map.md)
+- [FlashAttention 阅读导览](./flash-attention-reading-guide.md)
+- [FlashAttention 术语表与关键状态表](./flash-attention-glossary-and-state-table.md)
+- [FlashAttention 系统地图](./flash-attention-system-map.md)
+- [AI Infra 方向论文地图](../../../../inbox/ai-infra-papers-map.md)
 
 ## References
 

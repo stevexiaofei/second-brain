@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Agents, AgentLoop, AgentRunner, Runtime, Nanobot, Source Code, MessageBus]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\agent\loop.py
   - d:\project\nanobot\nanobot\agent\runner.py
@@ -25,7 +25,7 @@ source:
 
 ### 1.1 关键数据类型
 
-`TurnKind` 枚举（[loop.py#L112-L114](file:///d:/project/nanobot/nanobot/agent/loop.py#L112-L114)）：
+`TurnKind` 枚举（`loop.py#L112-L114`（`d:/project/nanobot/nanobot/agent/loop.py#L112-L114`））：
 
 ```python
 class TurnKind(Enum):
@@ -33,7 +33,7 @@ class TurnKind(Enum):
     SYSTEM = auto()    # 内部消息（subagent 结果、cron 触发等）
 ```
 
-`TurnContext` dataclass（[loop.py#L117-L165](file:///d:/project/nanobot/nanobot/agent/loop.py#L117-L165)）——**贯穿一个 turn 所有阶段的"书包"**，字段按用途可分五组：
+`TurnContext` dataclass（`loop.py#L117-L165`（`d:/project/nanobot/nanobot/agent/loop.py#L117-L165`））——**贯穿一个 turn 所有阶段的"书包"**，字段按用途可分五组：
 
 | 分组 | 字段 | 作用 |
 |---|---|---|
@@ -43,11 +43,11 @@ class TurnKind(Enum):
 | 结果 | `final_content` / `all_messages` / `stop_reason` / `had_injections` / `streamed_content` | 一轮产出 |
 | 回调 | `on_progress` / `on_stream` / `on_stream_end` / `on_retry_wait` / `pending_queue` | 流式/进度/注入 |
 
-两个守卫方法（[loop.py#L167-L177](file:///d:/project/nanobot/nanobot/agent/loop.py#L167-L177)）：`require_runtime()`（BUILD 阶段后才能用）、`require_session()`（RESTORE 阶段后才能用）——**这从机制上强制了阶段顺序**。
+两个守卫方法（`loop.py#L167-L177`（`d:/project/nanobot/nanobot/agent/loop.py#L167-L177`））：`require_runtime()`（BUILD 阶段后才能用）、`require_session()`（RESTORE 阶段后才能用）——**这从机制上强制了阶段顺序**。
 
 ### 1.2 `__init__` 装配了哪些组件
 
-`AgentLoop.__init__`（[loop.py#L256-L459](file:///d:/project/nanobot/nanobot/agent/loop.py#L256-L459)）是最大的装配点，全部依赖都在这里建立：
+`AgentLoop.__init__`（`loop.py#L256-L459`（`d:/project/nanobot/nanobot/agent/loop.py#L256-L459`））是最大的装配点，全部依赖都在这里建立：
 
 ```python
 self.bus = bus                    # MessageBus（inbound/outbound 队列）
@@ -71,7 +71,7 @@ self.commands = CommandRouter()   # 内置命令（/new /stop 等）
 
 ### 1.3 `run()` 主循环：消息从总线进来的第一条路径
 
-[loop.py#L1172-L1266](file:///d:/project/nanobot/nanobot/agent/loop.py#L1172-L1266)：
+`loop.py#L1172-L1266`（`d:/project/nanobot/nanobot/agent/loop.py#L1172-L1266`）：
 
 ```python
 while self._running:
@@ -84,11 +84,11 @@ while self._running:
     # 6. 否则 create_task(self._dispatch(msg))
 ```
 
-**每 session 一个 pending queue**（[loop.py#L416](file:///d:/project/nanobot/nanobot/agent/loop.py#L416)）是 nanobot 实现"回合中注入"（injection）的基石：当 agent 正在跑工具时又来一条消息，它不是新起任务，而是**塞进队列，由 runner 的 injection_callback 在合适时机拉取**（见 Runner 部分）。
+**每 session 一个 pending queue**（`loop.py#L416`（`d:/project/nanobot/nanobot/agent/loop.py#L416`））是 nanobot 实现"回合中注入"（injection）的基石：当 agent 正在跑工具时又来一条消息，它不是新起任务，而是**塞进队列，由 runner 的 injection_callback 在合适时机拉取**（见 Runner 部分）。
 
 ### 1.4 `_dispatch()`：串行化 + 全生命周期
 
-[loop.py#L1268-L1382](file:///d:/project/nanobot/nanobot/agent/loop.py#L1268-L1382)：
+`loop.py#L1268-L1382`（`d:/project/nanobot/nanobot/agent/loop.py#L1268-L1382`）：
 
 ```python
 async def _dispatch(self, msg):
@@ -106,11 +106,11 @@ async def _dispatch(self, msg):
         # 恢复 runtime checkpoint（取消/崩溃后保住部分上下文）
 ```
 
-`_effective_session_key`（[loop.py#L839-L843](file:///d:/project/nanobot/nanobot/agent/loop.py#L839-L843)）处理 **unified session**：开启后所有 channel 的消息归并到 `UNIFIED_SESSION_KEY`。
+`_effective_session_key`（`loop.py#L839-L843`（`d:/project/nanobot/nanobot/agent/loop.py#L839-L843`））处理 **unified session**：开启后所有 channel 的消息归并到 `UNIFIED_SESSION_KEY`。
 
 ### 1.5 `_process_message()`：七阶段 turn 管线（最值得画图的一段）
 
-[loop.py#L1446-L1564](file:///d:/project/nanobot/nanobot/agent/loop.py#L1446-L1564)：
+`loop.py#L1446-L1564`（`d:/project/nanobot/nanobot/agent/loop.py#L1446-L1564`）：
 
 ```text
 restore → compact → command → build → run → save → respond
@@ -142,12 +142,12 @@ return ctx.outbound
 
 **崩溃恢复双机制**（理解 nanobot 健壮性的关键）：
 
-1. **runtime checkpoint**（[loop.py#L2142-L2265](file:///d:/project/nanobot/nanobot/agent/loop.py#L2142-L2265)）：runner 在每个 phase 调 `checkpoint_callback`，把 `assistant_message` + `completed_tool_results` + `pending_tool_calls` 存进 `session.metadata`。`_restore_runtime_checkpoint` 在下一轮把它物化进 history，并通过消息键比对去重 overlap。
-2. **pending user turn**（[loop.py#L2267-L2286](file:///d:/project/nanobot/nanobot/agent/loop.py#L2267-L2286)）：用户消息已落盘但 assistant 回复未生成就崩溃 → 补一条"Task interrupted"占位，避免对话断裂。
+1. **runtime checkpoint**（`loop.py#L2142-L2265`（`d:/project/nanobot/nanobot/agent/loop.py#L2142-L2265`））：runner 在每个 phase 调 `checkpoint_callback`，把 `assistant_message` + `completed_tool_results` + `pending_tool_calls` 存进 `session.metadata`。`_restore_runtime_checkpoint` 在下一轮把它物化进 history，并通过消息键比对去重 overlap。
+2. **pending user turn**（`loop.py#L2267-L2286`（`d:/project/nanobot/nanobot/agent/loop.py#L2267-L2286`））：用户消息已落盘但 assistant 回复未生成就崩溃 → 补一条"Task interrupted"占位，避免对话断裂。
 
 ### 1.6 `_build_turn` 与 provider_state
 
-[loop.py#L1741-L1864](file:///d:/project/nanobot/nanobot/agent/loop.py#L1741-L1864) 中有一个值得注意的机制：**provider conversation state（连续对话状态）**。
+`loop.py#L1741-L1864`（`d:/project/nanobot/nanobot/agent/loop.py#L1741-L1864`） 中有一个值得注意的机制：**provider conversation state（连续对话状态）**。
 
 ```python
 if stored_state is not None and runtime.provider.can_resume_conversation_state(stored_state, runtime.model):
@@ -163,9 +163,9 @@ if stored_state is not None and runtime.provider.can_resume_conversation_state(s
 
 ### 2.1 三个数据类
 
-- `AgentRunSpec`（[runner.py#L90-L117](file:///d:/project/nanobot/nanobot/agent/runner.py#L90-L117)）：一次执行的**全部配置**——`initial_messages`、`tools`、`runtime`、`max_iterations`、`max_tool_result_chars`、`hook`、`concurrent_tools`、`workspace`、各种 callback（progress/retry_wait/checkpoint/**injection**/goal）。
-- `AgentRunResult`（[runner.py#L120-L134](file:///d:/project/nanobot/nanobot/agent/runner.py#L120-L134)）：产出——`final_content`、`messages`（完整消息史，供 loop 落盘）、`tools_used`、`usage`、`stop_reason`、`tool_events`、`had_injections`、`provider_state`。
-- 关键常量（[runner.py#L73-L76](file:///d:/project/nanobot/nanobot/agent/runner.py#L73-L76)）：
+- `AgentRunSpec`（`runner.py#L90-L117`（`d:/project/nanobot/nanobot/agent/runner.py#L90-L117`））：一次执行的**全部配置**——`initial_messages`、`tools`、`runtime`、`max_iterations`、`max_tool_result_chars`、`hook`、`concurrent_tools`、`workspace`、各种 callback（progress/retry_wait/checkpoint/**injection**/goal）。
+- `AgentRunResult`（`runner.py#L120-L134`（`d:/project/nanobot/nanobot/agent/runner.py#L120-L134`））：产出——`final_content`、`messages`（完整消息史，供 loop 落盘）、`tools_used`、`usage`、`stop_reason`、`tool_events`、`had_injections`、`provider_state`。
+- 关键常量（`runner.py#L73-L76`（`d:/project/nanobot/nanobot/agent/runner.py#L73-L76`））：
 
 ```python
 _MAX_EMPTY_RETRIES = 2        # 空回复最多重试 2 次
@@ -176,7 +176,7 @@ _MAX_INJECTION_CYCLES = 5     # 全轮最多 5 个注入循环
 
 ### 2.2 `run()`：hook 生命周期外壳
 
-[runner.py#L371-L417](file:///d:/project/nanobot/nanobot/agent/runner.py#L371-L417)：
+`runner.py#L371-L417`（`d:/project/nanobot/nanobot/agent/runner.py#L371-L417`）：
 
 ```python
 async def run(self, spec):
@@ -200,7 +200,7 @@ Hook 生命周期：`before_run → (每轮 before_iteration/after_iteration) �
 
 ### 2.3 `_run_core()`：主迭代循环（全文核心）
 
-[runner.py#L419-L873](file:///d:/project/nanobot/nanobot/agent/runner.py#L419-L873)：
+`runner.py#L419-L873`（`d:/project/nanobot/nanobot/agent/runner.py#L419-L873`）：
 
 ```text
 for iteration in range(spec.max_iterations):
@@ -236,7 +236,7 @@ else:  # max_iterations 耗尽
 
 ### 2.4 `_request_model()`：三种请求模式
 
-[runner.py#L895-L1102](file:///d:/project/nanobot/nanobot/agent/runner.py#L895-L1102)：
+`runner.py#L895-L1102`（`d:/project/nanobot/nanobot/agent/runner.py#L895-L1102`）：
 
 按 hook 是否要流式，选三条路径：
 
@@ -246,15 +246,15 @@ else:  # max_iterations 耗尽
 | 进度流 | 非流式但有 progress | 同上 | `IncrementalThinkExtractor` + `on_content_delta` |
 | 非流式 | 默认 | `provider.chat_with_retry` | 无 |
 
-超时控制（[runner.py#L906-L917](file:///d:/project/nanobot/nanobot/agent/runner.py#L906-L917)）：默认 `NANOBOT_LLM_TIMEOUT_S=300`；流式请求用 `max(300, timeout*2)` 作为墙钟超时，`asyncio.wait_for` 兜底。
+超时控制（`runner.py#L906-L917`（`d:/project/nanobot/nanobot/agent/runner.py#L906-L917`））：默认 `NANOBOT_LLM_TIMEOUT_S=300`；流式请求用 `max(300, timeout*2)` 作为墙钟超时，`asyncio.wait_for` 兜底。
 
-**坏工具调用清洗**（[runner.py#L1104-L1140](file:///d:/project/nanobot/nanobot/agent/runner.py#L1104-L1140)）：`_drop_malformed_tool_calls` 剥离 name 缺失的 tool call——如果不删，它会进 assistant 消息并被每次重放，导致 provider 校验永久失败"wedge"住 session。全删则用 `_malformed_tool_call_retry_messages` 重试一次，再不行降级为 no-tools 请求。
+**坏工具调用清洗**（`runner.py#L1104-L1140`（`d:/project/nanobot/nanobot/agent/runner.py#L1104-L1140`））：`_drop_malformed_tool_calls` 剥离 name 缺失的 tool call——如果不删，它会进 assistant 消息并被每次重放，导致 provider 校验永久失败"wedge"住 session。全删则用 `_malformed_tool_call_retry_messages` 重试一次，再不行降级为 no-tools 请求。
 
 ### 2.5 `_execute_tools()` 与 `_run_tool()`：工具执行
 
-批量与并发（[runner.py#L1647-L1670](file:///d:/project/nanobot/nanobot/agent/runner.py#L1647-L1670)）：`_partition_tool_batches` 把 `concurrency_safe=True` 的连续工具合并成一批，`asyncio.gather` 并发执行；不安全的工具单独串行。
+批量与并发（`runner.py#L1647-L1670`（`d:/project/nanobot/nanobot/agent/runner.py#L1647-L1670`））：`_partition_tool_batches` 把 `concurrency_safe=True` 的连续工具合并成一批，`asyncio.gather` 并发执行；不安全的工具单独串行。
 
-`_run_tool`（[runner.py#L1410-L1523](file:///d:/project/nanobot/nanobot/agent/runner.py#L1410-L1523)）完整流程：
+`_run_tool`（`runner.py#L1410-L1523`（`d:/project/nanobot/nanobot/agent/runner.py#L1410-L1523`））完整流程：
 
 ```python
 # 1. 重复外部查询限流（同一工具+参数最多 N 次）
@@ -267,7 +267,7 @@ tool, params, prep_error = prepare_call(name, arguments)
 
 ### 2.6 安全边界分类：SSRF 与 workspace 违规
 
-[runner.py#L1525-L1615](file:///d:/project/nanobot/nanobot/agent/runner.py#L1525-L1615)：
+`runner.py#L1525-L1615`（`d:/project/nanobot/nanobot/agent/runner.py#L1525-L1615`）：
 
 ```python
 _SSRF_MARKERS = ("internal/private url detected", "private/internal address", ...)
@@ -283,7 +283,7 @@ _WORKSPACE_VIOLATION_MARKERS = ("outside the configured workspace", "path traver
 
 ### 2.7 Injection：回合中注入机制（理解 nanobot 复杂度的钥匙）
 
-[runner.py#L240-L369](file:///d:/project/nanobot/nanobot/agent/runner.py#L240-L369)：
+`runner.py#L240-L369`（`d:/project/nanobot/nanobot/agent/runner.py#L240-L369`）：
 
 ```text
 用户 turn 进行中，又来新消息
@@ -295,17 +295,17 @@ _WORKSPACE_VIOLATION_MARKERS = ("outside the configured workspace", "path traver
   → 拉到的消息转成 user 消息注入 messages，循环继续
 ```
 
-`_try_drain_injections`（[runner.py#L240-L299](file:///d:/project/nanobot/nanobot/agent/runner.py#L240-L299)）返回值 `(should_continue, cycles)`，配合 `_MAX_INJECTION_CYCLES=5` 防止无限循环。还有 **sustained goal 注入**（[runner.py#L301-L309](file:///d:/project/nanobot/nanobot/agent/runner.py#L301-L309)）：`goal_active_predicate` 为真时注入"继续执行目标"的提示。
+`_try_drain_injections`（`runner.py#L240-L299`（`d:/project/nanobot/nanobot/agent/runner.py#L240-L299`））返回值 `(should_continue, cycles)`，配合 `_MAX_INJECTION_CYCLES=5` 防止无限循环。还有 **sustained goal 注入**（`runner.py#L301-L309`（`d:/project/nanobot/nanobot/agent/runner.py#L301-L309`））：`goal_active_predicate` 为真时注入"继续执行目标"的提示。
 
-`_append_injected_messages`（[runner.py#L162-L238](file:///d:/project/nanobot/nanobot/agent/runner.py#L162-L238)）：注入时做 **role 交替合并**——两条连续 user 消息会合并 content 与 runtime context blocks，避免违反 OpenAI 的 role 交替约束。
+`_append_injected_messages`（`runner.py#L162-L238`（`d:/project/nanobot/nanobot/agent/runner.py#L162-L238`））：注入时做 **role 交替合并**——两条连续 user 消息会合并 content 与 runtime context blocks，避免违反 OpenAI 的 role 交替约束。
 
 ### 2.8 输出恢复三件套
 
 | 场景 | 机制 | 位置 |
 |---|---|---|
-| 空回复 | 重试 ≤2 次，仍空 → `_finalization_retry_messages` 无工具重发 | [runner.py#L632-L673](file:///d:/project/nanobot/nanobot/agent/runner.py#L632-L673) |
-| 长度截断（length） | 续写 ≤3 段，`length_recovery_parts` 拼接，`build_length_recovery_message` | [runner.py#L675-L700](file:///d:/project/nanobot/nanobot/agent/runner.py#L675-L700) |
-| 迭代耗尽 | `_try_finalize_after_max_iterations` 无工具收尾，失败回退模板 | [runner.py#L1195-L1278](file:///d:/project/nanobot/nanobot/agent/runner.py#L1195-L1278) |
+| 空回复 | 重试 ≤2 次，仍空 → `_finalization_retry_messages` 无工具重发 | `runner.py#L632-L673`（`d:/project/nanobot/nanobot/agent/runner.py#L632-L673`） |
+| 长度截断（length） | 续写 ≤3 段，`length_recovery_parts` 拼接，`build_length_recovery_message` | `runner.py#L675-L700`（`d:/project/nanobot/nanobot/agent/runner.py#L675-L700`） |
+| 迭代耗尽 | `_try_finalize_after_max_iterations` 无工具收尾，失败回退模板 | `runner.py#L1195-L1278`（`d:/project/nanobot/nanobot/agent/runner.py#L1195-L1278`） |
 
 ## 3. 一条完整消息的生命周期（串联两个类）
 
@@ -351,4 +351,4 @@ _WORKSPACE_VIOLATION_MARKERS = ("outside the configured workspace", "path traver
 - [nanobot Providers Registry 源码精读](./nanobot-providers-registry.md) — runtime 如何选 provider
 - [nanobot Channel Manager 源码精读](./nanobot-channel-manager.md) — outbound 如何投递
 - [nanobot 源码阅读指南](./nanobot-source-reading-guide.md)
-- [AI 索引](./index.md)
+- [AI 索引](../../index.md)

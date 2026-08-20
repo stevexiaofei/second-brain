@@ -66,7 +66,7 @@ Capture / Learn / Think
 你：我读了 GRPO 这篇论文，记到 inbox
 
 TRAE：
-  1. 搜仓库 → 发现 docs/knowledge/ai/ppo.md 但没有 grpo，不重复
+  1. 搜仓库 → 发现 docs/knowledge/ai/foundations/reinforcement-learning/ppo.md 但没有 grpo，不重复
   2. 套 paper 模板，写到 docs/inbox/grpo-notes.md
      - Problem / Motivation / Key Idea / Method / 留空
      - My Understanding / Open Questions 先空着
@@ -99,14 +99,14 @@ TRAE：补到 "My Understanding" 节，明确标注「我的理解」
 
 TRAE：
   1. 搜重复 → 无冲突
-  2. 补全 Related Knowledge，加链接到 [ppo.md](../knowledge/ai/ppo.md)
-  3. 移动 docs/inbox/grpo-notes.md → docs/knowledge/ai/grpo.md
+  2. 补全 Related Knowledge，加链接到 [ppo.md](../knowledge/ai/foundations/reinforcement-learning/ppo.md)
+  3. 移动 docs/inbox/grpo-notes.md → docs/knowledge/ai/foundations/reinforcement-learning/grpo.md
   4. 从 docs/inbox/index.md 删条目
   5. 在 docs/knowledge/ai/index.md 的 RLHF 区块加 GRPO 链接
   6. git commit -m "docs: add GRPO knowledge"
 ```
 
-参考已有样例：[grpo.md](../knowledge/ai/grpo.md)、[ppo.md](../knowledge/ai/ppo.md)。
+参考已有样例：[grpo.md](../knowledge/ai/foundations/reinforcement-learning/grpo.md)、[ppo.md](../knowledge/ai/foundations/reinforcement-learning/ppo.md)。
 
 ### 场景 2：工程踩坑
 

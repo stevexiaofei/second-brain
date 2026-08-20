@@ -10,5 +10,6 @@
 - [Autonomous Driving](./autonomous-driving/)
 - [Distributed Systems](./distributed-systems/)
 - [Engineering](./engineering/)
+- [Learning](./learning/)
 - [Mathematics](./mathematics/)
 - [PyTorch](./pytorch/)

@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Knowledge Graph, AI Governance, Provenance, Decision Intelligence, Reasoning, RAG, MCP]
 created: 2026-08-12
-updated: 2026-08-12
+updated: 2026-08-20
 source: "https://github.com/semantica-agi/semantica"
 ---
 
@@ -119,8 +119,8 @@ Semantica 踩中的是当前 AI Agent 最被忽视的痛点：**可信度与可�
 ## Related
 
 - [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 12 个精读项目的扩展候选（Graph 构建/推理引擎）
-- [Second Brain 迭代路线图](../../projects/second-brain-iteration-roadmap.md) — 知识图谱与回链自动化的路线参考
-- [分布式存储系统知识地图](../engineering/distributed-storage-knowledge-map.md) — 图数据库多后端（Neo4j/FalkorDB/Neptune）属于存储选型范畴
+- [Second Brain 迭代路线图](../../../projects/second-brain-iteration-roadmap.md) — 知识图谱与回链自动化的路线参考
+- [分布式存储系统知识地图](../../engineering/distributed-storage-knowledge-map.md) — 图数据库多后端（Neo4j/FalkorDB/Neptune）属于存储选型范畴
 
 ## References
 

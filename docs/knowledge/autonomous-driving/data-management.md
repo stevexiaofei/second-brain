@@ -138,8 +138,8 @@ Dagster/Airflow 调度
 ## Related
 
 - [分布式存储系统知识地图](../engineering/distributed-storage-knowledge-map.md) — 对象存储/并行文件系统/多级缓存的底层原理
-- [AI 开源项目源码精读指南](../ai/ai-open-source-source-reading.md) — 数据管线相关开源项目（FiftyOne/DVC）源码精读方向
-- [Semantica 知识图谱](../ai/semantica.md) — 数据血缘/溯源（PROV-O）在数据治理中的应用
+- [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — 数据管线相关开源项目（FiftyOne/DVC）源码精读方向
+- [Semantica 知识图谱](../ai/systems/semantica.md) — 数据血缘/溯源（PROV-O）在数据治理中的应用
 
 ## References
 

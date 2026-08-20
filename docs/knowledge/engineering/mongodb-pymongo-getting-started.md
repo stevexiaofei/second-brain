@@ -1,7 +1,7 @@
 ---
 title: MongoDB 与 PyMongo 入门指南
 type: guide
-status: inbox
+status: seed
 tags: [MongoDB, PyMongo, Python, Database, NoSQL]
 created: 2026-08-19
 updated: 2026-08-19

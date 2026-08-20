@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Agents, ContextBuilder, Prompt, Memory, Skills, Nanobot, Source Code]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\agent\context.py
 ---
@@ -19,7 +19,7 @@ source:
 
 ## 1. 类骨架与常量
 
-[context.py#L52-L66](file:///d:/project/nanobot/nanobot/agent/context.py#L52-L66)：
+`context.py#L52-L66`（`d:/project/nanobot/nanobot/agent/context.py#L52-L66`）：
 
 ```python
 class ContextBuilder:
@@ -46,7 +46,7 @@ build_messages()          ← 顶层入口，返回完整 messages
 
 ### 2.1 `build_messages()`：顶层装配
 
-[context.py#L206-L265](file:///d:/project/nanobot/nanobot/agent/context.py#L206-L265)：
+`context.py#L206-L265`（`d:/project/nanobot/nanobot/agent/context.py#L206-L265`）：
 
 ```python
 def build_messages(self, history, current_message, *, media=None, channel=None, ...):
@@ -73,11 +73,11 @@ def build_messages(self, history, current_message, *, media=None, channel=None, 
 
 **role 交替的两种形态**：
 - 都是字符串 → `f"{left}\n\n{right}"` 简单拼接
-- 有 multimodal block（list）→ `_to_blocks` 把两端都规范成 `{"type": ...}` block 列表再拼接（[context.py#L147-L167](file:///d:/project/nanobot/nanobot/agent/context.py#L147-L167)）
+- 有 multimodal block（list）→ `_to_blocks` 把两端都规范成 `{"type": ...}` block 列表再拼接（`context.py#L147-L167`（`d:/project/nanobot/nanobot/agent/context.py#L147-L167`））
 
 ### 2.2 `build_system_prompt()`：system prompt 的六大 section
 
-[context.py#L68-L127](file:///d:/project/nanobot/nanobot/agent/context.py#L68-L127)：
+`context.py#L68-L127`（`d:/project/nanobot/nanobot/agent/context.py#L68-L127`）：
 
 ```python
 parts = [
@@ -116,7 +116,7 @@ return "\n\n---\n\n".join(parts)
 
 ### 2.3 bootstrap 文件的加载细节（容易被忽略）
 
-[context.py#L169-L196](file:///d:/project/nanobot/nanobot/agent/context.py#L169-L196)：
+`context.py#L169-L196`（`d:/project/nanobot/nanobot/agent/context.py#L169-L196`）：
 
 ```python
 sources = [
@@ -135,7 +135,7 @@ for filename, root in sources:
 
 ### 2.4 `build_user_content()`：图片 → base64 data URL
 
-[context.py#L286-L315](file:///d:/project/nanobot/nanobot/agent/context.py#L286-L315)：
+`context.py#L286-L315`（`d:/project/nanobot/nanobot/agent/context.py#L286-L315`）：
 
 ```python
 def build_user_content(self, text, image_paths):
@@ -159,7 +159,7 @@ def build_user_content(self, text, image_paths):
 
 ## 3. 与 AgentLoop 的协作点
 
-在 [loop.py#L734-L750](file:///d:/project/nanobot/nanobot/agent/loop.py#L734-L750) 的 `_build_initial_messages` 中调用：
+在 `loop.py#L734-L750`（`d:/project/nanobot/nanobot/agent/loop.py#L734-L750`） 的 `_build_initial_messages` 中调用：
 
 ```python
 return self.context.build_messages(
@@ -186,9 +186,9 @@ return self.context.build_messages(
 
 | 问题 | 位置 |
 |---|---|
-| 图片怎么进 prompt | [context.py#L286-L315](file:///d:/project/nanobot/nanobot/agent/context.py#L286-L315) |
-| 默认文件怎么被跳过 | `_is_template_content`（[context.py#L198-L204](file:///d:/project/nanobot/nanobot/agent/context.py#L198-L204)） |
-| role 交替怎么合并 | `_merge_message_content`（[context.py#L147-L167](file:///d:/project/nanobot/nanobot/agent/context.py#L147-L167)） |
+| 图片怎么进 prompt | `context.py#L286-L315`（`d:/project/nanobot/nanobot/agent/context.py#L286-L315`） |
+| 默认文件怎么被跳过 | `_is_template_content`（`context.py#L198-L204`（`d:/project/nanobot/nanobot/agent/context.py#L198-L204`）） |
+| role 交替怎么合并 | `_merge_message_content`（`context.py#L147-L167`（`d:/project/nanobot/nanobot/agent/context.py#L147-L167`）） |
 | 技能怎么激活 | `skills.get_explicitly_invoked_skills` / `get_always_skills` |
 | 记忆游标 | `memory.get_last_dream_cursor()`（Dream 之后才计入 Recent History） |
 
@@ -203,4 +203,4 @@ return self.context.build_messages(
 - [nanobot AgentLoop 与 AgentRunner 源码精读](./nanobot-agentloop-runner.md) — build 阶段的调用方
 - [nanobot Tool Registry 源码精读](./nanobot-tool-registry.md) — tool contract 的 schema 来源
 - [nanobot 源码阅读指南](./nanobot-source-reading-guide.md)
-- [AI 索引](./index.md)
+- [AI 索引](../../index.md)

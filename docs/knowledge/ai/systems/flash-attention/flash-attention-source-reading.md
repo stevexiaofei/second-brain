@@ -272,9 +272,9 @@ FlashAttention 很多 feature 看起来像“功能”，但本质上都是数�
 
 ## Related Knowledge
 
-- [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 源码阅读方法论与项目选择路线
-- [PyTorch C++ 核心模块](../pytorch/pytorch-cpp-core.md) — FlashAttention 接入 PyTorch 运行时的底座
-- [PyTorch 依赖关系](../pytorch/pytorch-dependencies.md) — 了解 `aten`、`torch/csrc`、第三方库之间的关系
+- [AI 开源项目源码精读指南](../ai-open-source-source-reading.md) — 源码阅读方法论与项目选择路线
+- [PyTorch C++ 核心模块](../../../pytorch/pytorch-cpp-core.md) — FlashAttention 接入 PyTorch 运行时的底座
+- [PyTorch 依赖关系](../../../pytorch/pytorch-dependencies.md) — 了解 `aten`、`torch/csrc`、第三方库之间的关系
 
 ## References
 

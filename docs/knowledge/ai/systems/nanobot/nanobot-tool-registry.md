@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Tools, Registry, Function Calling, Nanobot, MCP, Source Code]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\agent\tools\registry.py
   - d:\project\nanobot\nanobot\agent\tools\base.py
@@ -27,7 +27,7 @@ class ToolRegistry:
         self._cached_definitions: list | None = None  # schema 缓存，register/unregister 时失效
 ```
 
-工具本体是 `Tool`（ABC，[base.py#L159](file:///d:/project/nanobot/nanobot/agent/tools/base.py#L159)），每个工具实现：
+工具本体是 `Tool`（ABC，`base.py#L159`（`d:/project/nanobot/nanobot/agent/tools/base.py#L159`）），每个工具实现：
 - `name` / `description`：模型契约的标识
 - `parameters`：JSON Schema（`to_schema()` 生成给模型的定义）
 - `cast_params()`：参数类型转换
@@ -39,7 +39,7 @@ class ToolRegistry:
 
 ### 2.1 `get_definitions()`：生成给模型的 tool schema
 
-[registry.py#L86-L108](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L86-L108)：
+`registry.py#L86-L108`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L86-L108`）：
 
 ```python
 def get_definitions(self):
@@ -61,7 +61,7 @@ def get_definitions(self):
 
 ### 2.2 `prepare_call()`：解析 + 校验一次 tool call
 
-[registry.py#L110-L147](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L110-L147)：
+`registry.py#L110-L147`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L110-L147`）：
 
 ```python
 def prepare_call(self, name, params):
@@ -88,7 +88,7 @@ def prepare_call(self, name, params):
 
 ### 2.3 `_coerce_params`：处理 LLM 返回的"字符串参数"
 
-[registry.py#L149-L185](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L149-L185)：
+`registry.py#L149-L185`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L149-L185`）：
 
 ```python
 @classmethod
@@ -110,7 +110,7 @@ def _unwrap_arguments_payload(cls, tool, params):
 
 ## 3. `execute()`：便捷入口
 
-[registry.py#L187-L201](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L187-L201)：
+`registry.py#L187-L201`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L187-L201`）：
 
 ```python
 async def execute(self, name, params):
@@ -126,11 +126,11 @@ async def execute(self, name, params):
         return ToolResult.error(f"Error executing {name}: {str(e)}" + hint)
 ```
 
-注意 runner 里其实走的是 `prepare_call` + `tool.execute(**params)` 两段式（[runner.py#L1440-L1470](file:///d:/project/nanobot/nanobot/agent/runner.py#L1440-L1470)），`ToolRegistry.execute` 是简化路径。
+注意 runner 里其实走的是 `prepare_call` + `tool.execute(**params)` 两段式（`runner.py#L1440-L1470`（`d:/project/nanobot/nanobot/agent/runner.py#L1440-L1470`）），`ToolRegistry.execute` 是简化路径。
 
 ## 4. `ToolResult`：带错误标志的字符串
 
-[base.py#L144-L156](file:///d:/project/nanobot/nanobot/agent/tools/base.py#L144-L156)：
+`base.py#L144-L156`（`d:/project/nanobot/nanobot/agent/tools/base.py#L144-L156`）：
 
 ```python
 class ToolResult(str):
@@ -148,7 +148,7 @@ class ToolResult(str):
 
 ## 5. Schema 校验层（base.py 里的隐藏细节）
 
-`Schema.validate_json_schema_value`（[base.py#L51-L121](file:///d:/project/nanobot/nanobot/agent/tools/base.py#L51-L121)）是一个完整的 JSON Schema 校验器：
+`Schema.validate_json_schema_value`（`base.py#L51-L121`（`d:/project/nanobot/nanobot/agent/tools/base.py#L51-L121`））是一个完整的 JSON Schema 校验器：
 
 - 类型检查：`integer`（且排除 bool！）、`number`（必须有限）、`string`/`array`/`object`
 - 约束检查：`enum`、`minimum/maximum`、`minLength/maxLength`、`required`、`additionalProperties: false`、`minItems/maxItems`
@@ -176,11 +176,11 @@ class ToolResult(str):
 
 | 问题 | 位置 |
 |---|---|
-| schema 缓存为什么重要 | `get_definitions`（[registry.py#L86-L108](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L86-L108)） |
-| 参数包装形态怎么抹平 | `_unwrap_arguments_payload`（[registry.py#L175-L185](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L175-L185)） |
-| 工具找不到给什么提示 | `_suggest_name`（[registry.py#L58-L69](file:///d:/project/nanobot/nanobot/agent/tools/registry.py#L58-L69)） |
-| ToolResult 如何携带错误 | [base.py#L144-L156](file:///d:/project/nanobot/nanobot/agent/tools/base.py#L144-L156) |
-| 完整 schema 校验 | `Schema.validate_json_schema_value`（[base.py#L51-L121](file:///d:/project/nanobot/nanobot/agent/tools/base.py#L51-L121)） |
+| schema 缓存为什么重要 | `get_definitions`（`registry.py#L86-L108`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L86-L108`）） |
+| 参数包装形态怎么抹平 | `_unwrap_arguments_payload`（`registry.py#L175-L185`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L175-L185`）） |
+| 工具找不到给什么提示 | `_suggest_name`（`registry.py#L58-L69`（`d:/project/nanobot/nanobot/agent/tools/registry.py#L58-L69`）） |
+| ToolResult 如何携带错误 | `base.py#L144-L156`（`d:/project/nanobot/nanobot/agent/tools/base.py#L144-L156`） |
+| 完整 schema 校验 | `Schema.validate_json_schema_value`（`base.py#L51-L121`（`d:/project/nanobot/nanobot/agent/tools/base.py#L51-L121`）） |
 
 ## 8. 常见坑点
 
@@ -194,4 +194,4 @@ class ToolResult(str):
 - [nanobot AgentLoop 与 AgentRunner 源码精读](./nanobot-agentloop-runner.md) — runner 如何调用 registry
 - [nanobot ContextBuilder 源码精读](./nanobot-contextbuilder.md) — tool contract 如何进入 prompt
 - [nanobot 源码阅读指南](./nanobot-source-reading-guide.md)
-- [AI 索引](./index.md)
+- [AI 索引](../../index.md)

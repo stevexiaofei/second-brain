@@ -147,5 +147,5 @@ updated: 2026-08-18
 ## 关联笔记
 
 - [新代码库阅读导览](./codebase-reading-guide.md)
-- [FlashAttention 阅读导览](./flash-attention-reading-guide.md)
-- [FlashAttention 系统地图](./flash-attention-system-map.md)
+- [FlashAttention 阅读导览](../../ai/systems/flash-attention/flash-attention-reading-guide.md)
+- [FlashAttention 系统地图](../../ai/systems/flash-attention/flash-attention-system-map.md)

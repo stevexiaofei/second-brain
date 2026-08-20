@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [AI, Providers, Registry, Model Routing, OpenAI-Compatible, Nanobot, Source Code]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-20
 source:
   - d:\project\nanobot\nanobot\providers\registry.py
   - d:\project\nanobot\nanobot\providers\base.py
@@ -20,7 +20,7 @@ source:
 
 ## 1. 两个核心数据类
 
-### `ProviderSpec`（[registry.py#L31-L136](file:///d:/project/nanobot/nanobot/providers/registry.py#L31-L136)）
+### `ProviderSpec`（`registry.py#L31-L136`（`d:/project/nanobot/nanobot/providers/registry.py#L31-L136`））
 
 字段按功能分五组：
 
@@ -32,9 +32,9 @@ source:
 | 参数适配 | `thinking_style` / `reasoning_effort_remap` / `model_overrides` / `responses_models` / `implicit_reasoning_models` / `extract_thinking_blocks` | 各家推理参数方言 |
 | 能力 | `supports_prompt_caching` / `supports_max_completion_tokens` / `is_transcription_only` | 能力标记 |
 
-**关键点**：`env_extras` 值支持占位符 `{api_key}` 和 `{api_base}`（[registry.py#L34-L38](file:///d:/project/nanobot/nanobot/providers/registry.py#L34-L38)），如 Skywork 需要把 key 同时放进 `APIFREE_API_KEY`。
+**关键点**：`env_extras` 值支持占位符 `{api_key}` 和 `{api_base}`（`registry.py#L34-L38`（`d:/project/nanobot/nanobot/providers/registry.py#L34-L38`）），如 Skywork 需要把 key 同时放进 `APIFREE_API_KEY`。
 
-### `ProviderModelSpec`（[registry.py#L21-L28](file:///d:/project/nanobot/nanobot/providers/registry.py#L21-L28)）
+### `ProviderModelSpec`（`registry.py#L21-L28`（`d:/project/nanobot/nanobot/providers/registry.py#L21-L28`））
 
 给没有 model-list endpoint 的 provider（OpenAI Codex、xAI Grok）用的**手工维护模型清单**：
 
@@ -49,7 +49,7 @@ class ProviderModelSpec:
 
 ## 2. `PROVIDERS` 表的组织逻辑（顺序 = 优先级）
 
-[registry.py#L143-L749](file:///d:/project/nanobot/nanobot/providers/registry.py#L143-L749)，从上到下依次是：
+`registry.py#L143-L749`（`d:/project/nanobot/nanobot/providers/registry.py#L143-L749`），从上到下依次是：
 
 ```text
 1. Custom / Azure / Bedrock        ← is_direct，用户自供全部信息
@@ -61,7 +61,7 @@ class ProviderModelSpec:
 5. 辅助                            ← 语音转写等（Groq/AssemblyAI）
 ```
 
-**为什么网关在最前**：网关能路由任何模型，所以匹配时它优先赢（`# Gateways can route any model, so they win in fallback.`，[registry.py#L187](file:///d:/project/nanobot/nanobot/providers/registry.py#L187)）。
+**为什么网关在最前**：网关能路由任何模型，所以匹配时它优先赢（`# Gateways can route any model, so they win in fallback.`，`registry.py#L187`（`d:/project/nanobot/nanobot/providers/registry.py#L187`））。
 
 ## 3. 三种识别策略（重要）
 
@@ -92,7 +92,7 @@ class ProviderModelSpec:
 
 ## 5. 查找帮助函数
 
-[registry.py#L757-L784](file:///d:/project/nanobot/nanobot/providers/registry.py#L757-L784)：
+`registry.py#L757-L784`（`d:/project/nanobot/nanobot/providers/registry.py#L757-L784`）：
 
 ```python
 def find_by_name(name: str) -> ProviderSpec | None:
@@ -108,7 +108,7 @@ def create_dynamic_spec(name, *, display_name="", thinking_style=""):
 
 ## 6. Provider 实现层（base.py，配合理解）
 
-`LLMProvider`（[base.py#L302](file:///d:/project/nanobot/nanobot/providers/base.py#L302)）是抽象基类，核心接口：
+`LLMProvider`（`base.py#L302`（`d:/project/nanobot/nanobot/providers/base.py#L302`））是抽象基类，核心接口：
 
 ```python
 @abstractmethod
@@ -118,7 +118,7 @@ async def chat_stream_with_retry(...)   # 带重试的流式（runner 用）
 async def chat_with_retry(...)          # 带重试的普通（runner 用）
 ```
 
-`LLMResponse`（[base.py#L255](file:///d:/project/nanobot/nanobot/providers/base.py#L255)）关键字段：`content` / `reasoning_content` / `thinking_blocks` / `tool_calls` / `finish_reason`（`stop|length|tool_calls|error|refusal|content_filter`）/ `usage` / `provider_state`。
+`LLMResponse`（`base.py#L255`（`d:/project/nanobot/nanobot/providers/base.py#L255`））关键字段：`content` / `reasoning_content` / `thinking_blocks` / `tool_calls` / `finish_reason`（`stop|length|tool_calls|error|refusal|content_filter`）/ `usage` / `provider_state`。
 
 ## 7. 一次请求的 provider 路由链路
 
@@ -135,11 +135,11 @@ config 里写了 model="deepseek-chat" 或 provider="deepseek"
 
 | 问题 | 位置 |
 |---|---|
-| 网关为什么优先 | `PROVIDERS` 顺序注释（[registry.py#L186-L188](file:///d:/project/nanobot/nanobot/providers/registry.py#L186-L188)） |
+| 网关为什么优先 | `PROVIDERS` 顺序注释（`registry.py#L186-L188`（`d:/project/nanobot/nanobot/providers/registry.py#L186-L188`）） |
 | 自动识别三种策略 | `detect_by_key_prefix` / `detect_by_base_keyword` / `keywords` |
-| 各厂 thinking 方言 | `thinking_style` / `gateway_reasoning_style`（[registry.py#L85-L96](file:///d:/project/nanobot/nanobot/providers/registry.py#L85-L96)） |
-| 自定义 provider | `create_dynamic_spec`（[registry.py#L766-L784](file:///d:/project/nanobot/nanobot/providers/registry.py#L766-L784)） |
-| provider 实现接口 | `LLMProvider`（[base.py#L302](file:///d:/project/nanobot/nanobot/providers/base.py#L302)） |
+| 各厂 thinking 方言 | `thinking_style` / `gateway_reasoning_style`（`registry.py#L85-L96`（`d:/project/nanobot/nanobot/providers/registry.py#L85-L96`）） |
+| 自定义 provider | `create_dynamic_spec`（`registry.py#L766-L784`（`d:/project/nanobot/nanobot/providers/registry.py#L766-L784`）） |
+| provider 实现接口 | `LLMProvider`（`base.py#L302`（`d:/project/nanobot/nanobot/providers/base.py#L302`）） |
 
 ## 9. 常见坑点
 
@@ -152,4 +152,4 @@ config 里写了 model="deepseek-chat" 或 provider="deepseek"
 
 - [nanobot AgentLoop 与 AgentRunner 源码精读](./nanobot-agentloop-runner.md) — runner 如何调 provider
 - [nanobot 源码阅读指南](./nanobot-source-reading-guide.md)
-- [AI 索引](./index.md)
+- [AI 索引](../../index.md)
