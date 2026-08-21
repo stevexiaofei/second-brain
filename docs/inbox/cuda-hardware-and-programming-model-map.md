@@ -275,6 +275,19 @@ Grid 中的 CTA 数量应该覆盖足够多的 SM，并让每个 SM 有机会驻
 
 因此 launch configuration 是算法设计的一部分，而不是最后随便填写的参数。
 
+### 2.7 Thread Block Cluster：比 Block 更高一级的协作边界
+
+从计算能力 9.0 开始，CUDA 提供可选的 **Thread Block Cluster** 层次。Cluster 中的 block 被保证共同调度到同一个 GPC，并可以通过 Cluster Group 做硬件支持的协作；参与 block 还可以访问彼此的 shared memory，这部分分区式存储称为 **Distributed Shared Memory**。它位于 block-local shared memory 与全局内存之间的协作层次。
+
+需要注意几个边界：
+
+- CUDA 支持一维、二维和三维 cluster；便携的最大 cluster size 是 8，但具体硬件、MIG 配置和非便携扩展可能不同；
+- cluster kernel 的 `gridDim` 仍按 block 数表示，grid 通常需要是 cluster size 的整数倍；
+- cluster 级 occupancy 应使用 `cudaOccupancyMaxActiveClusters` 等 cluster-aware API 估算，而不能直接套用普通 block occupancy；
+- Distributed Shared Memory 的访问仍应尽量合并、对齐并避免非单位 stride；cluster 协作不是免费通信。
+
+因此，cluster 不是“把多个 block 当成一个更大的 block”这么简单，而是增加了新的调度、同步、地址空间和 occupancy 约束。
+
 ---
 
 ## 3. CUDA 内存层次
@@ -452,16 +465,41 @@ shared memory tile 1 ──► 同时预取 tile 1
 - shared memory layout；
 - 计算与搬运之间的依赖管理。
 
-Ampere、Hopper、Blackwell 等世代的可用指令和最佳实践不同。Hopper 的 TMA 更强调由硬件处理多维张量数据搬运和边界 / layout 相关工作，但学习时应区分：
+架构差异可以先按下面的方式建立：
+
+- **Ampere**：硬件加速的 global-to-shared 异步拷贝可以与计算重叠，减少搬运过程中的寄存器使用，并可绕过 L1；split arrive/wait barrier 适合实现细粒度 producer/consumer pipeline；
+- **Hopper**：TMA 将异步搬运扩展到 global memory 与 shared memory 之间的 1D 至 5D tensor，也支持同一 cluster 内不同 SM 的 shared memory 区域之间传输。单个线程可以提交较大的搬运，数据在途时整个 block 继续执行；
+- **Hopper 及更新架构**：TMA 的优势依赖正确的 barrier、tensor descriptor、shared-memory layout 与边界管理，不能把 `cuda::memcpy_async` 当作“提交后自动可读”；必须明确完成条件和消费时机。
+
+在 PTX 层，`cp.async`、`cp.async.bulk` 和 `wgmma.mma_async` 都属于相对于发起线程异步的操作。它们不会自动纳入普通线程的全部 program order；需要依据具体指令语义使用 commit/wait、`mbarrier` 或相应的 fence / acquire-release 机制建立可见性。因此，“异步”同时意味着计算重叠机会和更严格的依赖建模要求。
+
+学习这部分时应区分：
 
 - CUDA C++ 中的编程接口；
-- PTX 指令语义；
+- PTX 指令语义和异步完成机制；
 - SASS 最终实现；
 - 具体架构的吞吐和限制。
 
 ---
 
+### 4.5 内存一致性、可见性与同步范围
+
+同步原语至少要同时回答两个问题：**谁参与同步**，以及**哪些内存操作在什么范围内可见**。block barrier、device-scope atomic、system-scope atomic、memory fence 和 kernel/stream 边界并不是同一种语义。
+
+特别需要避免以下推断：
+
+- 一个线程看到了另一个线程写入的 flag，不代表 flag 之前的所有数据对当前线程或 CPU 都已按所需 scope 可见；
+- `cp.async` 或 TMA 的提交不等于目标 shared memory 已经可以被消费；
+- 原子操作解决特定更新的数据竞争，不自动提供任意复合操作的事务性或浮点 bitwise determinism；
+- Hopper 引入的 memory synchronization domains 可以减少不相关通信流量对 fence/flush 的干扰，但跨不同 domain 的同步需要 system-scope fencing。
+
+因此，分析并发 kernel 时应把数据生产、完成通知、消费和 scope 分开记录，而不是只在代码中寻找一个 `__syncthreads()`。
+
+---
+
 ## 5. 从 CUDA C++ 到 PTX / SASS
+
+### 5.1 CUDA C++、PTX 与 SASS 的职责边界
 
 CUDA 代码不是直接在 CUDA Core 上执行的。一个简化编译链是：
 
@@ -492,6 +530,20 @@ GPU 执行
 
 ---
 
+### 5.2 架构世代差异：把能力与可移植性分开
+
+官方 tuning guide 给出的资源数字是具体 compute capability 和 SKU 的事实，不应直接推广成 CUDA 的跨架构常数。例如：
+
+| 世代示例 | 研究时值得记录的差异 | 对 kernel 设计的影响 |
+| --- | --- | --- |
+| Ampere，`sm_80` / `sm_86` | 异步 global-to-shared copy；不同 SM 的最大 resident warps、block 数和 shared memory 容量；第三代 Tensor Core 支持 FP64、BF16、TF32 等模式 | 需要同时记录 copy pipeline、寄存器压力、shared-memory carveout 和目标 compute capability |
+| Hopper，`sm_90` | TMA、thread block cluster、Distributed Shared Memory；H100 的 SM shared memory 与 cluster 约束不同于 Ampere | 需要使用 cluster-aware occupancy，并把 TMA barrier 和跨 block 数据访问纳入正确性分析 |
+| Blackwell，`sm_100` / `sm_120` | 不同 compute capability 的最大 resident warps、shared memory 容量和 cluster 扩展不同；官方 tuning guide 明确建议 cluster kernel 使用 `cudaOccupancyMaxActiveClusters` | 不应只以“Blackwell”作为一个统一目标，编译目标、运行时查询和 SKU 参数都要保留 |
+
+一个可复现的架构记录至少包括：GPU 型号、compute capability、CUDA/toolkit 版本、编译的 `-arch` / `-code`、寄存器/静态与动态 shared memory 使用量、occupancy 估算 API 和 profiler 结果。
+
+---
+
 ## 6. 性能模型：从 occupancy 到 roofline
 
 ### 6.1 Occupancy 是手段，不是目标
@@ -513,56 +565,20 @@ Occupancy 常指一个 SM 上 active warps 与最大可支持 warps 的比例。
 
 更准确的问题是：**当前 kernel 是否有足够的并发 warp 来隐藏它的主要延迟，同时保留足够资源做数据复用？**
 
-### 6.2 带宽受限与计算受限
+---
 
-粗略地说：
+### 6.2 架构特化优化的验证顺序
 
-- **memory-bound**：算力还有空余，但数据搬运跟不上；
-- **compute-bound**：数据供应足够，但算术或矩阵指令吞吐成为瓶颈；
-- **latency-bound**：并发不足或依赖链过长，无法隐藏延迟；
-- **synchronization-bound**：屏障、原子或 producer/consumer 依赖限制吞吐。
+不要先从某个世代的峰值规格反推 kernel 设计。更稳妥的顺序是：
 
-算术强度可以写成：
+1. 先确认目标 GPU 的 compute capability 和实际可用 cluster size；
+2. 查询寄存器、shared memory、resident warp/block 上限；
+3. 确认所用 CUDA API 和 PTX 指令在该架构上可用；
+4. 检查异步操作的完成与可见性协议；
+5. 用 Nsight Compute / Nsight Systems 验证吞吐、stall、访存和并发；
+6. 最后才比较不同 tile、pipeline 深度、cluster size 或 Tensor Core 指令的收益。
 
-$$
-\text{Arithmetic Intensity}
-=
-\frac{\text{执行的 FLOPs}}{\text{移动的字节数}}
-$$
-
-Roofline 模型用算术强度把理论峰值算力和内存带宽放到同一张图上，帮助判断优化应该优先减少数据移动还是提高计算吞吐。
-
-### 6.3 一个实用的性能排查顺序
-
-```text
-先确认结果正确
-  ↓
-测量 kernel 时间和端到端时间
-  ↓
-判断 memory-bound / compute-bound / latency-bound
-  ↓
-检查 grid / block / warp 映射
-  ↓
-检查 global memory 合并与复用
-  ↓
-检查 shared memory bank conflict 与容量
-  ↓
-检查 register、spill、occupancy
-  ↓
-检查分支、同步、atomic
-  ↓
-再看 Tensor Core、异步 pipeline 和架构特化
-```
-
-工具方向：
-
-- Nsight Systems：看 CPU/GPU 时间线、kernel launch、并发和传输；
-- Nsight Compute：看单个 kernel 的吞吐、内存、occupancy、warp 和指令指标；
-- `ptxas` 输出：看寄存器和 shared memory 使用；
-- CUDA events：测量 GPU 时间；
-- CUDA Occupancy API / Calculator：估算资源限制；
-- `cuobjdump` / `nvdisasm`：查看 cubin 和 SASS；
-- 源码与架构 tuning guide：确认特性和限制。
+这样可以避免把 Hopper 的 TMA/WGMMA、Blackwell 的具体资源数字或某个 SKU 的非便携 cluster size 错当成所有 NVIDIA GPU 都具备的通用能力。
 
 ---
 
@@ -626,6 +642,7 @@ Roofline 模型用算术强度把理论峰值算力和内存带宽放到同一�
 - [PyTorch 源码理解](../knowledge/ai/systems/pytorch/)：观察 CUDA kernel 如何从框架、ATen 和编译栈被调用。
 
 ---
+
 
 ## 8. 容易混淆的概念
 
