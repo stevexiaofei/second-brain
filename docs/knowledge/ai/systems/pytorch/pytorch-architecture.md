@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch 整体架构
@@ -107,9 +107,9 @@ PyTorch 的算子分发基于 **DispatchKey**。每个张量携带一个 `Dispat
 
 ## Related
 
-- [PyTorch 项目概述](./pytorch-overview/)
-- [C++ 核心模块](./pytorch-cpp-core/)
-- [Python 包结构](./pytorch-python-package/)
+- [PyTorch 项目概述](./pytorch-overview.md)
+- [C++ 核心模块](./pytorch-cpp-core.md)
+- [Python 包结构](./pytorch-python-package.md)
 
 ## References
 

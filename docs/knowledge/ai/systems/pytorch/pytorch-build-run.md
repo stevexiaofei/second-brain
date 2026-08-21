@@ -4,7 +4,7 @@ type: experience
 status: evergreen
 tags: [pytorch, build, devops]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch 构建与运行
@@ -158,9 +158,9 @@ torchrun --nproc_per_node=4 train_script.py
 
 ## Related
 
-- [依赖关系](./pytorch-dependencies/) — `USE_*` 选项对应的第三方库与可选后端
-- [代码生成 torchgen](./pytorch-torchgen/) — 构建时由 `caffe2/CMakeLists.txt` 与 `tools/setup_helpers/generate_code.py` 触发
-- [整体架构](./pytorch-architecture/) — 构建产出的库如何映射到五层架构
+- [依赖关系](./pytorch-dependencies.md) — `USE_*` 选项对应的第三方库与可选后端
+- [代码生成 torchgen](./pytorch-torchgen.md) — 构建时由 `caffe2/CMakeLists.txt` 与 `tools/setup_helpers/generate_code.py` 触发
+- [整体架构](./pytorch-architecture.md) — 构建产出的库如何映射到五层架构
 
 ## References
 

@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [PyTorch, torch.compile, Lowering, IR, Inductor]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-21
 source:
   - d:\project\pytorch-2.8.0\wiki\10_lowering.html
 ---
@@ -21,7 +21,7 @@ Lowering 的目标是把高层的 ATen 算子（如 `aten.add`、`aten.mm`）翻
 
 ## 🔄 10.2 GraphLowering：FX 解释器模式
 
-定义于 [graph.py#L288](file:///d:/project/pytorch-2.8.0/torch/_inductor/graph.py#L288)，`GraphLowering` 继承自 `torch.fx.Interpreter`：
+定义于 `torch/_inductor/graph.py#L288`，`GraphLowering` 继承自 `torch.fx.Interpreter`：
 
 **torch/_inductor/graph.py#L288**
 
@@ -75,7 +75,7 @@ class GraphLowering(torch.fx.Interpreter):
 
 ## 🧱 10.3 IR 节点体系
 
-定义于 [ir.py](file:///d:/project/pytorch-2.8.0/torch/_inductor/ir.py)，是 Inductor 的核心数据结构。IR 节点呈层次结构：
+定义于 `torch/_inductor/ir.py`，是 Inductor 的核心数据结构。IR 节点呈层次结构：
 
 **torch/_inductor/ir.py 核心类层次**
 
@@ -193,7 +193,7 @@ def realize(self) -> Optional[str]:
 
 ## 🏷️ 10.5 Lowering 注册机制
 
-定义于 [lowering.py#L100](file:///d:/project/pytorch-2.8.0/torch/_inductor/lowering.py#L100)。Inductor 维护一个全局字典 `lowerings`，建立 `OpOverload → lowering 函数` 的映射：
+定义于 `torch/_inductor/lowering.py#L100`。Inductor 维护一个全局字典 `lowerings`，建立 `OpOverload → lowering 函数` 的映射：
 
 **torch/_inductor/lowering.py#L100 / #L457**
 
@@ -261,7 +261,7 @@ def convert_element_type(x, dtype):
 
 计算密集型算子（`aten.mm`、`aten.convolution`、`aten._native_batch_norm`）不走 `Pointwise`/`Reduction` IR，而是通过 **模板 / 外部内核** 方式 lowering：
 
-- **加入 `needs_realized_inputs`**：`aten.convolution`、`aten.mm` 等（见 [lowering.py#L199](file:///d:/project/pytorch-2.8.0/torch/_inductor/lowering.py#L199) 起）要求输入先 realize，因为底层 cuBLDNN/cuBLAS 需要连续内存。
+- **加入 `needs_realized_inputs`**：`aten.convolution`、`aten.mm` 等（见 `torch/_inductor/lowering.py#L199` 起）要求输入先 realize，因为底层 cuBLDNN/cuBLAS 需要连续内存。
 - **模板融合 (epilogue fusion)：**在 `max-autotune` 模式下，matmul/conv 后接的 pointwise epilogue（如 `matmul(x,w) + bias → relu`）会被融合进模板内核，通过 `TemplateBuffer` 表示。
 - **未支持的回退 (fallback)：**`aten.convolution_backward` 等通过 `make_fallback(aten.convolution_backward, constrain_to_fx_strides)` 注册为外部调用，在生成的代码中以 `at::convolution_backward` 形式调用。
 - **batch_norm：**通常先被分解 (decomposition) 为更原子的归约与 pointwise，再走标准 lowering；或调用 fused 内核。
@@ -292,7 +292,7 @@ aten.convolution_backward ──►  make_fallback(...) ──►  ExternKernelN
 
 ## 📐 10.7 布局优化 (Layout Optimization)
 
-Inductor 会根据图的结构决定是否启用布局优化，核心由 `GraphLowering.decide_layout_opt` 完成，定义于 [graph.py#L594](file:///d:/project/pytorch-2.8.0/torch/_inductor/graph.py#L594)：
+Inductor 会根据图的结构决定是否启用布局优化，核心由 `GraphLowering.decide_layout_opt` 完成，定义于 `torch/_inductor/graph.py#L594`：
 
 **torch/_inductor/graph.py#L594**
 

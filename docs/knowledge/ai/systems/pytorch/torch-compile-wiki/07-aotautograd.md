@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [PyTorch, torch.compile, AOTAutograd, 联合图追踪]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-21
 source:
   - d:\project\pytorch-2.8.0\wiki\07_aot_autograd.html
 ---
@@ -13,7 +13,7 @@ source:
 
 *前向与反向计算图的分离引擎*
 
-AOTAutograd (Ahead-Of-Time Autograd) 是连接 Dynamo 和 Inductor 的中间层，位于 [aot_autograd.py](file:///d:/project/pytorch-2.8.0/torch/_functorch/aot_autograd.py)。它负责将前向和反向计算图分离，并应用梯度重计算优化。与传统的"运行时 autograd"不同，AOTAutograd 在编译期就把前向+反向**联合追踪**为一张图，再分区成独立的前向图与反向图，使后端能对二者分别优化、融合。
+AOTAutograd (Ahead-Of-Time Autograd) 是连接 Dynamo 和 Inductor 的中间层，实现在 `torch/_functorch/aot_autograd.py`。它负责将前向和反向计算图分离，并应用梯度重计算优化。与传统的"运行时 autograd"不同，AOTAutograd 在编译期就把前向+反向**联合追踪**为一张图，再分区成独立的前向图与反向图，使后端能对二者分别优化、融合。
 
 ## 🔀 7.1 核心职责
 
@@ -110,7 +110,7 @@ Dynamo 产出: forward_graph (GraphModule) + example_inputs
 
 ## 📦 7.5 functional_call 与参数提升
 
-`nn.Module` 的参数和缓冲区是"状态"，而追踪需要一个纯函数。AOTAutograd 通过 `aot_module`（[aot_autograd.py#L961](file:///d:/project/pytorch-2.8.0/torch/_functorch/aot_autograd.py#L961)）把参数/缓冲区**提升**为函数输入，使模块变成可追踪的纯函数。
+`nn.Module` 的参数和缓冲区是"状态"，而追踪需要一个纯函数。AOTAutograd 通过 `aot_module`（`torch/_functorch/aot_autograd.py#L961`）把参数/缓冲区**提升**为函数输入，使模块变成可追踪的纯函数。
 
 **torch/_functorch/aot_autograd.py#L961**
 
@@ -162,7 +162,7 @@ def aot_module(mod: nn.Module, *args, **kwargs) -> nn.Module:
 
 ## 🧩 7.6 算子分解 (Decomposition)
 
-分解表位于 [torch/_decomp/](file:///d:/project/pytorch-2.8.0/torch/_decomp/)，将复杂算子拆分为更简单的原子操作。分解在 AOTAutograd 追踪**之前**应用——追踪开始时，`select_decomp_table()` 返回的分解表被注册到 dispatch，使被分解的算子在追踪期直接走原子实现。
+分解表位于 `torch/_decomp/`，将复杂算子拆分为更简单的原子操作。分解在 AOTAutograd 追踪**之前**应用——追踪开始时，`select_decomp_table()` 返回的分解表被注册到 dispatch，使被分解的算子在追踪期直接走原子实现。
 
 **torch/_decomp/decompositions.py 顶部结构**
 

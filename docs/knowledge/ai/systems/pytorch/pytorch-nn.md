@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # torch.nn — 神经网络层
@@ -131,15 +131,15 @@ flowchart LR
 - `functional`（`F`）与 `Module` 的关系是"无状态算子 + 有状态包装"。`nn.Linear` 内部就是 `F.linear(input, self.weight, self.bias)`。需要可学习参数时用 `Module`，纯函数式变换时直接用 `F`，二者通过同一组底层算子（ATen）实现，无性能差异。
 - `Module` 与 autograd 是**解耦但协作**的：`Module` 本身不懂求导，它只负责组织参数与调用 `forward`；autograd 在算子层面隐式工作。`optimizer` 则把二者粘合——它通过 `Module.parameters()` 拿到 `Parameter` 列表，再读 autograd 产出的 `.grad` 做更新。
 - `Lazy*` 模块用 `UninitializedParameter` 推迟形状确定到首次前向，省去手动指定 `in_features`，但首次前向有额外开销，且对图捕获（JIT/FX）需特别处理。
-- `DataParallel` 是单机多卡的轻量方案（线程级模型复制 + scatter/gather），多机训练应改用 `torch.nn.parallel.DistributedDataParallel`（见 [分布式训练](./pytorch-distributed/)），后者基于 c10d `Reducer` 做梯度 bucketing all-reduce，效率与可扩展性远优于前者。
+- `DataParallel` 是单机多卡的轻量方案（线程级模型复制 + scatter/gather），多机训练应改用 `torch.nn.parallel.DistributedDataParallel`（见 [分布式训练](./pytorch-distributed.md)），后者基于 c10d `Reducer` 做梯度 bucketing all-reduce，效率与可扩展性远优于前者。
 
 ## Related
 
-- [torch.autograd](./pytorch-autograd/) — Module 的训练依赖 autograd 计算梯度
-- [torch.optim](./pytorch-optim/) — 优化器消费 Module.parameters() 的 .grad
-- [torch.jit](./pytorch-jit/) — script/trace 捕获 nn.Module 为可部署 IR
-- [torch.fx](./pytorch-fx/) — symbolic_trace 把 nn.Module 转为 GraphModule
-- [分布式训练](./pytorch-distributed/) — DistributedDataParallel 包装 Module
+- [torch.autograd](./pytorch-autograd.md) — Module 的训练依赖 autograd 计算梯度
+- [torch.optim](./pytorch-optim.md) — 优化器消费 Module.parameters() 的 .grad
+- [torch.jit](./pytorch-jit.md) — script/trace 捕获 nn.Module 为可部署 IR
+- [torch.fx](./pytorch-fx.md) — symbolic_trace 把 nn.Module 转为 GraphModule
+- [分布式训练](./pytorch-distributed.md) — DistributedDataParallel 包装 Module
 
 ## References
 

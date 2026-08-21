@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # torch.fx — 图捕获与变换工具
@@ -123,11 +123,11 @@ TorchScript scripting 走 AST 解析，受限于 Python 子集；FX tracing 走"
 
 ## Related
 
-- [torch.jit](./pytorch-jit/) — TorchScript C++ IR，与 FX Python IR 互补
-- [torch.compile 编译栈](./pytorch-compile/) — Dynamo 产出 FX 图、Inductor 消费 FX GraphModule
-- [torch.autograd](./pytorch-autograd/) — FX 捕获前向图，autograd 在其上构建反向
-- [程序导出 export](./pytorch-export/) — ExportedProgram 以 FX Graph 为底座
-- [torch.nn](./pytorch-nn/) — symbolic_trace 的输入是 nn.Module，GraphModule 也是 nn.Module
+- [torch.jit](./pytorch-jit.md) — TorchScript C++ IR，与 FX Python IR 互补
+- [torch.compile 编译栈](./pytorch-compile.md) — Dynamo 产出 FX 图、Inductor 消费 FX GraphModule
+- [torch.autograd](./pytorch-autograd.md) — FX 捕获前向图，autograd 在其上构建反向
+- [程序导出 export](./pytorch-export.md) — ExportedProgram 以 FX Graph 为底座
+- [torch.nn](./pytorch-nn.md) — symbolic_trace 的输入是 nn.Module，GraphModule 也是 nn.Module
 
 ## References
 

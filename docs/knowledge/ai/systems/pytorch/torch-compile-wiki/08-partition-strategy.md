@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [PyTorch, torch.compile, 分区, 最小割, 重计算]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-21
 source:
   - d:\project\pytorch-2.8.0\wiki\08_partitioner.html
 ---
@@ -23,7 +23,7 @@ source:
 
 ## 🟦 8.1 default_partition：简单分区
 
-定义于 [partitioners.py#L915](file:///d:/project/pytorch-2.8.0/torch/_functorch/partitioners.py#L915)，行为最接近原始 `.forward()` / `.backward()` 的划分。
+定义于 `torch/_functorch/partitioners.py#L915`，行为最接近原始 `.forward()` / `.backward()` 的划分。
 
 **torch/_functorch/partitioners.py#L915**
 
@@ -70,7 +70,7 @@ def default_partition(
 
 ## 🔬 8.2 min_cut_rematerialization_partition：最小割分区
 
-定义于 [partitioners.py#L2491](file:///d:/project/pytorch-2.8.0/torch/_functorch/partitioners.py#L2491)，是 Inductor 的默认分区策略。核心思想是 **用计算换内存带宽**：反向传播时重计算部分前向操作，从而减少需要保存的中间结果。
+定义于 `torch/_functorch/partitioners.py#L2491`，是 Inductor 的默认分区策略。核心思想是 **用计算换内存带宽**：反向传播时重计算部分前向操作，从而减少需要保存的中间结果。
 
 **torch/_functorch/partitioners.py#L2491**
 

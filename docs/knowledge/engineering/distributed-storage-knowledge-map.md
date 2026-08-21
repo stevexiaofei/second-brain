@@ -370,7 +370,7 @@ flowchart TD
 
 - [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — 源码精读方法论（阶段三可复用）
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — 存储服务端高性能计算（RDMA/向量化）相关
-- [PyTorch](../pytorch/) — 存储的下游消费者（DataLoader、checkpoint、DDP）
+- [PyTorch](../ai/systems/pytorch/) — 存储的下游消费者（DataLoader、checkpoint、DDP）
 - [Second Brain 迭代路线图](../../projects/second-brain-iteration-roadmap.md) — 本文可作为"自动驾驶/数据流水线"方向的内容种子
 
 ## References

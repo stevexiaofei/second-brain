@@ -13,6 +13,7 @@ AI 知识按两条主线组织：**基础与方法**回答模型为什么有效�
 
 - [AI Systems](./systems/) — AI 基础设施、源码阅读与工程实现总入口
 - [AI 开源项目源码精读指南](./systems/ai-open-source-source-reading.md) — Framework、Runtime、Compiler、Distributed 与 GPU 项目路线
+- [PyTorch 专题](./systems/pytorch/) — 框架架构、autograd、编译栈、分布式训练与源码阅读
 - [FlashAttention 专题](./systems/flash-attention/) — 论文原理、系统地图、源码、kernel 与 PyTorch 接入
 - [nanobot 专题](./systems/nanobot/) — Agent Runtime 的架构与组件源码精读
 - [Semantica](./systems/semantica.md) — Agent 的知识图谱、溯源和确定性推理基础设施

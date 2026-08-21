@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch 代码生成系统 torchgen
@@ -113,11 +113,11 @@ torchgen 体现了一种典型的**声明式 + 单一事实来源**工程哲学�
 
 ## Related
 
-- [整体架构](./pytorch-architecture/) — torchgen 生成的代码如何填入五层分层架构、分发机制
-- [C++ 核心模块](./pytorch-cpp-core/) — torchgen 产物落点（c10、ATen、torch/csrc）
-- [自动微分 autograd](./pytorch-autograd/) — `derivatives.yaml` 与生成的 `VariableType_*.cpp` 的下游
-- [构建与运行](./pytorch-build-run/) — torchgen 在构建时由 `caffe2/CMakeLists.txt` 与 `tools/setup_helpers/generate_code.py` 触发
-- [依赖关系](./pytorch-dependencies/) — torchgen 是构建时依赖，不进入运行时
+- [整体架构](./pytorch-architecture.md) — torchgen 生成的代码如何填入五层分层架构、分发机制
+- [C++ 核心模块](./pytorch-cpp-core.md) — torchgen 产物落点（c10、ATen、torch/csrc）
+- [自动微分 autograd](./pytorch-autograd.md) — `derivatives.yaml` 与生成的 `VariableType_*.cpp` 的下游
+- [构建与运行](./pytorch-build-run.md) — torchgen 在构建时由 `caffe2/CMakeLists.txt` 与 `tools/setup_helpers/generate_code.py` 触发
+- [依赖关系](./pytorch-dependencies.md) — torchgen 是构建时依赖，不进入运行时
 
 ## References
 

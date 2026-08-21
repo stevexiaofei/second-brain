@@ -4,7 +4,7 @@ type: plan
 status: seed
 tags: [Second Brain, Roadmap, PKM, Knowledge Management, Iteration]
 created: 2026-08-12
-updated: 2026-08-12
+updated: 2026-08-21
 ---
 
 # Second Brain 迭代路线图
@@ -15,16 +15,19 @@ updated: 2026-08-12
 
 > 这份路线图以 TRAE 为历史背景，但同样适用于 Claude Code；把它理解成一套 AI assistant 的工作流设计即可。
 
-## 为什么需要迭代
+## 当前状态（2026-08-21）
 
-- inbox 里 8 篇 seed 笔记没有"消化 → 沉淀"的闭环，会越积越多
-- `knowledge/` 只有 pytorch 成体系，autonomous-driving / mathematics 是空目录，与背景（BEV / 自动驾驶 / RL / LLM）严重不匹配
-- reading / projects / ideas / archives 四个区域只有 index 骨架
-- 已有的 taker / connector / architect 三个 agent 角色未固化成可复现工作流
+- `inbox/` 目前只保留 AI Infra 论文地图；已完成一轮“消化 → 稳定知识”的迁移。
+- `knowledge/ai/` 已按 Foundations / Systems 组织，并形成 Reinforcement Learning、Diffusion、Reasoning、FlashAttention 和 nanobot 等专题入口。
+- `knowledge/autonomous-driving/`、`mathematics/` 已有种子笔记，但与 AI Systems 中的 PyTorch 专题相比，主题深度仍不足。
+- `knowledge/learning/` 已承接学习科学和通用源码阅读方法。
+- 模板、Claude / TRAE 兼容层和 `repository-refactor` workflow 已具备；下一步应把维护检查变成可重复运行的流程。
 
-## 现状盘点
+## 2026-08-12 现状盘点（历史基线）
 
-| 区域 | 状态 | 问题 |
+下表保留首次路线图形成时的观察，用于说明后续迭代解决了什么；它不再代表当前状态。
+
+| 区域 | 当时状态 | 当时问题 |
 |---|---|---|
 | `knowledge/pytorch/` | 🟢 16 篇，最丰富 | 唯一成体系的领域 |
 | `knowledge/ai/` | 🟡 grpo + ppo | 与 LLM 主线相比太薄 |
@@ -70,13 +73,14 @@ flowchart LR
 
 ## 优先级建议
 
-如果只挑 3 件现在做：
+如果只挑 4 件现在做：
 
-1. **inbox 消化一轮**（8 篇 seed → 提炼 3-4 篇原子知识，清空 / 归档其余）——立竿见影
-2. **打通微信读书 → reading/**——方案已讨论，可直接落地
-3. **补 autonomous-driving 2-3 篇**——核心背景领域，目前完全空白
+1. **消化 AI Infra 论文地图**——为其中真正读过的论文补齐一手来源、个人问题与稳定入口，而不是继续扩张收藏清单。
+2. **深化 Mathematics 与 Autonomous Driving**——围绕当前已有的高斯分布、约束优化和训练数据管理继续补前置概念与应用连接。
+3. **建立知识健康度检查**——先从死链、旧路径、孤立笔记与 index/sidebar 一致性检查开始，再决定是否引入 CI。
+4. **成熟现有 seed 笔记**——在有真实学习或实践后补“我的理解”“实践经验”和开放问题，不用模板式内容填空。
 
-这三件都不依赖换平台，在当前 VitePress 架构内就能完成。
+这些工作都不依赖换平台，能在现有 Markdown + VitePress 架构中增量完成。
 
 ## 平台评估备忘
 

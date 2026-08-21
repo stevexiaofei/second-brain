@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, FlashAttention, PyTorch, CUDA, System Design]
 created: 2026-08-18
-updated: 2026-08-18
+updated: 2026-08-21
 ---
 
 # FlashAttention 系统地图
@@ -244,7 +244,7 @@ flowchart TD
 - [FlashAttention 接口与 Autograd](./flash-attention-interface-and-autograd.md)
 - [FlashAttention Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md)
 - [AI 开源项目源码精读指南](../ai-open-source-source-reading.md)
-- [PyTorch C++ 核心模块](../../../pytorch/pytorch-cpp-core.md)
+- [PyTorch C++ 核心模块](../pytorch/pytorch-cpp-core.md)
 
 ## References
 

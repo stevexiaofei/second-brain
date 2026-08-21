@@ -216,7 +216,7 @@ Ceph 不用一致性哈希，而是用 **CRUSH（Controlled Replication Under Sc
 ## Related
 
 - [分布式存储系统知识地图](../engineering/distributed-storage-knowledge-map.md) — 本理论的服务对象，存储子领域全景
-- [PyTorch](../pytorch/) — DDP/FSDP 是分布式理论的训练场景实例
+- [PyTorch](../ai/systems/pytorch/) — DDP/FSDP 是分布式理论的训练场景实例
 - [Fenwick Tree 与动态加权采样](../engineering/fenwick-tree-weighted-sampling.md) — 二进制/位运算思维与分布式版本向量的底层思维相通
 
 ## References

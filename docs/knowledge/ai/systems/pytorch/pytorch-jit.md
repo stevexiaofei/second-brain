@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # torch.jit — TorchScript
@@ -148,10 +148,10 @@ flowchart LR
 
 ## Related
 
-- [torch.fx](./pytorch-fx/) — Python 原生 IR，与 TorchScript C++ IR 互补
-- [torch.compile 编译栈](./pytorch-compile/) — Dynamo+Inductor 取代 TorchScript 的训练优化角色
-- [torch.autograd](./pytorch-autograd/) — TorchScript 捕获含 autograd 边的模型
-- [程序导出 export](./pytorch-export/) — 新一代无 Python 部署 IR（ExportedProgram）
+- [torch.fx](./pytorch-fx.md) — Python 原生 IR，与 TorchScript C++ IR 互补
+- [torch.compile 编译栈](./pytorch-compile.md) — Dynamo+Inductor 取代 TorchScript 的训练优化角色
+- [torch.autograd](./pytorch-autograd.md) — TorchScript 捕获含 autograd 边的模型
+- [程序导出 export](./pytorch-export.md) — 新一代无 Python 部署 IR（ExportedProgram）
 
 ## References
 

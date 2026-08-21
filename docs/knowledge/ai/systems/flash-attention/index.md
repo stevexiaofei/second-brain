@@ -27,5 +27,5 @@
 ## Related
 
 - [AI Systems](../)
-- [PyTorch 源码理解](../../../pytorch/)
+- [PyTorch 源码理解](../pytorch/)
 - [源码阅读方法](../../../learning/code-reading/)

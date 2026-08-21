@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch 关键类与函数参考
@@ -181,11 +181,11 @@ flowchart LR
 
 ## Related
 
-- [整体架构](./pytorch-architecture/) — 这些类在五层架构中的位置
-- [C++ 核心模块](./pytorch-cpp-core/) — c10、ATen、torch/csrc 各模块详解
-- [自动微分 autograd](./pytorch-autograd/) — `Node`/`Engine`/`Function` 的深入工作机制
-- [代码生成 torchgen](./pytorch-torchgen/) — C++ 表中 `TensorImpl`、`Dispatcher` 相关的注册代码由 torchgen 生成
-- [依赖关系](./pytorch-dependencies/) — 这些类所属模块的依赖方向
+- [整体架构](./pytorch-architecture.md) — 这些类在五层架构中的位置
+- [C++ 核心模块](./pytorch-cpp-core.md) — c10、ATen、torch/csrc 各模块详解
+- [自动微分 autograd](./pytorch-autograd.md) — `Node`/`Engine`/`Function` 的深入工作机制
+- [代码生成 torchgen](./pytorch-torchgen.md) — C++ 表中 `TensorImpl`、`Dispatcher` 相关的注册代码由 torchgen 生成
+- [依赖关系](./pytorch-dependencies.md) — 这些类所属模块的依赖方向
 
 ## References
 

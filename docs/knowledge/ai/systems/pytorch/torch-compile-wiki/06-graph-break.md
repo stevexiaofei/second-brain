@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [PyTorch, torch.compile, 图断裂, Dynamo]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-21
 source:
   - d:\project\pytorch-2.8.0\wiki\06_graph_break.html
 ---
@@ -53,7 +53,7 @@ Dynamo 能展开**静态**控制流（条件在编译期可求值），但当代
 - **递归深度限制：**为防止栈溢出，Dynamo 对嵌套追踪深度设限，超限则图断裂。
 - **显式图断裂：**用户调用 `torch._dynamo.graph_break()` 强制断开，常用于调试或隔离不可追踪段。
 
-`graph_break_hints.py`（[graph_break_hints.py](file:///d:/project/pytorch-2.8.0/torch/_dynamo/graph_break_hints.py)）为每种图断裂原因定义了用户提示文案，帮助开发者理解断裂性质：
+`graph_break_hints.py`（`torch/_dynamo/graph_break_hints.py`）为每种图断裂原因定义了用户提示文案，帮助开发者理解断裂性质：
 
 **torch/_dynamo/graph_break_hints.py**
 
@@ -145,11 +145,11 @@ out = run_kernel_3(w)
 
 > **⚠️ 注意：** **fullgraph=True 时：**图断裂会直接报错而非静默处理。这确保整图被编译为单个内核，但要求代码完全可追踪。生产场景中，建议先用 `torch._dynamo.explain` 排查图断裂，再决定是否启用 `fullgraph`。
 
-图断裂追踪逻辑位于 [graph_break_hints.py](file:///d:/project/pytorch-2.8.0/torch/_dynamo/graph_break_hints.py)（用户提示）和 [graph_region_tracker.py](file:///d:/project/pytorch-2.8.0/torch/_dynamo/graph_region_tracker.py)（子图区域追踪）。
+图断裂追踪逻辑位于 `graph_break_hints.py`（`torch/_dynamo/graph_break_hints.py`，用户提示）和 `graph_region_tracker.py`（`torch/_dynamo/graph_region_tracker.py`，子图区域追踪）。
 
 ## 🗺️ 6.5 子图管理与 graph_region_tracker
 
-`GraphRegionTracker`（[graph_region_tracker.py#L189](file:///d:/project/pytorch-2.8.0/torch/_dynamo/graph_region_tracker.py#L189)）追踪每个被加入输出图的节点，并基于**源码位置、指令指针、输入形状、全局状态**计算哈希，把哈希相同的节点归为"相同节点组"。它的核心目的是识别图中**重复的子区域**，为去重等图变换优化提供基础。
+`GraphRegionTracker`（`torch/_dynamo/graph_region_tracker.py#L189`）追踪每个被加入输出图的节点，并基于**源码位置、指令指针、输入形状、全局状态**计算哈希，把哈希相同的节点归为"相同节点组"。它的核心目的是识别图中**重复的子区域**，为去重等图变换优化提供基础。
 
 **torch/_dynamo/graph_region_tracker.py#L189**
 

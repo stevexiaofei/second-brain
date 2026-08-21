@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch 项目概述
@@ -60,9 +60,9 @@ PyTorch 的工作模型可以概括为 **define-by-run**：
 
 ## Related
 
-- [PyTorch 整体架构](./pytorch-architecture/)
-- [C++ 核心模块](./pytorch-cpp-core/)
-- [Python 包结构](./pytorch-python-package/)
+- [PyTorch 整体架构](./pytorch-architecture.md)
+- [C++ 核心模块](./pytorch-cpp-core.md)
+- [Python 包结构](./pytorch-python-package.md)
 
 ## References
 

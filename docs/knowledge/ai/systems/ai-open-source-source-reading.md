@@ -305,7 +305,7 @@ ai-source-reading/
 
 ## Related
 
-- [PyTorch](../../pytorch/) — 本项目的 PyTorch 知识体系，是源码精读的前置基础
+- [PyTorch](./pytorch/) — 本项目的 PyTorch 知识体系，是源码精读的前置基础
 - **Transformer** — Transformers 库背后的模型架构，尚待形成独立笔记
 - [PPO](../foundations/reinforcement-learning/ppo.md) — DeepSpeed 相关的 RL 训练
 

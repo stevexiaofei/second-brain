@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Mathematics, Optimization, Lagrangian, Constrained Optimization, Multivariable Calculus, KKT]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-21
 source:
   - https://www.khanacademy.org/math/multivariable-calculus/applications-of-multivariable-derivatives/constrained-optimization/a/lagrange-multipliers-single-constraint
   - https://datastoriesweb.wordpress.com/2017/06/25/lagrange-multiplier-and-constrained-optimization/
@@ -160,4 +160,4 @@ L(x, λ) = f(x) - λ (g(x) - c)
 - [数学索引](./index.md)
 - [优化](./index.md#optimization)
 - [约束优化](./index.md)
-- [KKT 条件](./kkt-conditions.md)
+- **KKT 条件**：约束优化的后续主题，尚未形成独立笔记

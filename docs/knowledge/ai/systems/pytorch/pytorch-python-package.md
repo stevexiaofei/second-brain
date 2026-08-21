@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch Python 顶层包结构
@@ -147,9 +147,9 @@ flowchart LR
 
 ## Related
 
-- [PyTorch 项目概述](./pytorch-overview/)
-- [PyTorch 整体架构](./pytorch-architecture/)
-- [C++ 核心模块](./pytorch-cpp-core/)
+- [PyTorch 项目概述](./pytorch-overview.md)
+- [PyTorch 整体架构](./pytorch-architecture.md)
+- [C++ 核心模块](./pytorch-cpp-core.md)
 
 ## References
 

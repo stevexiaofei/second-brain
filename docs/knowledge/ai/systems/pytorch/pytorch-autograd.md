@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # torch.autograd — 自动微分
@@ -88,11 +88,11 @@ classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
 
 ## Related
 
-- [torch.nn](./pytorch-nn/) — Module 通过 Parameter + autograd 实现可训练模型
-- [torch.optim](./pytorch-optim/) — 消费 autograd 产出的 `.grad` 更新参数
-- [torch.jit](./pytorch-jit/) — TorchScript 捕获含 autograd 边的模型 IR
-- [torch.fx](./pytorch-fx/) — FX 图可捕获 autograd 前向，供编译器变换
-- [torch.compile 编译栈](./pytorch-compile/) — compiled_autograd 编译反向图
+- [torch.nn](./pytorch-nn.md) — Module 通过 Parameter + autograd 实现可训练模型
+- [torch.optim](./pytorch-optim.md) — 消费 autograd 产出的 `.grad` 更新参数
+- [torch.jit](./pytorch-jit.md) — TorchScript 捕获含 autograd 边的模型 IR
+- [torch.fx](./pytorch-fx.md) — FX 图可捕获 autograd 前向，供编译器变换
+- [torch.compile 编译栈](./pytorch-compile.md) — compiled_autograd 编译反向图
 
 ## References
 

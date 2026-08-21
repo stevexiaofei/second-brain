@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [PyTorch, torch.compile, Inductor, 后端]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-21
 source:
   - d:\project\pytorch-2.8.0\wiki\09_inductor.html
 ---
@@ -80,7 +80,7 @@ FX GraphModule (来自 Dynamo)
 
 ## 🚪 9.3 compile_fx：Inductor 入口
 
-定义于 [compile_fx.py#L1977](file:///d:/project/pytorch-2.8.0/torch/_inductor/compile_fx.py#L1977)：
+定义于 `torch/_inductor/compile_fx.py#L1977`：
 
 **torch/_inductor/compile_fx.py#L1977**
 
@@ -146,7 +146,7 @@ if config_patches:
 
 ## 🧹 9.5 _recursive_pre_grad_passes：梯度前优化
 
-定义于 [compile_fx.py#L456](file:///d:/project/pytorch-2.8.0/torch/_inductor/compile_fx.py#L456)，在 AOTAutograd 追踪 *之前* 执行的图优化阶段：
+定义于 `torch/_inductor/compile_fx.py#L456`，在 AOTAutograd 追踪 *之前* 执行的图优化阶段：
 
 **torch/_inductor/compile_fx.py#L456**
 
@@ -179,7 +179,7 @@ def _recursive_pre_grad_passes(
 
 ## 🔗 9.6 _recursive_joint_graph_passes：联合图优化
 
-定义于 [compile_fx.py#L475](file:///d:/project/pytorch-2.8.0/torch/_inductor/compile_fx.py#L475)，在 AOTAutograd 追踪得到联合图后、分区前执行：
+定义于 `torch/_inductor/compile_fx.py#L475`，在 AOTAutograd 追踪得到联合图后、分区前执行：
 
 **torch/_inductor/compile_fx.py#L475**
 
@@ -262,7 +262,7 @@ def partition_fn(gm, joint_inputs, **kwargs):
 
 ## ❄️ 9.8 模型冻结 (Model Freezing)
 
-当 `config.freezing` 为真且当前非梯度模式（`torch.is_grad_enabled()` 为 False）时，推理路径会走 `fw_compiler_freezing`，定义于 [compile_fx.py#L1838](file:///d:/project/pytorch-2.8.0/torch/_inductor/compile_fx.py#L1838)。
+当 `config.freezing` 为真且当前非梯度模式（`torch.is_grad_enabled()` 为 False）时，推理路径会走 `fw_compiler_freezing`，定义于 `torch/_inductor/compile_fx.py#L1838`。
 
 **torch/_inductor/compile_fx.py#L1838**
 
@@ -307,7 +307,7 @@ def fw_compiler_freezing(
 
 ## 📦 9.9 compile_fx_aot：AOT 编译导出
 
-定义于 [compile_fx.py#L1773](file:///d:/project/pytorch-2.8.0/torch/_inductor/compile_fx.py#L1773)，用于 **提前编译导出 (AOT Inductor)**，将模型编译为可独立部署的 `.so` 共享库。
+定义于 `torch/_inductor/compile_fx.py#L1773`，用于 **提前编译导出 (AOT Inductor)**，将模型编译为可独立部署的 `.so` 共享库。
 
 **torch/_inductor/compile_fx.py#L1773**
 

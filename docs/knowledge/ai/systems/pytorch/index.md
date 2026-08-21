@@ -4,27 +4,27 @@
 
 ## 架构与核心
 
-- [项目概述](./pytorch-overview/) — PyTorch 是什么、设计哲学、核心组件
-- [整体架构](./pytorch-architecture/) — 五层分层、分发机制、新旧编译栈
-- [C++ 核心模块](./pytorch-cpp-core/) — c10、ATen、caffe2、torch/csrc 四大模块
-- [Python 包结构](./pytorch-python-package/) — torch 顶层包与子包职责
-- [FlashAttention PyTorch ATen 接入层](../ai/systems/flash-attention/flash-attention-pytorch-aten-integration.md) — ATen backend、参数检查、RNG、ALiBi、dense / varlen 派发
+- [项目概述](./pytorch-overview.md) — PyTorch 是什么、设计哲学、核心组件
+- [整体架构](./pytorch-architecture.md) — 五层分层、分发机制、新旧编译栈
+- [C++ 核心模块](./pytorch-cpp-core.md) — c10、ATen、caffe2、torch/csrc 四大模块
+- [Python 包结构](./pytorch-python-package.md) — torch 顶层包与子包职责
+- [FlashAttention PyTorch ATen 接入层](../flash-attention/flash-attention-pytorch-aten-integration.md) — ATen backend、参数检查、RNG、ALiBi、dense / varlen 派发
 
 ## 主要子系统
 
-- [自动微分 autograd](./pytorch-autograd/) — 反向模式 AD、autograd 图、Engine 引擎
-- [神经网络 nn](./pytorch-nn/) — Module 基类、层、参数、函数式算子
-- [优化器 optim](./pytorch-optim/) — SGD/Adam 等算法、学习率调度
-- [TorchScript jit](./pytorch-jit/) — script/trace 捕获、IR、优化 pass
-- [FX 图变换](./pytorch-fx/) — 符号追踪、Graph/Node IR、代码生成
+- [自动微分 autograd](./pytorch-autograd.md) — 反向模式 AD、autograd 图、Engine 引擎
+- [神经网络 nn](./pytorch-nn.md) — Module 基类、层、参数、函数式算子
+- [优化器 optim](./pytorch-optim.md) — SGD/Adam 等算法、学习率调度
+- [TorchScript jit](./pytorch-jit.md) — script/trace 捕获、IR、优化 pass
+- [FX 图变换](./pytorch-fx.md) — 符号追踪、Graph/Node IR、代码生成
 
 ## 编译栈与分布式
 
-- [torch.compile](./pytorch-compile/) — Dynamo 字节码捕获 + Inductor 内核生成
+- [torch.compile](./pytorch-compile.md) — Dynamo 字节码捕获 + Inductor 内核生成
 - [torch.compile Wiki 系列（17 章）](./torch-compile-wiki/01-architecture-overview.md) — 基于 PyTorch 2.8.0 源码的全链路精读
-- [分布式训练](./pytorch-distributed/) — DDP/FSDP/RPC、ProcessGroup、torchrun
-- [程序导出 export](./pytorch-export/) — ExportedProgram IR、动态形状
-- [Reducer 类设计详解](./pytorch-reducer/) — DDP 梯度归约协调器深度解析
+- [分布式训练](./pytorch-distributed.md) — DDP/FSDP/RPC、ProcessGroup、torchrun
+- [程序导出 export](./pytorch-export.md) — ExportedProgram IR、动态形状
+- [Reducer 类设计详解](./pytorch-reducer.md) — DDP 梯度归约协调器深度解析
 
 ## torch.compile Wiki 系列（基于 PyTorch 2.8.0 源码）
 
@@ -48,7 +48,7 @@
 
 ## 工程基建
 
-- [代码生成 torchgen](./pytorch-torchgen/) — 从 YAML schema 生成 C++/Python 绑定
-- [依赖关系](./pytorch-dependencies/) — 模块依赖、第三方库、可选后端
-- [构建与运行](./pytorch-build-run/) — 源码编译、Docker、测试、文档
-- [关键类参考](./pytorch-key-classes/) — C++ 与 Python 核心类/函数速查表
+- [代码生成 torchgen](./pytorch-torchgen.md) — 从 YAML schema 生成 C++/Python 绑定
+- [依赖关系](./pytorch-dependencies.md) — 模块依赖、第三方库、可选后端
+- [构建与运行](./pytorch-build-run.md) — 源码编译、Docker、测试、文档
+- [关键类参考](./pytorch-key-classes.md) — C++ 与 Python 核心类/函数速查表

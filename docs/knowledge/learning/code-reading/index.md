@@ -11,7 +11,7 @@
 
 - [FlashAttention 专题](../../ai/systems/flash-attention/) — 论文、系统地图、接口与 kernel 的多层源码笔记
 - [nanobot 专题](../../ai/systems/nanobot/) — Agent Runtime 的架构与组件源码笔记
-- [PyTorch 源码理解](../../pytorch/) — 大型框架和编译栈的系统化阅读
+- [PyTorch 源码理解](../../ai/systems/pytorch/) — 大型框架和编译栈的系统化阅读
 
 ## Related
 

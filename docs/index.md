@@ -15,7 +15,6 @@
 - [Autonomous Driving](/knowledge/autonomous-driving/)
 - [Engineering](/knowledge/engineering/)
 - [Mathematics](/knowledge/mathematics/)
-- [PyTorch](/knowledge/pytorch/)
 
 ## 🚀 Projects
 
@@ -45,6 +44,6 @@ HTML is only the presentation layer.
 
 Git is the memory.
 
-TRAE is the assistant.
+AI assistants are the helpers.
 
 I am the owner of the knowledge.

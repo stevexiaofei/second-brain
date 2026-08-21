@@ -568,7 +568,7 @@ RVV 的 VLA（Vector Length Agnostic）设计是它与 ARM SVE/SVE2 共享的核
 
 ## Related
 
-- [PyTorch](../pytorch/) — 深度学习框架后端需要 RVV 适配
+- [PyTorch](../ai/systems/pytorch/) — 深度学习框架后端需要 RVV 适配
 - [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — ONNX Runtime、vLLM 等项目有 SIMD 优化参考
 
 ## References

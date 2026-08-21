@@ -110,7 +110,21 @@ Then present a concrete refactor plan with:
 
 Prefer a small structural pass over a simultaneous structural rewrite and content rewrite. Do not create empty placeholder notes merely to make a taxonomy appear complete. Prefer a plain-text backlog for missing concepts until a real note exists.
 
-## Phase 3: Confirm the implementation boundary
+## Phase 3: Archive and confirm the implementation boundary
+
+Before presenting the refactor plan for approval, archive it in the repository under `plans/`:
+
+1. Create `plans/` if it does not exist.
+2. Use a descriptive, date-prefixed filename: `YYYY-MM-DD-<scope>-refactor-plan.md`.
+3. Write the plan in Chinese by default, unless the user explicitly requests another language. Include the audit scope, protected Git state, confirmed findings with evidence, exact implementation boundary, deferred work, and validation steps.
+4. Treat the archived file as an approved-plan record after the user confirms it; update it with the implementation outcome only if doing so keeps the original proposed boundary clear.
+5. Add the archived plan to the final change summary. Do not put plans in generated VitePress output unless the user explicitly asks to publish them.
+
+Do not mutate the repository outside the plan archive until the user has approved the exact refactor plan, unless their instruction explicitly authorizes a fully specified implementation.
+
+The plan archive itself is a record of the proposal, not approval to apply destructive or ambiguous changes.
+
+## Confirm the implementation boundary
 
 Do not mutate the repository until the user has approved the exact refactor plan, unless their instruction explicitly authorizes a fully specified implementation.
 

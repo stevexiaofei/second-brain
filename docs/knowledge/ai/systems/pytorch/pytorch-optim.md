@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # torch.optim — 优化算法
@@ -129,10 +129,10 @@ $$\theta_t = \theta_{t-1} - \eta \, \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon
 
 ## Related
 
-- [torch.autograd](./pytorch-autograd/) — 产出 `.grad` 供优化器消费
-- [torch.nn](./pytorch-nn/) — `Module.parameters()` 是优化器的输入
-- [分布式训练](./pytorch-distributed/) — ZeRO/FSDP 分片优化器状态、`zero_redundancy_optimizer`
-- [torch.compile 编译栈](./pytorch-compile/) — fused/compiled 优化器、`apply_optimizer_in_backward`
+- [torch.autograd](./pytorch-autograd.md) — 产出 `.grad` 供优化器消费
+- [torch.nn](./pytorch-nn.md) — `Module.parameters()` 是优化器的输入
+- [分布式训练](./pytorch-distributed.md) — ZeRO/FSDP 分片优化器状态、`zero_redundancy_optimizer`
+- [torch.compile 编译栈](./pytorch-compile.md) — fused/compiled 优化器、`apply_optimizer_in_backward`
 
 ## References
 

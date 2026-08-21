@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch C++ 核心模块
@@ -144,9 +144,9 @@ C++ 侧的运行时数据流可概括为：
 
 ## Related
 
-- [PyTorch 项目概述](./pytorch-overview/)
-- [PyTorch 整体架构](./pytorch-architecture/)
-- [Python 包结构](./pytorch-python-package/)
+- [PyTorch 项目概述](./pytorch-overview.md)
+- [PyTorch 整体架构](./pytorch-architecture.md)
+- [Python 包结构](./pytorch-python-package.md)
 
 ## References
 

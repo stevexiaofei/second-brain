@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-08-21
 ---
 
 # PyTorch 依赖关系
@@ -117,10 +117,10 @@ PyTorch 的依赖设计有几个值得记住的点：
 
 ## Related
 
-- [整体架构](./pytorch-architecture/) — 依赖链对应五层分层架构
-- [C++ 核心模块](./pytorch-cpp-core/) — c10、ATen、caffe2、torch/csrc 各层详解
-- [代码生成 torchgen](./pytorch-torchgen/) — torchgen 在构建时由 caffe2/CMakeLists.txt 触发
-- [构建与运行](./pytorch-build-run/) — `USE_*` 环境变量与第三方子模块的实践用法
+- [整体架构](./pytorch-architecture.md) — 依赖链对应五层分层架构
+- [C++ 核心模块](./pytorch-cpp-core.md) — c10、ATen、caffe2、torch/csrc 各层详解
+- [代码生成 torchgen](./pytorch-torchgen.md) — torchgen 在构建时由 caffe2/CMakeLists.txt 触发
+- [构建与运行](./pytorch-build-run.md) — `USE_*` 环境变量与第三方子模块的实践用法
 
 ## References
 

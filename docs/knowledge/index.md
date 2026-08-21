@@ -12,4 +12,3 @@
 - [Engineering](./engineering/)
 - [Learning](./learning/)
 - [Mathematics](./mathematics/)
-- [PyTorch](./pytorch/)
