@@ -62,7 +62,7 @@ FlashAttention 的理解门槛不在“看不懂单个函数”，而在于：
 | **Split-KV** | 把 K/V 方向切成多个分片并行算 | FA2、launch | 主要为并行度服务 |
 | **Sequence-parallel** | 沿序列维度分摊 backward / combine 工作 | backward kernel | 常见于长序列或确定性路径 |
 | **Packed QKV** | Q/K/V 已经打包在一个 tensor 中 | Python API | 更适合某些投影和训练路径 |
-| **Varlen** | 变长 batch，使用 `cu_seqlens_*` 描述边界 | Python API / C++ / kernel | 不靠 padding，而靠前缀和定位 |
+| **Varlen** | 将有效 token 拼接成 `(total_tokens, H, D)` 的变长 batch，使用 `cu_seqlens_*` 描述边界 | Python API / C++ / kernel | 不靠 padding；第 $i$ 条序列范围为 `[cu_seqlens[i], cu_seqlens[i+1])` |
 | **MQA / GQA** | Q 的头数多于 KV 的头数 | 接口 / params / backward | 通过 `h / h_k` 支持共享 KV 头 |
 | **Paged KV cache** | KV cache 以 page/block 组织，而不是连续大张量 | 推理路径 | 解决长上下文和碎片问题 |
 | **Rotary embedding** | 位置编码的一种旋转实现 | `flash_attn_with_kvcache` / `mha.py` | 推理时常与 cache 更新合并 |
@@ -97,8 +97,8 @@ FlashAttention 的理解门槛不在“看不懂单个函数”，而在于：
 
 | 状态 | 由谁创建 | 由谁消费 | 作用 | 什么时候重要 |
 |---|---|---|---|---|
-| `cu_seqlens_q` | Python / dataloader | varlen forward/backward | 描述每个 query 序列的前缀和边界 | 变长 batch |
-| `cu_seqlens_k` | Python / dataloader | varlen forward/backward | 描述每个 key/value 序列的前缀和边界 | 变长 batch |
+| `cu_seqlens_q` | Python / dataloader | varlen forward/backward | query 边界的前缀和；第 $i$ 条序列为 `q[cu_seqlens_q[i]:cu_seqlens_q[i+1]]` | 变长 batch |
+| `cu_seqlens_k` | Python / dataloader | varlen forward/backward | key/value 边界的前缀和；第 $i$ 条序列为 `k/v[cu_seqlens_k[i]:cu_seqlens_k[i+1]]` | 变长 batch |
 | `seqused_k` | Python 侧输入 | kernel | 限定每个 batch item 实际用到多少 K | 截断 / 稀疏 / cache 场景 |
 | `block_table` | 推理框架 / cache 管理器 | paged KV kernel | page 到实际 KV block 的映射 | paged KV cache |
 | `cache_leftpad` | 推理框架 | kvcache 路径 | cache 的左侧起始偏移 | 左填充布局 |

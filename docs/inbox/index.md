@@ -21,6 +21,9 @@
 - [NVIDIA CUDA 硬件与编程模型研究地图](./cuda-hardware-and-programming-model-map.md) — 从 GPU/SM/warp 到内存层次、同步、Tensor Core、异步编程和性能分析的系统学习路线
   - 来源：NVIDIA CUDA Programming Guide、Best Practices Guide、PTX 文档及架构调优指南（待逐项研读与实验验证）
   - 关键词：`CUDA`、`SM`、`CTA`、`warp`、`SIMT`、`shared memory`、`occupancy`、`Tensor Core`、`TMA`、`WGMMA`
+- [CUDA 初学者学习路径与最小实验](./cuda-beginner-learning-path.md) — 从 Thread/Block/Grid/warp 到内存层次、GEMM、Softmax 和 FlashAttention 的渐进学习路线
+  - 来源：ChatGPT 分享对话
+  - 关键词：`CUDA`、`Vector Add`、`Transpose`、`Reduction`、`GEMM`、`Softmax`、`FlashAttention`
 
 
 ## Example

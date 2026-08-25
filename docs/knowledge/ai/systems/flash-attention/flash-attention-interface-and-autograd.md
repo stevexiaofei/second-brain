@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, PyTorch, FlashAttention, Autograd, CUDA]
 created: 2026-08-18
-updated: 2026-08-21
+updated: 2026-08-24
 ---
 
 # FlashAttention 接口与 Autograd
@@ -144,17 +144,75 @@ FlashAttention 接口最容易让人迷糊的一点，是它看起来有很多�
 
 适合一般模型结构，尤其是 MQA / GQA。
 
-### 3. `flash_attn_varlen_func`
+### 3. `_flash_attn_forward`：规整的 dense 路径
 
-输入是 unpadded token 序列，配合 `cu_seqlens_q / cu_seqlens_k`。
+底层 `_flash_attn_forward` 接收形如 `q: (B, S_q, H_q, D)`、`k/v: (B, S_k, H_k, D)` 的四维张量。它从张量形状直接得到 batch size 和序列长度，因此适合：
+
+- batch 内每条序列本来就等长；
+- 或上层已经把短序列 padding 到统一长度。
+
+它调用 CUDA 后端的 `flash_attn_gpu.fwd(...)`。这种规整布局便于常规模型接口使用，但如果 batch 中的真实序列长度差异很大，padding 位置仍会占用激活内存和部分计算资源。
+
+```text
+q.shape = (B, S, H, D)
+
+sample 0: token token token PAD   PAD
+sample 1: token token token token token
+```
+
+这里的 `S` 是每个样本共享的物理长度；mask 可以保证 padding 不影响语义，但不能自动消除其存储和调度成本。
+
+### 4. `_flash_attn_varlen_forward`：压缩的变长路径
+
+`_flash_attn_varlen_forward` 服务于变长 batch。它把每个样本的**有效 token** 在第 $0$ 维连续拼接，输入布局变为：
+
+```text
+q.shape = (total_q, H_q, D)
+k/v.shape = (total_k, H_k, D)
+```
+
+由于 `q.shape` 本身不再包含每条序列的边界，调用方必须传入 `cu_seqlens_q` 与 `cu_seqlens_k`（cumulative sequence lengths，累计序列长度 / 前缀和）。例如 batch 的 query 长度为 `[3, 5, 2]` 时：
+
+```text
+cu_seqlens_q = [0, 3, 8, 10]
+
+sample 0 → q[0:3]
+sample 1 → q[3:8]
+sample 2 → q[8:10]
+```
+
+对第 $i$ 个样本，kernel 按如下规则恢复边界：
+
+$$
+\text{start}_i = \text{cu\_seqlens}[i],\qquad
+\text{end}_i = \text{cu\_seqlens}[i + 1]
+$$
+
+它还需要 `max_seqlen_q / max_seqlen_k`，用于描述当前 batch 的最大 Q/K 序列长度；kernel 可据此进行 tile、grid 和临时布局相关的安排。实际计算走另一个 CUDA 后端入口：`flash_attn_gpu.varlen_fwd(...)`。
+
+varlen 的收益在于跳过 padding。比如真实长度为 `[128, 512, 2048]`：
+
+```text
+padding 后的 dense token 槽位 = 3 × 2048 = 6144
+实际有效 token 数             = 128 + 512 + 2048 = 2688
+padding 槽位                  = 3456（约 56.25%）
+```
+
+因此，在长度差异大的训练 batch 或 sequence packing 中，varlen 通常能减少激活内存、内存访问和无效 attention 工作。
+
+**重要：**varlen 只是把样本在内存中物理拼接，**不会**让不同样本之间彼此 attention；kernel 根据 `cu_seqlens_*` 恢复边界，让每个样本的 Q 只访问自身对应的 K/V。
+
+### 5. `flash_attn_varlen_func`
+
+`flash_attn_varlen_func` 是对变长路径的公开 Python API。它在 autograd 层保存 `cu_seqlens_q / cu_seqlens_k`，并在 forward / backward 中转交给 `_flash_attn_varlen_forward` / `_flash_attn_varlen_backward`。
 
 适合：
 
-- padding 很多的 batch
-- ragged / packed 数据
-- 更高效的 token 级 attention
+- padding 很多的 batch；
+- ragged / packed 数据；
+- 更高效的 token 级 attention。
 
-### 4. `flash_attn_with_kvcache`
+### 6. `flash_attn_with_kvcache`
 
 适合推理阶段：
 
