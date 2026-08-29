@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, PyTorch, FlashAttention, ATen, CUDA]
 created: 2026-08-18
-updated: 2026-08-18
+updated: 2026-08-25
 ---
 
 # FlashAttention PyTorch ATen 接入层
@@ -92,10 +92,15 @@ flowchart TD
 - 某些路径下把 `q` reshape / transpose 成更适合并行的布局
 - 推理式的 `seqlenq_ngroups_swapped` 优化
 
-其中最典型的是短 query + grouped heads 的优化：
+其中最典型的是短 query + grouped heads 的优化：**`seqlenq_ngroups_swapped`**。
 
-- dense 路径里，如果 `seqlen_q == 1` 且满足特定条件，会把 Q 重新布局以提高吞吐
-- varlen 路径里，如果 `max_seqlen_q == 1` 且满足条件，也会做类似变换
+- 适用条件：`seqlen_q == 1` 且 `num_heads > num_heads_k`（GQA/MQA，`ngroups = num_heads / num_heads_k > 1`），且 `window_size_left/right < 0`、`p_dropout == 0`、`head_size % 8 == 0`、无 ALiBi
+- 动机：q 形状 `(b, 1, num_heads_k·ngroups, d)`，序列维只有 1，内核在序列维上几乎无并行度；而所有 query head 位置相同（都是位置 0），注意力模式完全一致
+- 做法：`q.reshape({b, num_heads_k, ngroups, d}).transpose(1, 2)` 变成 `(b, ngroups, num_heads_k, d)`，**把 ngroups 当"序列"维提供并行度**，随后 `seqlen_q = ngroups`、`num_heads = num_heads_k`
+- 限制条件即该路径不支持的特性：window 注意力、dropout、ALiBi（`head_size % 8` 在前面已 TORCH_CHECK）
+
+> 代码位置：`csrc/flash_attn/flash_api.cpp`，注释 "H/t Daniel Haziza"。
+> dense 路径看 `seqlen_q == 1`；varlen 路径对应 `max_seqlen_q == 1` 的类似变换。
 
 这类逻辑说明：**ATen 层不是在做数学，而是在做数据表示法转换。**
 

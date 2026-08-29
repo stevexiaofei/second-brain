@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, PyTorch, FlashAttention, Autograd, CUDA]
 created: 2026-08-18
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # FlashAttention 接口与 Autograd
@@ -113,6 +113,13 @@ flowchart TD
 
 所以 interface 层不是“把输出返回给用户”这么简单，**它同时在做训练态缓存设计。**
 
+`ctx.save_for_backward` 只用来保存**张量**，标量/元组（`dropout_p`、`softmax_scale`、`causal`、`window_size`、`softcap`、`alibi_slopes`、`deterministic`）则直接存成 `ctx` 属性：
+
+- `save_for_backward` 会记录张量的**版本计数**，backward 时校验——若保存后该张量被 in-place 修改会直接报错，防止静默使用被篡改的数据；直接赋给 `ctx` 属性则无此保护
+- 只有经它保存的张量才能被 `torch.utils.checkpoint` / `saved_tensors_hooks`（释放内存、反向重算）等机制接管，存成普通属性这些机制看不见
+- backward 中按 `ctx.saved_tensors` 顺序取回，且保存后不可重新赋值，避免误覆盖
+- 普通 Python 标量不参与梯度、不会被修改、无需内存管理，直接存属性最简洁
+
 ## 关键设计 3：padding 是为了满足 kernel 的硬约束
 
 代码里有一个很常见的模式：
@@ -122,7 +129,17 @@ flowchart TD
 
 这样做的原因是 CUDA kernel 内部通常会按对齐向量访问、warp tile、tensor core 对齐来实现。
 
+具体机制（以 `FlashAttnQKVPackedFunc.forward` 为例）：先记录原始维度 `head_size_og`，当 `head_size_og % 8 != 0` 时用 `F.pad(q, [0, 8 - head_size_og % 8])` 在**最后一维右侧**补零到下一个 8 的倍数；内核返回 `out_padded` 后截回 `out_padded[..., :head_size_og]`，backward 侧对 `dqkv` 同样截回 `dqkv[..., :dout.shape[-1]]`——**pad 只发生在传给内核的前后，对外部调用者完全不可见**。
+
 同样，`flash_attn_interface.py` 还会根据 `head_dim`、`causal`、`dropout`、`window_size` 选择不同的 `_get_block_size_n()` 路径。
+
+### 三个注意力约束参数（forward 入参）
+
+- **`causal`**：因果遮罩。开启后位置 $i$ 的 query 只能 attend 到 $j \le i$ 的 key，用于自回归/Decoder；默认 `False`。
+- **`window_size`**：`(left, right)` 滑动窗口局部注意力，位置 $i$ 只能 attend 到 $[i-\text{left}, i+\text{right}]$；`(-1, -1)` 表示不加限制。与 `causal` 组合常用 `(window, -1)` / `(window, 0)`。实现的是 Longformer / Mistral 式的局部注意力。
+- **`softcap`**：注意力 logits 软上限，`> 0` 时启用 $score' = softcap \cdot \tanh(score/softcap)$，把分数压缩到 $(-softcap, softcap)$，防止长序列注意力分数过大导致 softmax 饱和；`0.0` 表示不启用（Gemini/Gemma 风格）。
+
+三者都在 CUDA kernel 内部生效，**不产生额外 mask 张量**，分别传入 `causal` / `window_size_left/right` / `softcap`。
 
 这说明：**接口层做的不是“业务逻辑”，而是把用户自由输入变成 kernel 可接受的受约束输入。**
 
@@ -233,13 +250,42 @@ padding 槽位                  = 3456（约 56.25%）
 
 这让 FlashAttention 可以作为一个“可替换后端”嵌入到真实模型代码里。
 
+### 为什么 forward 里要 detach q/k/v
+
+`FlashAttnQKVPackedFunc.forward` 中（`flash_attn_interface.py`）：
+
+- `qkv` 形状为 `(batch_size, seqlen, 3, nheads, headdim)`，dim=2 是 q/k/v 打包维度；切片后 `q/k/v: (batch_size, seqlen, nheads, headdim)`
+- `q, k, v = qkv[:, :, 0].detach(), qkv[:, :, 1].detach(), qkv[:, :, 2].detach()`
+
+为什么 detach（梯度完全由本类手写的 backward 负责）：
+
+1. 避免内部 slice/pad 以及内核（内核本身也是自定义 Function）为带梯度的 q/k/v 重复建图、保存无用 ctx
+2. 防止 backward 中 `dqkv` 的 view 原地写入与图内张量共享存储而触发 in-place 修改报错
+3. `ctx.save_for_backward` 保存的 q/k/v 只是供手动 backward 复算梯度的数据载体，无需保留梯度连接
+
+本质规律：**手写 backward 的自定义 Function，forward 里的内部算子只应“用数据”，不应“建图”。**
+
+### ALiBi slopes 为什么要转成 fp32
+
+`mha.py` 的 `FlashSelfAttention.forward` 里：
+
+- `alibi_slopes` 注册为 `persistent=False` 的 buffer（不进 state_dict）
+- 传给内核前强制 `.to(torch.float32)`，因为 CUDA kernel 在 fp32 精度下把该偏置加到注意力 logits 上（参数类型 `float*`）
+- 在 forward 而非 `__init__` 中转，是因为模型可能被 `.half()` / `.to(dtype)` 整体移动过导致 buffer 变 fp16；转换后写回 self，保证本次及后续调用都正确
+
 ### 训练态 vs 推理态
 
 - 训练：通常会走 `flash_attn_func` / `flash_attn_qkvpacked_func`
 - 推理：优先走 `flash_attn_with_kvcache`
 
-推理路径里还有一个关键优化：
-当 `seqlen_q == 1` 时，会尝试把 Q 的形状变换成更适合 KV 分块的布局，以提升并行度。
+推理路径里还有一个关键优化：**`seqlenq_ngroups_swapped`（维度互换）**。
+
+- 适用条件：`seqlen_q == 1`（单 token 解码）+ GQA/MQA（`num_heads > num_heads_k`，即 `ngroups = num_heads / num_heads_k > 1`）+ 无 window / dropout / ALiBi
+- 动机：此时 q 形状为 `(b, 1, num_heads_k·ngroups, d)`，序列维度只有 1，内核在序列维上几乎没有并行度
+- 做法：因为所有 query head 位置相同（都是位置 0），注意力模式完全一致，所以把 q 重排为 `(b, num_heads_k, ngroups, d)` 再 `transpose` 成 `(b, ngroups, num_heads_k, d)`，**把 ngroups 当作"序列"维度提供并行度**，解码更快
+- 代价：交换后 `seqlen_q = ngroups`、`num_heads = num_heads_k`，后续 check / 分配都用新值
+
+详见 [FlashAttention PyTorch ATen 接入层](./flash-attention-pytorch-aten-integration.md)。
 
 ## 对 PyTorch 编译栈的意义
 
@@ -303,6 +349,7 @@ CUDA bridge
 
 建议与这些笔记一起看：
 
+- [Attention 头变体：MHA/MQA/GQA/MLA](./attention-head-variants.md)
 - [FlashAttention 源码精读](./flash-attention-source-reading.md)
 - [PyTorch C++ 核心模块](../pytorch/pytorch-cpp-core.md)
 - [PyTorch 依赖关系](../pytorch/pytorch-dependencies.md)

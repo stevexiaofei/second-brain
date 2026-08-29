@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, CUDA, FlashAttention, Kernel, GPU]
 created: 2026-08-18
-updated: 2026-08-18
+updated: 2026-08-25
 ---
 
 # FlashAttention Kernel 与 Launch 机制
@@ -170,6 +170,35 @@ backward 的结构比 forward 更复杂，常常会分成：
 - 最后再用 combine kernel 合并部分结果
 
 这就是“work partitioning”的具体实现。
+
+### C++ bridge 侧（flash_api.cpp）的 set_params_splitkv
+
+dense forward 里 `set_params_fprop` 之后会调 `set_params_splitkv` 完成切分配置：
+
+- **`block_n`（KV 维 tile）按 head_size 三档**：`<= 64 → 256`、`<= 128 → 128`、否则 `64`；注释明确要求与 `run_mha_fwd_splitkv_dispatch` 的 kernel 派发保持一致
+- 据此算 `num_n_blocks = ceil(seqlen_k / block_n)` 与 `num_m_blocks = ceil(seqlen_q / 64)`（`kBlockM = 64`）
+- **启发式 `num_splits_heuristic`**：若 `batch × heads × m_blocks ≥ 0.8 × num_SMs`（工作量已能填满 SM）直接取 1；否则在 `min(128, SMs, num_n_blocks)` 内枚举合法切分数（过滤"切了等于没切"的 `ceil` 不变值），选 SM 利用率最高者
+- **`num_splits > 1` 时分配两个 fp32 累加缓冲**：`softmax_lse_accum (splits, b, h, seqlen_q)` 与 `out_accum (splits, b, h, seqlen_q, head_size_rounded)`，并把指针写入 `params.softmax_lseaccum_ptr / params.oaccum_ptr`
+- **调用方用 `std::tie` 持有返回的张量引用**，延长生命周期——kernel 异步执行期间缓冲不能被提前析构
+
+### num_splits_heuristic 的 efficiency 推导
+
+切 `num_splits` 份后**总 CTA 数 = `batch_nheads_mblocks × num_splits`**（每个 (batch, head, Q 块) 原始任务沿 KV 维切成 `num_splits` 个 CTA，各算一段 partial softmax）。设 `num_SMs`（实际是 `num_sm × 2`，因 128 线程/块可 2 块共驻 1 SM）：
+
+$$
+n\_waves = \frac{\text{总 CTA 数}}{num\_SMs}, \qquad eff = \frac{n\_waves}{\lceil n\_waves \rceil}
+$$
+
+`eff` = **最后一波被填满的比例**（整数波 = 1.0）。验证注释例子（48 任务、108 槽位）：
+
+| num_splits | 总 CTA | n_waves | ceil | eff |
+|---|---|---|---|---|
+| 2 | 96 | 0.889 | 1 | 0.89（一波，12 槽空闲） |
+| 3 | 144 | 1.333 | 2 | 0.67（两波，第二波仅 36 CTA） |
+
+所以 **2 splits 优于 3 splits**。但 split 越多 HBM 重读 KV 片段越多、归约开销越大，因此不取最大效率，而是**取 "≥ 85% × 最大效率" 的最小切分数**折中。另外 `is_split_eligible` 过滤掉"切了等于没切"的切分数（`ceil(num_n_blocks / s)` 不变），以及工作量已 ≥ 0.8 × SMs 时直接返回 1（不切）。
+
+> 与 [FlashAttention 接口与 Autograd](./flash-attention-interface-and-autograd.md) 的关键设计 2 呼应：forward 不只在"算注意力"，还在**为归约路径准备 fp32 中间缓冲**。另注意 `p_dropout == 0` 才支持 split-KV。
 
 ## 关键设计 6：head dim 决定 kernel 形状
 
