@@ -45,7 +45,8 @@ export default withMermaid(
           { text: '思维链论文详解', link: '/knowledge/ai/foundations/reasoning/chain-of-thought-papers' },
           { text: 'AI Systems', link: '/knowledge/ai/systems/' },
           { text: 'AI 开源源码精读', link: '/knowledge/ai/systems/ai-open-source-source-reading' },
-          { text: 'Semantica 知识图谱', link: '/knowledge/ai/systems/semantica' }
+          { text: 'Semantica 知识图谱', link: '/knowledge/ai/systems/semantica' },
+          { text: 'Attention 头变体：MHA/MQA/GQA/MLA', link: '/knowledge/ai/attention-head-variants' }
         ]},
         { text: 'FlashAttention', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/flash-attention/' },
@@ -116,6 +117,11 @@ export default withMermaid(
           { text: '源码阅读方法', link: '/knowledge/learning/code-reading/' },
           { text: '审计 / 上手 / 深读', link: '/knowledge/learning/code-reading/codebase-review-modes' },
           { text: '新代码库阅读导览', link: '/knowledge/learning/code-reading/codebase-reading-guide' }
+        ]},
+        { text: 'Investing', items: [
+          { text: 'Overview', link: '/knowledge/investing/' },
+          { text: '价值投资入门', link: '/knowledge/investing/value-investing-intro' },
+          { text: '上市公司财报阅读指南', link: '/knowledge/investing/financial-statement-reading' }
         ]},
         { text: 'Mathematics', items: [
           { text: 'Overview', link: '/knowledge/mathematics/' }
