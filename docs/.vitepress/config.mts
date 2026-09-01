@@ -53,6 +53,7 @@ export default withMermaid(
           { text: '阅读导览', link: '/knowledge/ai/systems/flash-attention/flash-attention-reading-guide' },
           { text: '论文精读', link: '/knowledge/ai/systems/flash-attention/flashattention-paper-series' },
           { text: 'CUTE 入门', link: '/knowledge/ai/systems/flash-attention/cute-basics' },
+          { text: 'CUTE TiledMMA', link: '/knowledge/ai/systems/flash-attention/cute-tiled-mma' },
           { text: '术语表与状态', link: '/knowledge/ai/systems/flash-attention/flash-attention-glossary-and-state-table' },
           { text: '系统地图', link: '/knowledge/ai/systems/flash-attention/flash-attention-system-map' },
           { text: '源码精读', link: '/knowledge/ai/systems/flash-attention/flash-attention-source-reading' },

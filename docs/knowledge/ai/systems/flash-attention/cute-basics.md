@@ -209,11 +209,11 @@ if (get<0>(tOcO(0, m, 0)) < actual_seqlen_q) {
 ## Open Questions
 
 - `Swizzle`（swizzle 布局）如何与 bank conflict 对应？
-- `TiledMMA` 的 `AtomLayout` 与 warp 内 MMA 分工怎么映射到硬件？
 - cute 的 `#pragma unroll` 展开对寄存器压力/occupancy 的影响
 
 ## Related Knowledge
 
+- [CUTE TiledMMA：一条 MMA 指令如何"复制"成大 tile](./cute-tiled-mma.md) — TiledMMA 的线程/数值复制、片段分配与 gemm 展开（回答了本页原先的 TiledMMA Open Question）
 - [FlashAttention 源码精读](./flash-attention-source-reading.md) — kernel 上层的完整链路
 - [FlashAttention Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md) — tile、launch 与 split-KV
 - [FlashAttention Kernel 细节补充](./flash-attention-kernel-details.md) — backward 与 RNG
