@@ -18,6 +18,7 @@
 
 建议按层次阅读：
 
+0. [CUTE 入门：从 C CUDA 视角理解 flash-attn 的 kernel 写法](./cute-basics.md) — 读 kernel 前的前置知识：Tensor/Layout/local_tile/线程分区
 1. [FlashAttention 源码精读](./flash-attention-source-reading.md) — 先建立仓库与核心链路全局图
 2. [接口与 Autograd](./flash-attention-interface-and-autograd.md) — Python API、ctx、packed / varlen 与训练态
 3. [Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md) — params、launch specialization、tile 与 split-KV
