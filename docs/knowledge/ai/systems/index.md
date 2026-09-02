@@ -7,6 +7,7 @@
 - [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 从 Framework、Runtime、Compiler、Distributed 到 GPU 的项目选择地图
 - [PyTorch 专题](./pytorch/) — 框架架构、autograd、编译栈、分布式训练与源码阅读
 - [FlashAttention 专题](./flash-attention/) — 从 IO-aware 算法到 CUDA kernel 与 PyTorch 接入
+- [CUTLASS / CuTe 专题](./cutlass/) — Tensor、Layout、TiledCopy、TiledMMA 与 GEMM 数据流
 - [nanobot 专题](./nanobot/) — 从消息总线到 AgentLoop、工具、Provider 与 Channel
 - [Semantica](./semantica.md) — 知识图谱、决策溯源与确定性推理基础设施
 

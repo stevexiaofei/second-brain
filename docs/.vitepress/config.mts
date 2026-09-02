@@ -45,15 +45,23 @@ export default withMermaid(
           { text: '思维链论文详解', link: '/knowledge/ai/foundations/reasoning/chain-of-thought-papers' },
           { text: 'AI Systems', link: '/knowledge/ai/systems/' },
           { text: 'AI 开源源码精读', link: '/knowledge/ai/systems/ai-open-source-source-reading' },
+          { text: 'CUTLASS / CuTe', link: '/knowledge/ai/systems/cutlass/' },
           { text: 'Semantica 知识图谱', link: '/knowledge/ai/systems/semantica' },
           { text: 'Attention 头变体：MHA/MQA/GQA/MLA', link: '/knowledge/ai/attention-head-variants' }
+        ]},
+        { text: 'CUTLASS / CuTe', collapsed: true, items: [
+          { text: '专题总览', link: '/knowledge/ai/systems/cutlass/' },
+          { text: '01 Tensor 与 Layout', link: '/knowledge/ai/systems/cutlass/01-cute-tensor-and-layout' },
+          { text: '02 Copy 与线程分区', link: '/knowledge/ai/systems/cutlass/02-cute-copy-and-thread-partition' },
+          { text: '03 TiledMMA 与 fragment', link: '/knowledge/ai/systems/cutlass/03-cute-tiled-mma' },
+          { text: '04 GEMM 数据流', link: '/knowledge/ai/systems/cutlass/04-cute-gemm-pipeline' }
         ]},
         { text: 'FlashAttention', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/flash-attention/' },
           { text: '阅读导览', link: '/knowledge/ai/systems/flash-attention/flash-attention-reading-guide' },
           { text: '论文精读', link: '/knowledge/ai/systems/flash-attention/flashattention-paper-series' },
           { text: 'CUTE 入门', link: '/knowledge/ai/systems/flash-attention/cute-basics' },
-          { text: 'CUTE TiledMMA', link: '/knowledge/ai/systems/flash-attention/cute-tiled-mma' },
+          { text: 'CUTE TiledMMA（已归档至 CUTLASS）', link: '/knowledge/ai/systems/cutlass/03-cute-tiled-mma' },
           { text: '术语表与状态', link: '/knowledge/ai/systems/flash-attention/flash-attention-glossary-and-state-table' },
           { text: '系统地图', link: '/knowledge/ai/systems/flash-attention/flash-attention-system-map' },
           { text: '源码精读', link: '/knowledge/ai/systems/flash-attention/flash-attention-source-reading' },

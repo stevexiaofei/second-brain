@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, CUDA, CUTE, CUTLASS, FlashAttention, Kernel]
 created: 2026-08-25
-updated: 2026-09-01
+updated: 2026-09-02
 source: third_party/cutlass/include/cute/ + third_party/flash-attention/csrc/flash_attn/src/
 ---
 
@@ -436,6 +436,231 @@ for (每个由 copy layout 分给 tidx 的 row_group) {
 
 最重要的结论是：**`partition_D` 不等于「平均切成 128 份」**。它真正做的是：依据当前 `TiledCopy` 的线程布局和值布局，把目标张量中属于线程 `tidx` 的所有坐标组织成一个线程私有视图。
 
+## Tensor 命名约定：从 `tQgQ` 读懂数据流
+
+CuTe 代码经常用变量名把一个 Tensor 的**分区方式、存储层次和逻辑角色**压缩出来。先把它当作阅读代码的助记符，而不要把它当成 C++ 的类型语法：变量叫 `tAgA` 还是 `banana`，C++ 编译器并不会因此改变语义；真正决定语义的是 Tensor 的 layout、engine，以及它由哪个 partition API 构造。
+
+### 四段式读法
+
+在 CUTLASS 教程中，最常见的抽象读法是：
+
+```text
+t + partition pattern + storage location + logical operand
+```
+
+可以分别这样问：
+
+| 部分 | 常见含义 | 要问的问题 |
+|---|---|---|
+| `t` | 已经经过 tiling/partition 的局部 Tensor 或线程视图 | 这是整个 CTA 的 Tensor，还是当前线程拿到的局部视图？ |
+| `A`、`B`、`C` 等 | partition pattern、MMA role 或相关分区族 | 这个 Tensor 是按哪套工作分工切出来的？ |
+| `g`、`s`、`r` | global memory、shared memory、register file | 数据当前存在哪一层？ |
+| 最后的 `A`、`B`、`C` 等 | 逻辑矩阵操作数或算法对象 | 它在算法中代表谁？ |
+
+`A/B/C` 是 GEMM 中最常见的逻辑对象，但 FlashAttention 还会出现 `Q`、`K`、`V`、`Vt`、`S`、`P`、`O` 等名字。因此不要看到四个字符就套固定语法；应该把名字与构造它的 API 和来源 Tensor 一起读。
+
+### `mA`、`gA`、`sA`、`rA`：同一对象在不同层次的视图
+
+以 GEMM 的矩阵 A 为例：
+
+```text
+mA  →  整个或更高层次的矩阵视图（常见于 memory/global tensor 的起点）
+gA  →  CTA 负责的 global-memory A tile
+sA  →  搬到 shared memory 后的 A tile
+rA  →  当前线程寄存器中的 A fragment
+```
+
+这些前缀不是在复制数据，而通常是在描述同一数据对象经过不同切片、布局或存储阶段后的视图：
+
+```cpp
+Tensor mA = ...;  // 例如完整的 M×K 矩阵视图
+Tensor gA = local_tile(mA, cta_tiler, cta_coord, ...);
+Tensor sA = make_tensor(make_smem_ptr(...), SmemLayoutA{});
+Tensor rA = make_fragment_like(sA);
+```
+
+要注意，`gA`、`sA`、`rA` 不一定总是由同一种函数创建，也不一定拥有相同的 layout。`gA` 需要描述全局地址和 CTA tile，`sA` 需要匹配 shared-memory staging，`rA` 则通常是线程私有的寄存器片段。
+
+### `tAgA`、`tAsA`、`tArA`：同一套 copy partition 应用到不同存储层次
+
+假设 `tA` 是一套用于搬运 A tile 的线程/数值分区模式：
+
+```cpp
+Tensor tAgA = local_partition(gA, tA, threadIdx.x);
+Tensor tAsA = local_partition(sA, tA, threadIdx.x);
+Tensor tArA = make_fragment_like(tAsA);
+```
+
+它们可以读成：
+
+| 变量 | 读法 | 用途 |
+|---|---|---|
+| `tAgA` | `tA` partition applied to `gA` | 当前线程从 global memory 读哪些 A 元素 |
+| `tAsA` | `tA` partition applied to `sA` | 当前线程向 shared memory 写哪些 A 元素 |
+| `tArA` | 与 `tA` 对应的 register fragment | 当前线程暂存一次 copy 的数据 |
+
+在较新的 CuTe API 中，同样的含义通常写成：
+
+```cpp
+Tensor tAgA = thr_copy_a.partition_S(gA);
+Tensor tAsA = thr_copy_a.partition_D(sA);
+Tensor tArA = make_fragment_like(tAsA);
+```
+
+这里 `partition_S` 的 `S` 是 **Source**，`partition_D` 的 `D` 是 **Destination**。它们都使用 `thr_copy_a` 中编码的线程切片和 value layout；区别只在于参数 Tensor 扮演 copy 的源还是目标。于是：
+
+```text
+gA --partition_S--> tAgA --copy--> tArA/寄存器路径
+sA <--partition_D-- tAsA <--copy-- tArA/寄存器路径
+```
+
+同一套 `tA` 应用于 `gA` 和 `sA` 的重要价值，是让 global tile 与 shared tile 的逻辑元素保持可对应。程序不必为“第几个线程搬 A 的哪一行哪几列”再写一套手工索引公式。
+
+### `tCsA`、`tCsB`、`tCgC`、`tCrC`：MMA partition 与 copy partition 不同
+
+在 GEMM 中，`tC` 通常表示围绕 MMA 的分区模式：它描述一个 warp 或更大的 `TiledMMA` 如何把 A、B 操作数和 C/D accumulator 分给线程。典型代码是：
+
+```cpp
+Tensor tCsA = thr_mma.partition_A(sA);
+Tensor tCsB = thr_mma.partition_B(sB);
+Tensor tCgC = thr_mma.partition_C(gC);
+Tensor tCrC = thr_mma.make_fragment_C(tCgC);
+```
+
+读法如下：
+
+```text
+tCsA = MMA partition tC + shared-memory A
+tCsB = MMA partition tC + shared-memory B
+tCgC = MMA partition tC + global-memory C/output
+tCrC = MMA partition tC + register accumulator C/D
+```
+
+最后一个 `A/B/C` 是逻辑操作数；中间的 `s/g/r` 是存储层次；开头的 `tC` 是 MMA 分工，而不是“C 矩阵位于 shared memory”。所以 `tCsA` 的最后一个 `A` 才表示 A 操作数，不能把整个名字误读成“C 的 shared-memory Tensor”。
+
+copy partition 与 MMA partition 的任务不同：
+
+| 分区 | 典型 API | 主要回答的问题 |
+|---|---|---|
+| copy partition | `partition_S`、`partition_D` | 当前线程从哪里读、向哪里写？ |
+| MMA partition | `partition_A`、`partition_B`、`partition_C` | 当前线程在 MMA 指令中提供哪个 operand/accumulator fragment？ |
+
+同一个 `sA` 可以先通过 copy partition 得到 `tAsA`，参与 global → shared 搬运；搬运完成后，再通过 MMA partition 得到 `tCsA`，参与 shared → register/MMA 访问。**同一个物理数据可以拥有多个线程视图**，因为不同操作需要不同的布局契约。
+
+### FlashAttention 源码中的真实例子：`tQgQ` 到 `tVsV`
+
+在 `flash_fwd_kernel.h` 中，Q/K/V 的 global → shared copy 直接写出了这套命名法：
+
+```cpp
+typename Kernel_traits::GmemTiledCopyQKV gmem_tiled_copy_QKV;
+auto gmem_thr_copy_QKV = gmem_tiled_copy_QKV.get_thread_slice(tidx);
+
+Tensor tQgQ = gmem_thr_copy_QKV.partition_S(gQ);
+Tensor tQsQ = gmem_thr_copy_QKV.partition_D(sQ);
+Tensor tKgK = gmem_thr_copy_QKV.partition_S(gK);
+Tensor tKsK = gmem_thr_copy_QKV.partition_D(sK);
+Tensor tVgV = gmem_thr_copy_QKV.partition_S(gV);
+Tensor tVsV = gmem_thr_copy_QKV.partition_D(sV);
+```
+
+逐个拆开：
+
+| 变量 | 完整含义 |
+|---|---|
+| `gQ` | 当前 CTA 负责的 global-memory Q tile |
+| `sQ` | shared-memory 中用于后续计算的 Q tile |
+| `tQgQ` | QKV copy 的当前线程分区，应用于 global Q；是当前线程要读取的 Q 槽位 |
+| `tQsQ` | 同一 QKV copy 分区，应用于 shared Q；是当前线程要写入的 Q 槽位 |
+| `tKgK` | QKV copy 分区应用于 global K；是当前线程要读取的 K 槽位 |
+| `tKsK` | QKV copy 分区应用于 shared K；是当前线程要写入的 K 槽位 |
+| `tVgV` | QKV copy 分区应用于 global V；是当前线程要读取的 V 槽位 |
+| `tVsV` | QKV copy 分区应用于 shared V；是当前线程要写入的 V 槽位 |
+
+这里的第二个字母 `Q/K/V` 不是简单 GEMM 示例里的 `A/B/C`，它更像是**这组 copy partition 所服务的逻辑对象**。`gmem_thr_copy_QKV` 是整个 CTA 的 QKV 搬运方案中当前线程的 slice；`partition_S` 和 `partition_D` 再分别把 global/shared Tensor 映射到这个线程的 source/destination 槽位。
+
+可以把第一组 Q 搬运翻译成 C 风格的伪代码：
+
+```cpp
+// tQgQ：thread tidx 被分配去 global Q 读取的若干位置
+// tQsQ：同一个 tidx 被分配去 shared Q 写入的对应位置
+for (每个 copy value v) {
+    if (v 的 global Q 坐标合法) {
+        register_value = gQ[v];
+        sQ[v] = register_value;
+    }
+}
+```
+
+CuTe 的 Tensor view 保证 source 和 destination 的槽位布局适合这次 copy；实际是否向量化、如何处理尾部，则由 `GmemTiledCopyQKV` 的 Copy Atom、线程布局和值布局共同决定。
+
+### FlashAttention 中 MMA 命名更丰富，不能机械套四字符公式
+
+同一个 kernel 中还会看到：
+
+```cpp
+Tensor tSrQ  = thr_mma.partition_fragment_A(sQ);
+Tensor tSrK  = thr_mma.partition_fragment_B(sK);
+Tensor tOrVt = thr_mma.partition_fragment_B(sVtNoSwizzle);
+Tensor tSgS  = thr_mma.partition_C(gP);
+Tensor acc_o = partition_fragment_C(
+    tiled_mma, Shape<Int<kBlockM>, Int<kHeadDim>>{}
+);
+```
+
+这些名字要结合注释和计算阶段理解：
+
+- `tSrQ`：当前 MMA 分区中、寄存器 fragment 形式的 Q，作为第一个 MMA 的 A operand；
+- `tSrK`：当前 MMA 分区中、寄存器 fragment 形式的 K，作为 B operand；
+- `tOrVt`：用于第二个 $PV$ MMA 的 V 转置视图 fragment；最后的 `Vt` 表示 V 的转置/重排视图，不是普通的矩阵字母 B；
+- `tSgS`：围绕 score/probability 矩阵访问的 global-memory Tensor 视图，实际参数是 `gP`；这里变量名中的 `S` 是算法阶段/逻辑视图标识，不能脱离上下文硬解释为 C operand；
+- `acc_o`：O 的累加 fragment，通常驻留在寄存器中，变量名没有完整复刻 `tOrO`，但其构造 API `partition_fragment_C` 明确了它是 MMA 的 C/D accumulator。
+
+源码中的 `tS`、`tO` 等前缀可能表达 score、output 或某个 MMA/tile 语义；不同版本和不同 kernel 也可能采用略有差异的命名。可靠的阅读顺序是：
+
+1. 看最后一个逻辑对象来自哪个 Tensor（`sQ`、`sK`、`gP`、`sVtNoSwizzle`）；
+2. 看调用的是 `partition_S/D` 还是 `partition_A/B/C`；
+3. 看该对象进入的是 copy、QKᵀ MMA、PV MMA、softmax 还是 epilogue；
+4. 最后再用变量名中的 `g/s/r` 和 `tX` 做快速确认。
+
+### 一条完整的 GEMM/Attention 数据流
+
+```text
+GEMM:
+  mA → gA → tAgA ─┐
+                   ├─ global → shared copy → tCsA → MMA(A)
+  sA ← tAsA ←──────┘
+
+  mB → gB → tBgB ─┐
+                   ├─ global → shared copy → tCsB → MMA(B)
+  sB ← tBsB ←──────┘
+
+  mC → gC → tCgC → tCrC → accumulator / epilogue / global store
+
+FlashAttention:
+  gQ → tQgQ → tQsQ → sQ → tSrQ → QKᵀ MMA
+  gK → tKgK → tKsK → sK → tSrK → QKᵀ MMA
+  gV → tVgV → tVsV → sV → tOrVt → PV MMA
+  P  → tSgS / register fragments → softmax-related path
+  O  → acc_o → normalization → global output
+```
+
+箭头表示“同一逻辑数据在不同 Tensor view/存储阶段之间的流动”，不是说每一次箭头都一定发生一次独立的物理拷贝。`local_tile`、`partition_*` 和 `make_tensor` 很多时候只是创建视图或 fragment；真正的数据移动要看 `copy`、MMA 指令和后续 store。
+
+### 阅读检查清单
+
+遇到一个名字如 `tXgY` 或 `tXrY` 时，可以快速检查：
+
+```text
+1. t：是否已经是局部/分区后的 Tensor？
+2. X：是哪套 copy、MMA 或算法阶段 partition pattern？
+3. g/s/r：数据此刻在哪个存储层次？
+4. Y：逻辑对象是什么？它来自哪个源 Tensor？
+5. 构造 API：partition_S/D 还是 partition_A/B/C？
+6. 后续操作：copy、MMA、softmax 还是 store？
+```
+
+最后记住：这套命名约定的目的，是让读者在复杂的多层 tiling 代码中快速恢复数据流；它不是严格的语言规范，不能替代对 layout 和 API 的实际追踪。
+
 ## 概念 4：寄存器缓冲 —— `make_tensor<Element>(shape)`
 
 ```cpp
@@ -516,7 +741,10 @@ if (get<0>(tOcO(0, m, 0)) < actual_seqlen_q) {
 
 ## Related Knowledge
 
-- [CUTE TiledMMA：一条 MMA 指令如何"复制"成大 tile](./cute-tiled-mma.md) — TiledMMA 的线程/数值复制、片段分配与 gemm 展开（回答了本页原先的 TiledMMA Open Question）
+- [CUTE TiledMMA：一条 MMA 指令如何"复制"成大 tile](../cutlass/03-cute-tiled-mma.md) — TiledMMA 的线程/数值复制、片段分配与 gemm 展开（回答了本页原先的 TiledMMA Open Question）
+- [CUTLASS / CuTe 专题](../cutlass/) — 通用 Tensor、Layout、TiledCopy、TiledMMA 与 GEMM 数据流
+- [CUTLASS/CuTe 02：Copy Atom 与线程分区](../cutlass/02-cute-copy-and-thread-partition.md) — 深入理解 `partition_S/D` 与线程局部视图
+- [CUTLASS/CuTe 04：GEMM 数据流](../cutlass/04-cute-gemm-pipeline.md) — 从 global → shared → MMA → accumulator 串起完整路径
 - [FlashAttention 源码精读](./flash-attention-source-reading.md) — kernel 上层的完整链路
 - [FlashAttention Kernel 与 Launch 机制](./flash-attention-kernel-and-launch.md) — tile、launch 与 split-KV
 - [FlashAttention Kernel 细节补充](./flash-attention-kernel-details.md) — backward 与 RNG
