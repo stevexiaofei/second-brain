@@ -107,11 +107,28 @@ export default withMermaid(
           { text: '分布式存储知识地图', link: '/knowledge/engineering/distributed-storage-knowledge-map' },
           { text: 'Fenwick Tree 加权采样', link: '/knowledge/engineering/fenwick-tree-weighted-sampling' },
           { text: 'uv Python 包管理', link: '/knowledge/engineering/uv-python-package-manager' },
+          { text: 'pyproject.toml', link: '/knowledge/engineering/pyproject-toml' },
           { text: 'MongoDB 与 PyMongo', link: '/knowledge/engineering/mongodb-pymongo-getting-started' },
           { text: 'ER 图', link: '/knowledge/engineering/er-diagram' },
           { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
           { text: 'DFD 数据流图', link: '/knowledge/engineering/dfd' },
           { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' }
+        ]},
+        { text: 'Kubernetes', collapsed: true, items: [
+          { text: '专题总览', link: '/knowledge/engineering/kubernetes/' },
+          { text: '01 容器与网络前置', link: '/knowledge/engineering/kubernetes/01-prerequisites-containers-and-networking' },
+          { text: '02 架构与控制循环', link: '/knowledge/engineering/kubernetes/02-architecture-and-control-loop' },
+          { text: '03 kubectl、对象与 YAML', link: '/knowledge/engineering/kubernetes/03-kubectl-objects-and-yaml' },
+          { text: '04 Pod 与多容器模式', link: '/knowledge/engineering/kubernetes/04-pods-and-container-patterns' },
+          { text: '05 Workload 与任务', link: '/knowledge/engineering/kubernetes/05-workloads-deployments-and-jobs' },
+          { text: '06 Service、Ingress 与 DNS', link: '/knowledge/engineering/kubernetes/06-services-networking-ingress-and-dns' },
+          { text: '07 ConfigMap 与 Secret', link: '/knowledge/engineering/kubernetes/07-configuration-configmap-and-secrets' },
+          { text: '08 PV、PVC 与 CSI', link: '/knowledge/engineering/kubernetes/08-storage-pv-pvc-and-csi' },
+          { text: '09 资源、调度与扩缩容', link: '/knowledge/engineering/kubernetes/09-resources-scheduling-and-autoscaling' },
+          { text: '10 RBAC 与 Pod 安全', link: '/knowledge/engineering/kubernetes/10-security-rbac-and-pod-security' },
+          { text: '11 Helm 包管理', link: '/knowledge/engineering/kubernetes/11-helm-and-package-management' },
+          { text: '12 可观测性与排障', link: '/knowledge/engineering/kubernetes/12-observability-and-troubleshooting' },
+          { text: '13 CRD、Operator 与生产', link: '/knowledge/engineering/kubernetes/13-crd-operators-and-production-next-steps' }
         ]},
         { text: 'Learning', items: [
           { text: 'Overview', link: '/knowledge/learning/' },

@@ -4,8 +4,8 @@ type: concept
 status: growing
 tags: [AI, CUDA, CUTE, CUTLASS, FlashAttention, Kernel]
 created: 2026-08-25
-updated: 2026-08-25
-source: third_party/flash-attention/csrc/cutlass/include/cute/ + flash_fwd_kernel.h
+updated: 2026-09-01
+source: third_party/cutlass/include/cute/ + third_party/flash-attention/csrc/flash_attn/src/
 ---
 
 # CUTE 入门：从 C CUDA 视角理解 flash-attn 的 kernel 写法
@@ -107,31 +107,334 @@ float *block_ptr = mO_ptr + bidh*head_stride + m_block*kBlockM*row_stride;
 
 > 题外话：`Shape<Int<kBlockM>, Int<kHeadDim>>{}` 这种写法表示"编译期已知的常量尺寸"，能让编译器全展开、常数折叠。这就是 cute 性能的来源之一。
 
-## 概念 3：GmemTiledCopyO + partition_D —— 把"写全局"的任务分给 128 个线程
+## 概念 3：`GmemTiledCopyO` + `partition_D` —— 按当前 CTA 的线程布局拆分全局写回
 
-这是 flash_fwd_kernel.h 第 104-106 行的三连，也是最抽象的一段：
+这是 `flash_fwd_kernel.h` 里最抽象的三连：
 
 ```cpp
-typename Kernel_traits::GmemTiledCopyO gmem_tiled_copy_O;   // 1. 拷贝器（无状态，只带类型信息）
-auto gmem_thr_copy_O = gmem_tiled_copy_O.get_thread_slice(tidx);  // 2. 我要的那份
-Tensor tOgO = gmem_thr_copy_O.partition_D(gO);              // 3. 我的"目标槽位"视图
+typename Kernel_traits::GmemTiledCopyO gmem_tiled_copy_O;        // 1. 整个 CTA 的拷贝方案
+auto gmem_thr_copy_O = gmem_tiled_copy_O.get_thread_slice(tidx); // 2. 取线程 tidx 的方案
+Tensor tOgO = gmem_thr_copy_O.partition_D(gO);                    // 3. 取该线程的目标视图
 ```
 
-### 例 3：把 128×64 的 O 分给 128 个线程
+可以把三层对象分别理解成：
 
-设想一个简单 tiled copy：128 线程，每线程负责 8 列（每列 1 个元素），沿 M 维排布：
-
-```
-gO (128 行, 64 列)
-  ↓ partition_D 按线程切
-tOgO：每个线程看到 (1, 1, 8) 形状
-      模式：thread 0 → 行 0，thread 1 → 行 1，... 每线程 8 列
+```text
+GmemTiledCopyO          全班座位表：整个 CTA 如何共同搬一个 tile
+get_thread_slice(tidx)  找到第 tidx 个线程在座位表中的位置
+partition_D(gO)         按该位置列出这个线程要写的所有 O 坐标
 ```
 
-- `partition_D` 的 **D = Destination**，即"我负责写入的目标"
-- `tOgO` 是这个线程要写的全局位置视图，之后 `cute::copy` / 写操作都基于它
+`partition_D` 的 `D` 是 **Destination**。它不搬数据，也不新建一份 `gO`；它只是从目标张量 `gO` 中生成一个线程私有的逻辑视图。真正的寄存器到全局内存写回发生在后面的 `cute::copy`。
 
-**为什么这么设计**：你不需要手动算"第 tidx 个线程写哪几列"——库按 tiled copy 里编码的线程布局自动分好。改线程布局只需改一处类型。
+### 为什么当前代码经常是 128 个线程
+
+先分清两个问题：
+
+1. **这个 kernel 的一个 CTA 有多少线程？**由 `Kernel_traits` 的 `kNWarps` 决定；
+2. **这些线程如何拆分 copy tile？**由 `GmemTiledCopyO` 中的 thread layout 和 value layout 决定。
+
+`kernel_traits.h` 中有：
+
+```cpp
+static constexpr int kNWarps = kNWarps_;
+static constexpr int kNThreads = kNWarps * 32;
+```
+
+CUDA 一个 warp 固定有 32 个线程。许多前向 specialization 传入 `kNWarps_ = 4`，例如：
+
+```cpp
+Flash_fwd_kernel_traits<Headdim, 128, 64, 4, ...>
+//                                            ↑ 4 个 warp
+```
+
+所以该 specialization 的 CTA 线程数为：
+
+$$
+kNThreads = kNWarps \times 32 = 4 \times 32 = 128
+$$
+
+因此，原先所说的「分给 128 个线程」只适用于这些 **4-warp specialization**。`partition_D` 本身没有「必须使用 128 个线程」的规则。例如代码中 head dimension 较大的某些 specialization 使用 8 个 warp，此时：
+
+$$
+kNThreads = 8 \times 32 = 256
+$$
+
+同一个 `partition_D` 接口仍然成立，只是它按照新的 256-thread layout 重新分工。
+
+> 为什么选择 4 个而不是 2 个或 8 个 warp？这是 kernel 调优结果，而不是 CuTe 语义：更多线程可能增加并行度，却也可能增大寄存器、共享内存、同步和 occupancy 压力。源码甚至记录了某些形状下 8 warps 比 4 warps 更慢；另一些较大 head dimension 的形状则确实选用 8 warps。
+
+### `GmemTiledCopyO` 到底编码了什么
+
+前向 traits 中的定义可以拆成四步：
+
+```cpp
+static constexpr int kGmemElemsPerLoad =
+    sizeof(cute::uint128_t) / sizeof(Element);
+
+static constexpr int kGmemThreadsPerRow =
+    kBlockKSmem / kGmemElemsPerLoad;
+
+using GmemLayoutAtom = Layout<
+    Shape<Int<kNThreads / kGmemThreadsPerRow>,
+          Int<kGmemThreadsPerRow>>,
+    Stride<Int<kGmemThreadsPerRow>, _1>
+>;
+
+using GmemTiledCopyO = decltype(make_tiled_copy(
+    Copy_Atom<AutoVectorizingCopyWithAssumedAlignment<128>, Element>{},
+    GmemLayoutAtom{},
+    Layout<Shape<_1, _8>>{}
+));
+```
+
+这几部分的职责不同：
+
+| 组成 | 回答的问题 |
+|---|---|
+| `Copy_Atom<...>` | 一次底层 copy 使用什么元素类型和向量化方式？ |
+| `GmemLayoutAtom` | CTA 中的线程沿 tile 的行、列方向怎样排列？ |
+| `Layout<Shape<_1, _8>>` | 每个线程在一个 copy atom 中持有怎样的 value 布局？ |
+| `make_tiled_copy(...)` | 如何把上述原子模式平铺到完整目标张量？ |
+
+这里的 `128` 容易产生第二种误解：
+
+```cpp
+AutoVectorizingCopyWithAssumedAlignment<128>
+```
+
+它允许 copy 算法假定指针和动态 layout **最多具有 128-bit（16-byte）对齐**，并在源/目标的共同连续布局允许时选择不超过 128 bit 的向量宽度；它不是线程数。对这里连续的 8 个 FP16/BF16 元素，通常正好可以形成一次 128-bit copy。恰好 CTA 也常有 128 个线程，但两个「128」来自完全不同的维度：
+
+```text
+kNThreads = 128                         → 128 个 CUDA 线程
+AssumedAlignment<128> = 128 bits = 16 B → 内存对齐/向量化粒度
+```
+
+### 例 3A：FP16、`kHeadDim = 64` 时为什么是 `Shape<16, 8>`
+
+`Element` 是 FP16/BF16 时，每个元素为 2 byte。一份 128-bit 数据包含：
+
+$$
+kGmemElemsPerLoad = \frac{128\ \mathrm{bit}}{16\ \mathrm{bit/element}}
+= \frac{16\ \mathrm{byte}}{2\ \mathrm{byte/element}} = 8\ \mathrm{elements}
+$$
+
+当 `kBlockKSmem = 64` 时：
+
+$$
+kGmemThreadsPerRow = \frac{64}{8} = 8
+$$
+
+若该 specialization 使用 4 warps，即 `kNThreads = 128`，那么：
+
+$$
+\frac{kNThreads}{kGmemThreadsPerRow} = \frac{128}{8} = 16
+$$
+
+于是 thread-layout atom 是：
+
+```cpp
+GmemLayoutAtom = Layout<Shape<_16, _8>, Stride<_8, _1>>;
+//                                ↑ 8 个线程共同覆盖一行的 64 个元素
+```
+
+可以把一个 atom 画成下面这样。每个 `Tn` 表示线程 `n` 负责一个连续 8-element 向量，而不是只负责一个标量：
+
+```text
+逻辑行  0: T0   T1   T2   T3   T4   T5   T6   T7
+            0-7  8-15 16-23 ...             56-63
+逻辑行  1: T8   T9   T10  T11  T12  T13  T14  T15
+逻辑行  2: T16  T17  T18  T19  T20  T21  T22  T23
+...
+逻辑行 15: T120 T121 T122 T123 T124 T125 T126 T127
+```
+
+所以准确说法不是「thread 0 写第 0 行、thread 1 写第 1 行」，而是：
+
+- 8 个线程协作覆盖一行的 64 个 FP16/BF16 元素；
+- 128 个线程一次覆盖 16 行；
+- 每个线程在一行中负责一个连续的 8-element、16-byte 片段。
+
+### 例 3B：完整 `128 × 64` tile 如何重复这个 atom
+
+上面的 thread-layout atom 一轮覆盖 `16 × 64` 个元素，而 `gO` 有 `128 × 64` 个元素。因此这个模式会沿行方向重复：
+
+```text
+第 0 轮：128 个线程共同处理行   0-15
+第 1 轮：128 个线程共同处理行  16-31
+第 2 轮：128 个线程共同处理行  32-47
+...
+第 7 轮：128 个线程共同处理行 112-127
+```
+
+以 thread 3 为例，它的目标片段不是一整行，而是类似：
+
+```text
+(row 0,   col 24-31)
+(row 16,  col 24-31)
+(row 32,  col 24-31)
+...
+(row 112, col 24-31)
+```
+
+所以 `partition_D(gO)` 之后的 `tOgO` 通常是一个 rank-3 视图，而不是简单的一维数组。可以用以下**心智模型**理解它的模式：
+
+```text
+tOgO(CPY, m, k)
+      │    │  └─ copy atom 沿 K 方向平铺后的第 k 组
+      │    └──── copy atom 沿 M 方向平铺后的第 m 组
+      └───────── 一次 copy 内的 value mode（这里通常是 8 个元素）
+```
+
+确切的 mode 大小由 CuTe 对 layout 的合成结果决定，不应把所有 specialization 都硬记成某个固定 shape；真正稳定的是：`tOgO` 枚举了当前线程在整个 `gO` tile 中负责的全部目标位置。
+
+### 例 3C：`kHeadDim = 32` 时线程分工会变化
+
+当 `kBlockKSmem = 32`、元素仍是 FP16/BF16 时：
+
+$$
+kGmemThreadsPerRow = \frac{32}{8} = 4
+$$
+
+4-warp specialization 中：
+
+$$
+\frac{128}{4} = 32
+$$
+
+因此 thread layout 变为概念上的 `Shape<32, 4>`：
+
+```text
+每行：4 个线程 × 每线程 8 个元素 = 32 个元素
+一轮：32 行 × 4 个线程 = 128 个线程
+```
+
+这说明即使 CTA 仍是 128 个线程，每行参与写回的线程数也会随 copy tile 的列宽变化。`partition_D` 不是按一个固定公式「每线程一行」切，而是服从 `GmemTiledCopyO` 编码的布局。
+
+### 例 3D：8-warp specialization 中为什么变成 256 个线程
+
+假设 `kNWarps = 8`，并且 `kBlockKSmem = 64`：
+
+$$
+kNThreads = 8 \times 32 = 256, \qquad
+kGmemThreadsPerRow = \frac{64}{8} = 8
+$$
+
+那么：
+
+$$
+GmemLayoutAtom.shape = \left(\frac{256}{8}, 8\right) = (32, 8)
+$$
+
+即 8 个线程协作覆盖一行，一轮可以覆盖 32 行。调用代码完全不变：
+
+```cpp
+auto thr = gmem_tiled_copy_O.get_thread_slice(tidx);
+Tensor tOgO = thr.partition_D(gO);
+```
+
+变化发生在 `GmemTiledCopyO` 的类型内部。这正是 CuTe 类型化布局的价值：kernel 主体声明「按本 specialization 的 copy layout 分目标」，而不用分别手写 128-thread 和 256-thread 的索引公式。
+
+### 例 3E：尾行 —— 最后一个 Q tile 不满 `kBlockM`
+
+假设 `kBlockM = 128`、实际 Query 长度为 150。第 0 个 CTA 处理逻辑行 `0-127`，第 1 个 CTA 的局部 tile 仍然按编译期 shape 描述 128 行，但其中只有前 22 行合法：
+
+$$
+max\_M = 150 - 1 \times 128 = 22
+$$
+
+`partition_D` 仍会把完整的 `128 × kHeadDim` 逻辑 tile 分给线程；它不负责判断运行时边界。边界由同样分区的坐标张量和 `copy` helper 判断：
+
+```cpp
+Tensor cO   = make_identity_tensor(make_shape(size<0>(gO), size<1>(gO)));
+Tensor tOcO = gmem_thr_copy_O.partition_D(cO);
+
+if (get<0>(tOcO(0, m, 0)) < max_M) {
+    // 只写局部行 0-21
+}
+```
+
+例如在前面的 `Shape<16, 8>` 布局中，某线程会每隔 16 行拿到一个片段；若它从局部行 6 开始，则 `tOgO` 包含局部行 6、22、38、...。同位置的 `tOcO` 会给出这些行号；只有行 6 通过，22 及之后被跳过。这样既保留规则的编译期 tile，又避免越界写全局内存。
+
+### 例 3F：尾列 —— 实际 `params.d` 小于编译期 `kHeadDim`
+
+kernel specialization 的 `kHeadDim` 是编译期上界。例如实际 `params.d = 80` 可选择 `kHeadDim = 96` 的 specialization。接口要求 head dimension 是 8 的倍数，所以向量边界与每线程 8-element value 布局对齐。列谓词来自：
+
+```cpp
+Tensor tOpO = make_tensor<bool>(make_shape(size<2>(tOgO)));
+for (int k = 0; k < size(tOpO); ++k) {
+    tOpO(k) = get<1>(tOcO(0, 0, k)) < params.d;
+}
+```
+
+结果是：
+
+```text
+列  0-79  → predicate = true，允许写入
+列 80-95  → predicate = false，跳过写入
+```
+
+这里再次能看到职责分离：
+
+- `partition_D` 决定**本线程可能负责哪些槽位**；
+- `tOcO` 告诉代码**这些槽位的逻辑坐标是什么**；
+- 行/列 predicate 决定**当前运行时尺寸下哪些槽位真的合法**。
+
+### 为什么数据张量和坐标张量必须使用同一个 `partition_D`
+
+这两行是一个成对设计：
+
+```cpp
+Tensor tOgO = gmem_thr_copy_O.partition_D(gO); // 目标数据位置
+Tensor tOcO = gmem_thr_copy_O.partition_D(cO); // 同位置的逻辑坐标
+```
+
+因为 `gO` 与 `cO` 具有相同的逻辑 shape，又使用同一个 thread slice 和同一个 destination partition，所以二者逐槽对应：
+
+```text
+tOgO(_, m, k)  ← 真正要写的全局地址
+   ↕ 同一线程、同一 (m, k)
+tOcO(_, m, k)  ← 该地址对应的 (row, col)
+```
+
+如果两者使用不同的 partition，程序就可能拿 A 槽位的坐标去判断 B 槽位的地址，边界 mask 会失去意义。
+
+### 把整个流程翻译成 C 风格 CUDA
+
+CuTe 写法：
+
+```cpp
+auto thr = gmem_tiled_copy_O.get_thread_slice(tidx);
+Tensor dst   = thr.partition_D(gO);
+Tensor coord = thr.partition_D(cO);
+copy(gmem_tiled_copy_O, src, dst, coord, predicate_K, max_M);
+```
+
+概念上等价于：
+
+```cpp
+for (每个由 copy layout 分给 tidx 的 row_group) {
+    int row = /* 由 thread layout 和平铺次数计算 */;
+    int col = /* 由 thread-in-row 和 value layout 计算 */;
+
+    if (row < max_M && col < params.d) {
+        // 一次写当前线程负责的连续向量；FP16/BF16 常为 8 个元素
+        vector_store_16B(&gO[row][col], zero_vector);
+    }
+}
+```
+
+不同之处在于，CuTe 把 `row`、`col`、平铺次数和向量值布局编码在类型中，使编译器可以常量折叠并展开循环，也让同一份 kernel 主体适配不同的 tile/warp specialization。
+
+### 小结：不要混淆三个层次
+
+| 层次 | 当前典型值 | 谁决定 |
+|---|---:|---|
+| CTA 线程数 | 128（4 warps）或 256（8 warps） | `kNWarps × 32` |
+| 每行参与 copy 的线程数 | 4 或 8 | `kBlockKSmem / kGmemElemsPerLoad` |
+| 每线程每个 copy atom 的元素数 | FP16/BF16 下通常为 8 | 128-bit copy 与 value layout |
+
+最重要的结论是：**`partition_D` 不等于「平均切成 128 份」**。它真正做的是：依据当前 `TiledCopy` 的线程布局和值布局，把目标张量中属于线程 `tidx` 的所有坐标组织成一个线程私有视图。
 
 ## 概念 4：寄存器缓冲 —— `make_tensor<Element>(shape)`
 
@@ -173,21 +476,21 @@ if (get<0>(tOcO(0, m, 0)) < actual_seqlen_q) {
 }
 ```
 
-**这正是 flash_fwd_kernel.h 第 122-126 行干的事**：用坐标张量拿到真实行号，决定 `gLSE(row) = INFINITY`。
+**这正是 early-exit 分支末尾在做的事**：用坐标张量拿到局部 tile 的真实行号，决定 `gLSE(row) = INFINITY`。
 
-## 回到 flash_fwd_kernel.h 第 104-127 行：连起来看
+## 回到 `flash_fwd_kernel.h` 的 early-exit 分支：连起来看
 
-现在整段就"读得懂"了。这段在 early-exit 分支（本 CTA 没有可算的 KV），作用是把 O 写 0、LSE 写 +∞：
+现在整段就"读得懂"了。这段在 early-exit 分支（本 CTA 没有可算的 K/V），作用是把 O 写 0、LSE 写 +∞：
 
-| 行 | cute 概念 | 在干什么 |
+| 代码阶段 | cute 概念 | 在干什么 |
 |---|---|---|
-| 104 | tiled copy | 声明"写全局 O 的方式"（线程布局+向量宽） |
-| 105-106 | get_thread_slice / partition_D | 算我这个线程负责的全局槽位 `tOgO` |
-| 107-108 | 寄存器张量 + clear | 寄存器里凑一份全 0 |
-| 110-112 | identity_tensor + 同 partition | 造"坐标地图" `tOcO`，用于边界判断 |
-| 113-117 | bool 掩码 | 算 K 维（head_dim）越界标记 |
-| 119-121 | FLASH_NAMESPACE::copy | 循环 + 边界 mask，把 0 向量化写回全局 |
-| 122-126 | 坐标张量 | 每行写 `gLSE = INFINITY` |
+| 声明 `GmemTiledCopyO` | tiled copy | 声明"写全局 O 的方式"（线程布局+向量宽） |
+| `get_thread_slice` / `partition_D` | 线程切片 | 算当前线程负责的全局槽位 `tOgO` |
+| 寄存器张量 + `clear` | register fragment | 寄存器里凑一份全 0 |
+| identity tensor + 同一 partition | 坐标视图 | 造"坐标地图" `tOcO`，用于边界判断 |
+| `tOpO` | bool 掩码 | 算 K 维（head dimension）越界标记 |
+| `FLASH_NAMESPACE::copy` | predicated copy | 循环 + 边界 mask，把 0 向量化写回全局 |
+| 最后的行循环 | 坐标张量 | 每行由拥有逻辑列 0 的唯一线程写 `gLSE = INFINITY` |
 
 **核心心智模型**（一句话）：cute 用"**数据视图 + 坐标视图 + 同一套线程分区**"三个东西，把"谁、在哪、能不能写"全部显式化；你不再手写索引，而是声明式地表达意图。
 
@@ -221,6 +524,10 @@ if (get<0>(tOcO(0, m, 0)) < actual_seqlen_q) {
 
 ## References
 
-- `third_party/flash-attention/csrc/cutlass/include/cute/tensor.hpp`、`layout.hpp`、`tensor_impl.hpp`
+- `third_party/cutlass/include/cute/tensor.hpp`、`layout.hpp`、`tensor_impl.hpp`
+- `third_party/cutlass/include/cute/atom/copy_atom.hpp`
+- `third_party/cutlass/include/cute/algorithm/copy.hpp`
+- `third_party/flash-attention/csrc/flash_attn/src/kernel_traits.h`
 - `third_party/flash-attention/csrc/flash_attn/src/flash_fwd_kernel.h`
+- `third_party/flash-attention/csrc/flash_attn/src/flash_fwd_launch_template.h`
 - CUTLASS 官方文档与 cute 教程：https://github.com/NVIDIA/cutlass

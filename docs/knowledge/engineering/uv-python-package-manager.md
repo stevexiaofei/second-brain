@@ -499,6 +499,7 @@ uv 的意义不只是「快」。它真正改变的是 Python 项目的心智模
 
 ## Related
 
+- [pyproject.toml — Python 项目的声明式控制面](./pyproject-toml.md) — 项目元数据、构建后端与工具配置的标准边界
 - [Python Packaging 用户指南](https://packaging.python.org/) — 理解 `pyproject.toml`、PEP 517/518/621 标准，uv 实现这些标准
 - [PEP 723 — Inline script metadata](https://peps.python.org/pep-0723/) — uv 单文件脚本依赖声明的标准来源
 - [PEP 735 — Dependency groups](https://peps.python.org/pep-0735/) — uv `--group` 实现的标准
