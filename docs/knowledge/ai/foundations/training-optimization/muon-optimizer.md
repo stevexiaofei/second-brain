@@ -15,7 +15,7 @@ source:
 
 # Muon 优化器
 
-> **证据状态：** 本文先记录 Muon 的算法结构和需要验证的问题。两篇微信文章提供了“Bi-Maxwell”与“谱反馈/谱梯度流”的解释线索，但本轮无法取得可对应的一手论文；这些解释被单独标记为**待核验**，不作为 Muon 已被证明的工作机制。
+> **证据状态：** Muon 的更新几何、Bi-Maxwell 的实验结论和谱梯度流的理论结论来自不同层级的资料，不能混为同一证明链。本文只保留 Muon 的算法总览；两篇相关论文分别记录在 [Bi-Maxwell 物理响应与双时间尺度动量](./bimaxwell-muon-physical-response.md) 和 [平滑矩阵 Polar 谱梯度流](./smoothed-matrix-polar-spectral-gradient-flows.md)，并明确各自的假设和外推边界。
 
 ## 一句话理解
 
@@ -108,7 +108,30 @@ $$
 W_{t+1} = W_t - \eta\,s(m,n)\,O_t.
 $$
 
-缩放 $s(m,n)$ 的精确定义、学习率 $eta$、weight decay 的放置方式和参数分组同样是实现/配方的一部分。比较 Muon 与 AdamW 时，必须比较完整配方，而不仅是替换 `optimizer.step()` 中的一行。
+缩放 $s(m,n)$ 的精确定义、学习率 $\eta$、weight decay 的放置方式和参数分组同样是实现/配方的一部分。比较 Muon 与 AdamW 时，必须比较完整配方，而不仅是替换 `optimizer.step()` 中的一行。
+
+## 一种受限的理论动机：输出扰动预算
+
+Bi-Maxwell 论文给出了一种**条件化**的解释。将单层 $W$ 看作 $y=Wx$，令 $X=-\partial\Phi/\partial W$ 为损失势 $\Phi(W)$ 的负梯度，$V=\dot W$ 为瞬时更新速度。若要求任意输入方向上的最坏输出扰动满足
+
+$$
+A_{\mathrm{out}}(Vx) \le \varepsilon A_{\mathrm{in}}(x),\qquad \forall x,
+$$
+
+在该文使用的 RMS 通道归一化下，可以写成谱范数约束 $\lVert V\rVert_2\le c$。在该硬约束内最大化瞬时损失下降功率
+
+$$
+\max_{\lVert V\rVert_2\le c}\langle X,V\rangle_F
+$$
+
+会得到
+
+$$
+V^\star=c\operatorname{polar}(X),\qquad
+-\dot\Phi_{\max}=c\lVert X\rVert_*.
+$$
+
+这说明：在**欧氏度量、各向同性、对所有输入成立的最坏情况硬上限**下，Polar 方向是预算内的最大瞬时耗散方向。它不是 Muon 无条件优于梯度下降的证明。若约束改为按实际 activation 分布的平均扰动，论文会导出类似 $V\propto XC^{-1}$ 的协方差预条件方向；再考虑下游敏感度则可能是 $V\propto S^{-1}XC^{-1}$。完整推导、记忆核与实验见 [Bi-Maxwell 物理响应与双时间尺度动量](./bimaxwell-muon-physical-response.md)。
 
 ## 为什么不直接沿原始梯度走
 
@@ -212,23 +235,16 @@ $$
 - 同时报告收敛速度、最终质量和总训练成本；
 - 不把单一规模、单一种子或训练早期的 loss 优势泛化为通用结论。
 
-## 两篇文章带来的理论线索（待核验）
+## 两篇论文如何补充理解 Muon
 
-### Bi-Maxwell 解读
+两篇微信文章实际对应不同的一手研究，不能互相替代验证：
 
-《[Muon优化器的物理模型——解释它为什么 work，还搞出了个 Bi-Maxwell](https://mp.weixin.qq.com/s/Gq7k9yDgDdVlT6NHoKJizQ)》将训练权重矩阵描述为“有记忆的响应介质”，并声称 Muon 的半正交化方向得到物理解释，提出或讨论“Bi-Maxwell”。
+| 工作 | 研究维度 | 最稳妥的结论 | 不应推出的结论 |
+| --- | --- | --- | --- |
+| [Bi-Maxwell 物理响应与双时间尺度动量](./bimaxwell-muon-physical-response.md) | **时间**：动量记住多长历史 | 在一个 $124\text{M}$ GPT-2 / FineWeb 公开基准中，双时间尺度记忆核在特定冻结训练栈里优于匹配平均滞后的单 EMA 对照 | 对任意规模、任务或 Muon 配方普遍加速；完全解释 Muon 的全部行为 |
+| [平滑矩阵 Polar 谱梯度流](./smoothed-matrix-polar-spectral-gradient-flows.md) | **空间/谱**：为何使用 Polar 型矩阵方向 | 平滑连续时间模型具有稳定性结论；在特定单层平方损失与局部二次尺度比较下，可得 Polar 局部占优条件 | 实际离散 Muon 在真实网络中必然快于 SGD / AdamW |
 
-**当前状态：** 已确认这是该文章的陈述；尚未定位可验证其术语、方程、作者和实验的一手论文。因此它是研究线索，不能用于断言 Muon 的理论机制或优越性。
-
-**下一步：** 从文章正文或作者公开资料中定位论文精确标题、arXiv/会议链接和代码；阅读原文后再将其模型的变量、假设、预测与实验拆为独立论文笔记。
-
-### 谱反馈 / 谱梯度流解读
-
-《[控制论，从未退场⑤：Muon 为什么不直接沿梯度走？这篇论文把矩阵优化写成了“谱反馈系统”](https://mp.weixin.qq.com/s/zapTq9YsHqAGLsymEt9gcQ?scene=1)》把相关工作描述为“谱反馈系统”或“谱梯度流”，并归因于浙江大学团队。
-
-**当前状态：** 已确认这是该文章的表述；一手论文尚未在本轮可靠定位，文章中的机构归属、数学证明和经验结论均待核验。
-
-**值得核验的问题：** 所谓系统的状态变量、连续时间极限、反馈律、稳定性条件分别是什么？它是解释 Muon 既有更新的分析，还是提出新的优化算法？其预测是否用独立实验验证？
+因此可以把 Muon 研究为一条两维路线：先问梯度历史如何被动量积累，再问积累后的矩阵方向如何按奇异谱重新缩放。两篇论文尚未将这两部分联合成一个经过真实大模型验证的完整理论。
 
 ## 我的当前理解
 
@@ -243,7 +259,7 @@ Muon 的关键不只是“用 Newton–Schulz 加速矩阵运算”，而是选�
 3. shape scaling 的理论和经验动机是什么？它与学习率 scaling rule 如何耦合？
 4. 对 Transformer 的 attention/MLP 投影、embedding 与卷积核，Muon 的收益和失败模式是否不同？
 5. 更新谱均衡与训练损失、泛化、条件数或表示学习之间存在何种可检验关系？
-6. Bi-Maxwell 与谱反馈/谱梯度流分别对应哪篇原始论文？它们是独立理论还是同一工作的不同叙述？
+6. [Bi-Maxwell](./bimaxwell-muon-physical-response.md) 与 [谱梯度流](./smoothed-matrix-polar-spectral-gradient-flows.md)如何在同一离散 Muon 训练栈中联结？是否能产生可检验的联合预测？
 7. 在 FSDP、ZeRO、张量并行或 fused optimizer 中，矩阵的分片边界是否改变 Muon 的数学含义？
 
 ## Related Knowledge
@@ -253,15 +269,21 @@ Muon 的关键不只是“用 Newton–Schulz 加速矩阵运算”，而是选�
 - [自动微分 autograd](../../systems/pytorch/pytorch-autograd.md) — Muon 消费的 `.grad` 如何产生
 - [分布式训练](../../systems/pytorch/pytorch-distributed.md) — 优化器状态分片与并行训练边界
 - [CUTLASS / CuTe](../../systems/cutlass/) — Newton–Schulz 迭代依赖的矩阵乘法数据流与 GPU 实现背景
+- [Bi-Maxwell 物理响应与双时间尺度动量](./bimaxwell-muon-physical-response.md) — Muon 动量核的物理建模与 $124\text{M}$ 公开基准
+- [平滑矩阵 Polar 谱梯度流](./smoothed-matrix-polar-spectral-gradient-flows.md) — 连续时间稳定性与局部谱方向条件
 
 ## References
 
-### 算法与实现（本轮待联网复核版本）
+### 算法与实现
 
 - Keller Jordan, [Muon: An optimizer for hidden weight matrices](https://kellerjordan.github.io/posts/muon/) — Muon 的公开说明入口
 - [KellerJordan/Muon](https://github.com/KellerJordan/Muon) — 参考实现入口
+- [Muon is Scalable for LLM Training](https://arxiv.org/abs/2502.16982) — 大规模训练研究
+- [Old Optimizer, New Norm: An Anthology](https://arxiv.org/abs/2409.20325) — 与谱范数最速下降相关的理论背景
 
-### 二手解读（仅作研究线索）
+### 对应一手论文与二手解读
 
+- [A Physical Response-and-Memory Model for Muon Optimization](https://arxiv.org/abs/2608.22994) — Bi-Maxwell 论文，2026-08 预印本
+- [A Continuous-Time Analysis of Smoothed Matrix-Polar Spectral Gradient Flows for Muon-Type Optimization](https://arxiv.org/abs/2608.01911) — 谱梯度流论文，2026-08 预印本
 - 立与青，《[Muon优化器的物理模型——解释它为什么 work，还搞出了个 Bi-Maxwell](https://mp.weixin.qq.com/s/Gq7k9yDgDdVlT6NHoKJizQ)》，2026-08-25
 - 阳仔的控智笔记，《[控制论，从未退场⑤：浙大团队最新成果，Muon 为什么不直接沿梯度走？这篇论文把矩阵优化写成了“谱反馈系统”](https://mp.weixin.qq.com/s/zapTq9YsHqAGLsymEt9gcQ?scene=1)》，2026-08-15

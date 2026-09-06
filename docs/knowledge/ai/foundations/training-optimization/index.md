@@ -4,7 +4,9 @@
 
 ## Notes
 
-- [Muon 优化器](./muon-optimizer.md) — 对矩阵动量更新做近似极分解/半正交化的优化器；重点理解它改变了什么、为什么可能有益，以及哪些说法仍待验证。
+- [Muon 优化器](./muon-optimizer.md) — 对矩阵动量更新做近似极分解/半正交化的优化器；作为算法总览与实验入口
+- [Bi-Maxwell：Muon 的物理响应与双时间尺度动量](./bimaxwell-muon-physical-response.md) — 条件化的 Polar 动机、双时间尺度记忆核和 $124\text{M}$ 公开基准
+- [平滑矩阵 Polar 谱梯度流](./smoothed-matrix-polar-spectral-gradient-flows.md) — Muon-type 连续时间模型的稳定性与局部谱方向条件
 
 ## 组织原则
 
