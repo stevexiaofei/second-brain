@@ -7,6 +7,7 @@
 - [Reinforcement Learning](./reinforcement-learning/) — 价值函数、Bellman 方程和策略优化
 - [Diffusion Models](./diffusion/) — 扩散过程、训练目标与采样
 - [Reasoning & Inference](./reasoning/) — 推理提示、搜索、验证和自我改进
+- [Training Optimization](./training-optimization/) — 优化器、矩阵预条件、数值稳定性与训练动力学
 
 ## 组织原则
 

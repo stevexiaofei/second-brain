@@ -133,6 +133,7 @@ $$\theta_t = \theta_{t-1} - \eta \, \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon
 - [torch.nn](./pytorch-nn.md) — `Module.parameters()` 是优化器的输入
 - [分布式训练](./pytorch-distributed.md) — ZeRO/FSDP 分片优化器状态、`zero_redundancy_optimizer`
 - [torch.compile 编译栈](./pytorch-compile.md) — fused/compiled 优化器、`apply_optimizer_in_backward`
+- [Muon 优化器](../../foundations/training-optimization/muon-optimizer.md) — 矩阵动量更新与近似极分解；与 `torch.optim` 源码概览互补
 
 ## References
 

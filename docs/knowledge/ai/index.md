@@ -6,6 +6,7 @@ AI 知识按两条主线组织：**基础与方法**回答模型为什么有效�
 - [Reinforcement Learning](./foundations/reinforcement-learning/) — 状态价值、Bellman 方程、PPO 与 GRPO
 - [Diffusion Models](./foundations/diffusion/) — 扩散模型与生成过程；当前从 DDIM 论文切入
 - [Reasoning & Inference](./foundations/reasoning/) — Chain-of-Thought 及其推理方法演进
+- [Training Optimization](./foundations/training-optimization/) — 优化器、更新几何、数值稳定性与训练动力学
 - [Attention 头变体：MHA / MQA / GQA / MLA](./attention-head-variants.md) — 同一公式在"KV 头共享"维度上的谱系，KV cache 内存权衡
 
 ## Systems

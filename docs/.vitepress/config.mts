@@ -43,6 +43,8 @@ export default withMermaid(
           { text: 'DDIM 论文', link: '/knowledge/ai/foundations/diffusion/ddim-paper' },
           { text: 'Reasoning & Inference', link: '/knowledge/ai/foundations/reasoning/' },
           { text: '思维链论文详解', link: '/knowledge/ai/foundations/reasoning/chain-of-thought-papers' },
+          { text: 'Training Optimization', link: '/knowledge/ai/foundations/training-optimization/' },
+          { text: 'Muon 优化器', link: '/knowledge/ai/foundations/training-optimization/muon-optimizer' },
           { text: 'AI Systems', link: '/knowledge/ai/systems/' },
           { text: 'AI 开源源码精读', link: '/knowledge/ai/systems/ai-open-source-source-reading' },
           { text: 'CUTLASS / CuTe', link: '/knowledge/ai/systems/cutlass/' },
