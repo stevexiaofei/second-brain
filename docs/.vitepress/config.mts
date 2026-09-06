@@ -151,7 +151,13 @@ export default withMermaid(
           { text: 'Overview', link: '/knowledge/investing/' },
           { text: '价值投资学习路线图', link: '/knowledge/investing/value-investing-learning-roadmap' },
           { text: '价值投资入门', link: '/knowledge/investing/value-investing-intro' },
-          { text: '上市公司财报阅读指南', link: '/knowledge/investing/financial-statement-reading' }
+          { text: '上市公司财报阅读指南', link: '/knowledge/investing/financial-statement-reading' },
+          { text: '判断贵不贵：估值地图', link: '/knowledge/investing/valuation/' },
+          { text: '什么是"贵"', link: '/knowledge/investing/valuation/01-what-is-expensive' },
+          { text: '绝对估值', link: '/knowledge/investing/valuation/02-absolute-valuation' },
+          { text: '相对估值：倍数工具箱', link: '/knowledge/investing/valuation/03-relative-multiples' },
+          { text: '按生意类型选尺子', link: '/knowledge/investing/valuation/04-multiples-by-business-type' },
+          { text: '交叉验证与检查清单', link: '/knowledge/investing/valuation/05-cross-checks-and-checklist' }
         ]},
         { text: 'Mathematics', items: [
           { text: 'Overview', link: '/knowledge/mathematics/' }
