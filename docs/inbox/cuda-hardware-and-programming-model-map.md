@@ -51,6 +51,8 @@ Register → Shared Memory / L1 → L2 → HBM / Global Memory
 
 本轮只建立地图，不把每个概念都当作已经掌握；带有“待验证 / 待实践”的内容需要后续通过文档、源码、实验和 profiler 继续确认。
 
+> **定位与边界：** 本文是 CUDA 主题的待验证研究母地图；[CUDA 初学者学习路径与最小实验](./cuda-beginner-learning-path.md) 则以最小代码、现象与实验组织同一主题的入门路径。两篇笔记互补而非重复，不在未经验证的情况下合并或迁入 Knowledge。
+
 ---
 
 ## 1. 先建立硬件地图

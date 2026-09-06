@@ -147,6 +147,7 @@ export default withMermaid(
         ]},
         { text: 'Investing', items: [
           { text: 'Overview', link: '/knowledge/investing/' },
+          { text: '价值投资学习路线图', link: '/knowledge/investing/value-investing-learning-roadmap' },
           { text: '价值投资入门', link: '/knowledge/investing/value-investing-intro' },
           { text: '上市公司财报阅读指南', link: '/knowledge/investing/financial-statement-reading' }
         ]},

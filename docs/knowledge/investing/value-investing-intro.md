@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [Investing, Value Investing, Graham, Buffett, 估值, 财务分析, 股票指标]
 created: 2026-08-25
-updated: 2026-08-25
+updated: 2026-09-03
 source: Graham《The Intelligent Investor》《Security Analysis》、Buffett 致股东信、Munger、Klarman、Marks
 ---
 
@@ -332,6 +332,7 @@ Graham 防御型投资者的经验参考线（仅作历史参照，非规则）�
 
 ## Related Knowledge
 
+- [价值投资学习路线图](./value-investing-learning-roadmap.md) — 将本文的概念框架转化为分阶段学习和公司研究练习
 - [上市公司财报阅读指南](./financial-statement-reading.md) — 三张报表、杜邦分析、造假红旗，估值的输入基础
 - 暂无站内关联笔记；后续可与 [数学知识](../mathematics/)（复利、期望值、凯利公式）建立连接
 

@@ -126,6 +126,17 @@ AI Cluster
 - **AI Infra 正在变成一种新的 Operating System**：Scheduler / Memory / Compiler 围绕 GPU 构成新的资源管理层
 - 推荐学习路径串联：`C softmax → RVV softmax → CUDA softmax → Triton softmax → FlashAttention`，把 CPU SIMD / RVV / GPU / Compiler / Kernel 全部串起来
 
+## 后续核验与整理条件
+
+这篇笔记当前是由对话整理出的**阅读线索**，不是已核验的论文事实集合。将其中内容迁入 Reading 或沉淀为 Knowledge 前，至少需要：
+
+1. 为每篇保留的论文补充正式论文页、预印本或会议页面等一手来源；
+2. 核对论文标题、发表信息、问题、方法与文中的性能数字，避免把对话中的概括当作结论；
+3. 对实际精读的论文补充自己的问题、理解、局限与和现有笔记的连接；
+4. 把路线图中的项目源码入口与对应论文分别核实，不把项目名和论文名混为同一来源。
+
+完成这些条件前，本笔记继续作为 Inbox 中的研究线索。
+
 ## 下一步建议（对话中的提议）
 
 做一张 **AI Infra 50 篇论文地图**：按 GPU Architecture → CUDA Kernel → Compiler → Runtime → Training System → Inference → Serving → Distributed GPU Cluster 八层，每层挑 5–8 篇，标注"必须精读 / 了解思想 / 配合源码读"，并把 vLLM、Triton、FlashInfer、Megatron、DeepSpeed、TensorRT-LLM 的源码对应到论文。
