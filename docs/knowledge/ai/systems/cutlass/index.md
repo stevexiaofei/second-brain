@@ -38,7 +38,8 @@ FlashAttention 等真实 kernel
 2. [Copy Atom、TiledCopy 与线程分区](./02-cute-copy-and-thread-partition.md)：理解 global → shared 搬运和 `partition_S/D`；
 3. [TiledMMA 与 fragment](./03-cute-tiled-mma.md)：理解 MMA atom 如何复制成大 tile；
 4. [GEMM 数据流](./04-cute-gemm-pipeline.md)：把 copy、shared memory、MMA、accumulator 和写回串起来；
-5. 回到 [FlashAttention 中的 CuTe 入门](../flash-attention/cute-basics.md)：用真实 attention kernel 验证这些抽象。
+5. [Copy 规模核算与 128-bit 向量化](./05-cute-copy-scaling-and-vectorization.md)：把 thread/value layout 算到 warp/CTA 吞吐，并核对向量化约束；
+6. 回到 [FlashAttention 中的 CuTe 入门](../flash-attention/cute-basics.md)：用真实 attention kernel 验证这些抽象。
 
 ## 知识地图
 
@@ -48,6 +49,7 @@ FlashAttention 等真实 kernel
 | 坐标映射 | Shape/Stride 如何映射到 offset？ | [01](./01-cute-tensor-and-layout.md) |
 | 数据搬运 | 谁从 global 读、谁向 shared 写？ | [02](./02-cute-copy-and-thread-partition.md) |
 | 线程分工 | `get_thread_slice` 和 `partition_S/D` 做什么？ | [02](./02-cute-copy-and-thread-partition.md) |
+| 规模与约束 | tile 槽位如何换算成 warp/CTA 吞吐？128-bit 向量化要求什么？ | [05](./05-cute-copy-scaling-and-vectorization.md) |
 | 矩阵计算 | 一条 MMA 如何扩展成大 tile？ | [03](./03-cute-tiled-mma.md) |
 | 完整流水线 | copy → shared → fragment → MMA → store 如何连接？ | [04](./04-cute-gemm-pipeline.md) |
 | 真实应用 | Q/K/V tile 如何使用这些视图？ | [FlashAttention](../flash-attention/cute-basics.md) |

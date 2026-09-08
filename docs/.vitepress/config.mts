@@ -58,7 +58,8 @@ export default withMermaid(
           { text: '01 Tensor 与 Layout', link: '/knowledge/ai/systems/cutlass/01-cute-tensor-and-layout' },
           { text: '02 Copy 与线程分区', link: '/knowledge/ai/systems/cutlass/02-cute-copy-and-thread-partition' },
           { text: '03 TiledMMA 与 fragment', link: '/knowledge/ai/systems/cutlass/03-cute-tiled-mma' },
-          { text: '04 GEMM 数据流', link: '/knowledge/ai/systems/cutlass/04-cute-gemm-pipeline' }
+          { text: '04 GEMM 数据流', link: '/knowledge/ai/systems/cutlass/04-cute-gemm-pipeline' },
+          { text: '05 Copy 规模核算与向量化', link: '/knowledge/ai/systems/cutlass/05-cute-copy-scaling-and-vectorization' }
         ]},
         { text: 'FlashAttention', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/flash-attention/' },
