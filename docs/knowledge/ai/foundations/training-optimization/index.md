@@ -4,7 +4,14 @@
 
 ## Notes
 
-- [Muon 优化器](./muon-optimizer.md) — 对矩阵动量更新做近似极分解/半正交化的优化器；作为算法总览与实验入口
+### 统一框架
+
+- [最速下降的范数对偶框架：SGD、SignSGD 与 Muon 是同一条公式](./steepest-descent-duality-map.md) — 最速下降方程 → 对偶范数 → 对偶映射；含 msign 的完整推导与"参数/梯度的类型错误"
+- [谱范数与 RMS 几何：为什么 Muon 用算子范数，而 AdamW 的几何不匹配](./spectral-norm-rms-geometry.md) — RMS→RMS 算子范数推导、输出扰动上界、AdamW 的 $\ell_1\to\ell_\infty$ 与 NP-hard 论证
+
+### 具体方法
+
+- [Muon 优化器](./muon-optimizer.md) — 对矩阵动量更新做近似极分解/半正交化的优化器；算法总览、[Newton–Schulz 代数推导](./muon-optimizer.md)与 Moonlight 改型
 - [Bi-Maxwell：Muon 的物理响应与双时间尺度动量](./bimaxwell-muon-physical-response.md) — 条件化的 Polar 动机、双时间尺度记忆核和 $124\text{M}$ 公开基准
 - [平滑矩阵 Polar 谱梯度流](./smoothed-matrix-polar-spectral-gradient-flows.md) — Muon-type 连续时间模型的稳定性与局部谱方向条件
 

@@ -44,10 +44,14 @@ export default withMermaid(
           { text: 'Reasoning & Inference', link: '/knowledge/ai/foundations/reasoning/' },
           { text: '思维链论文详解', link: '/knowledge/ai/foundations/reasoning/chain-of-thought-papers' },
           { text: 'Training Optimization', link: '/knowledge/ai/foundations/training-optimization/' },
+          { text: '最速下降的范数对偶框架', link: '/knowledge/ai/foundations/training-optimization/steepest-descent-duality-map' },
+          { text: '谱范数与 RMS 几何', link: '/knowledge/ai/foundations/training-optimization/spectral-norm-rms-geometry' },
           { text: 'Muon 优化器', link: '/knowledge/ai/foundations/training-optimization/muon-optimizer' },
           { text: 'Bi-Maxwell 与 Muon 动量', link: '/knowledge/ai/foundations/training-optimization/bimaxwell-muon-physical-response' },
           { text: '平滑 Matrix-Polar 谱梯度流', link: '/knowledge/ai/foundations/training-optimization/smoothed-matrix-polar-spectral-gradient-flows' },
           { text: 'AI Systems', link: '/knowledge/ai/systems/' },
+          { text: 'GPU 算子优化方法论', link: '/knowledge/ai/systems/gpu-kernel-optimization-methodology' },
+          { text: 'GPU 全局内存访存模型', link: '/knowledge/ai/systems/gpu-memory-access-model' },
           { text: 'AI 开源源码精读', link: '/knowledge/ai/systems/ai-open-source-source-reading' },
           { text: 'CUTLASS / CuTe', link: '/knowledge/ai/systems/cutlass/' },
           { text: 'Semantica 知识图谱', link: '/knowledge/ai/systems/semantica' },
@@ -59,7 +63,11 @@ export default withMermaid(
           { text: '02 Copy 与线程分区', link: '/knowledge/ai/systems/cutlass/02-cute-copy-and-thread-partition' },
           { text: '03 TiledMMA 与 fragment', link: '/knowledge/ai/systems/cutlass/03-cute-tiled-mma' },
           { text: '04 GEMM 数据流', link: '/knowledge/ai/systems/cutlass/04-cute-gemm-pipeline' },
-          { text: '05 Copy 规模核算与向量化', link: '/knowledge/ai/systems/cutlass/05-cute-copy-scaling-and-vectorization' }
+          { text: '05 Copy 规模核算与向量化', link: '/knowledge/ai/systems/cutlass/05-cute-copy-scaling-and-vectorization' },
+          { text: '06 GEMM 三级 Tiling', link: '/knowledge/ai/systems/cutlass/06-gemm-three-level-tiling' },
+          { text: '07 Permutation Layout', link: '/knowledge/ai/systems/cutlass/07-cute-permutation-layout' },
+          { text: '08 MMA 指令语义与累加方向', link: '/knowledge/ai/systems/cutlass/08-mma-instruction-and-accumulation' },
+          { text: '09 TiledCopy 核心原理', link: '/knowledge/ai/systems/cutlass/09-cute-tiled-copy-principle' }
         ]},
         { text: 'FlashAttention', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/flash-attention/' },
@@ -163,7 +171,10 @@ export default withMermaid(
           { text: '交叉验证与检查清单', link: '/knowledge/investing/valuation/05-cross-checks-and-checklist' }
         ]},
         { text: 'Mathematics', items: [
-          { text: 'Overview', link: '/knowledge/mathematics/' }
+          { text: 'Overview', link: '/knowledge/mathematics/' },
+          { text: '高斯分布', link: '/knowledge/mathematics/gaussian-distribution' },
+          { text: 'Lagrangian 与约束优化', link: '/knowledge/mathematics/lagrangian-and-constrained-optimization' },
+          { text: '奇异值分解 SVD', link: '/knowledge/mathematics/singular-value-decomposition' }
         ]}
       ],
       '/projects/': [{ text: 'Projects', items: [

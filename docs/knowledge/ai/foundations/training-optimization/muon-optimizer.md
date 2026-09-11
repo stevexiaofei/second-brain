@@ -5,12 +5,13 @@ type: concept
 status: seed
 tags: [AI, deep-learning, optimization, Muon, Newton-Schulz, polar-decomposition]
 created: 2026-09-06
-updated: 2026-09-06
+updated: 2026-09-11
 source:
   - https://kellerjordan.github.io/posts/muon/
   - https://github.com/KellerJordan/Muon
   - https://mp.weixin.qq.com/s/Gq7k9yDgDdVlT6NHoKJizQ
   - https://mp.weixin.qq.com/s/zapTq9YsHqAGLsymEt9gcQ?scene=1
+  - 知乎《Muon优化器科普，但从最速下降的本质出发》 https://zhuanlan.zhihu.com/p/1954634867791869927 （Newton–Schulz 代数、Moonlight weight decay / RMS 对齐 / QK-Clip）
 ---
 
 # Muon 优化器
@@ -100,6 +101,73 @@ $$
 
 具体多项式系数、迭代次数、归一化方式、是否转置宽矩阵，以及低精度下的稳定性都是**实现细节**，不同 Muon 版本可能不同。它们不能由上式推断，应以所选代码版本和实验复现为准。
 
+#### 为什么"多项式作用在矩阵上"等于"多项式作用在奇异值上"
+
+这是 Newton–Schulz 能工作的代数根据，值得完整推一遍。
+
+设 $G = U\Sigma V^\top$（$U \in \mathbb{R}^{n\times r}$、$V \in \mathbb{R}^{m\times r}$ 列正交，$\Sigma = \mathrm{diag}(\sigma_1,\dots,\sigma_r)$、$\sigma_i \ge 0$）。反复使用 $U^\top U = I_r$、$V^\top V = I_r$：
+
+**① 二阶组合**
+
+$$G^\top G = (U\Sigma V^\top)^\top(U\Sigma V^\top) = V\Sigma \underbrace{U^\top U}_{I}\Sigma V^\top = V\Sigma^2 V^\top$$
+
+**② 由结合律逐步升幂**
+
+$$G^\top G = V\Sigma^2 V^\top \;\Longrightarrow\; (G^\top G)^n = V\Sigma^{2n}V^\top$$
+
+（因为 $(V\Sigma^2V^\top)^k (V\Sigma^2V^\top) = V\Sigma^{2k}\underbrace{V^\top V}_{I}\Sigma^2V^\top = V\Sigma^{2k+2}V^\top$，望远镜式消掉。）
+
+**③ 与 $G$ 相乘**
+
+$$G\,(G^\top G)^n = U\Sigma V^\top \cdot V\Sigma^{2n}V^\top = U\Sigma^{2n+1}V^\top$$
+
+> **原文勘误**：知乎原文此处写作 $G^\top(G^\top G)^n = U\Sigma V^\top(V\Sigma^2V^\top)^n = U\Sigma^{2n+1}V^\top$，左端应为 $G\,(G^\top G)^n$（$G^\top$ 的分解是 $V\Sigma U^\top$，代入后得到的是 $V\Sigma^{2n+1}U^\top$，即转置）。右端的计算过程本身是对的，只是左端符号笔误。下面统一用正确的 $G\,(G^\top G)^n$。
+
+**④ 代入五阶奇多项式**
+
+取 $\varphi(X) = aX + bXX^\top X + cXX^\top XX^\top X$。逐项计算：
+
+```text
+XX^T      = UΣ²U^T
+XX^T X    = (UΣ²U^T)(UΣV^T)            = UΣ³V^T        ← 对应 n = 1
+XX^T XX^T X = (UΣ²U^T)(UΣ²U^T)(UΣV^T) = UΣ⁵V^T        ← 对应 n = 2
+```
+
+于是
+
+$$\varphi(G) = a\,U\Sigma V^\top + b\,U\Sigma^3 V^\top + c\,U\Sigma^5 V^\top = U\,(a\Sigma + b\Sigma^3 + c\Sigma^5)\,V^\top = U\,\varphi(\Sigma)\,V^\top$$
+
+**核心结论**：
+
+$$\boxed{\ \varphi(G) = U\,\varphi(\Sigma)\,V^\top\ }$$
+
+**多项式 $\varphi$ 只作用在奇异值上，左右奇异向量 $U,V$ 完全不变。** 因此整个 NS 迭代可以退化成 $r$ 个**独立的标量迭代**：
+
+$$\sigma_i \longleftarrow \varphi(\sigma_i) = a\sigma_i + b\sigma_i^3 + c\sigma_i^5$$
+
+#### 尺度归一化与收敛
+
+迭代方案：
+
+$$G_0 = \frac{G}{\|G\|_F},\qquad G_{t+1} = \varphi(G_t)$$
+
+**为什么除以 Frobenius 范数能把奇异值压进 $[0,1]$？** 因为
+
+$$\|G\|_F = \sqrt{\sum_i \sigma_i^2} \;\ge\; \max_i\sigma_i = \sigma_1$$
+
+即 F 范数**不小于谱范数**，所以 $G_0$ 的奇异值 $\sigma_i/\|G\|_F \le 1$，且非负，落在 $[0,1]$。
+
+此后标量迭代 $\sigma \mapsto a\sigma + b\sigma^3 + c\sigma^5$ 把 $[0,1]$ 内的奇异值推向 $1$，从而 $G_t \to UV^\top$，即正交矩阵。
+
+**关于系数的两点说明**（原文说"这篇不讲"，这里只记录可验证的部分）：
+
+1. 系数需要综合考虑不动点迭代的收敛条件、收敛速度与精度。
+2. Keller Jordan 给出的 $(a,b,c) = (3.4445,\,-4.7750,\,2.0315)$，迭代 5 步。**他放松了误差要求，允许奇异值收敛到 $[0.7, 1.3]$ 区间**，经验上这个误差对训模型影响不大。
+
+> **我的验算**：把 $\sigma = 1$ 代入得 $3.4445 - 4.7750 + 2.0315 = 0.7010 \ne 1$，可见 $\sigma = 1$ **不是精确不动点** —— 这正与"允许收敛到一个带，而不是精确的 1"相符。也就是说 Muon 实际拿到的是**近似半正交**矩阵，不是严格 $UV^\top$。这一点在评估近似误差时必须记住。
+
+目前 SOTA 方案是 [Polar Express](https://arxiv.org/abs/2505.16932)，科学空间也有记载（<https://www.spaces.ac.cn/archives/10996>）。
+
 ### 4. 按形状缩放并更新
 
 半正交矩阵的 Frobenius 范数会随秩而变。实际 Muon 配方通常对 $O_t$ 乘以与 $m/n$ 相关的缩放，再进行参数更新：
@@ -168,6 +236,88 @@ Muon 的核心操作面向矩阵。一个常见的研究问题是如何划分参
 | 标量参数 | 没有矩阵奇异谱 | 不使用 Muon |
 
 这里的“典型选择”是待查阅官方训练配方后才能固定的工程结论，不能机械迁移到任意任务。
+
+## 配方改型：Kimi / Moonlight 的两个可解析结论
+
+原版 Muon 没有 weight decay；Moonlight 给它加上了，并做了一件很聪明的事——**用 RMS 对齐来复用 AdamW 的超参**。这两件事各自有一个干净的解析结论。
+
+### 1. weight decay 等价于"对奇异值做 decay"
+
+设参数矩阵 $W \in \mathbb{R}^{m\times n}$、SVD 为 $W = U\Sigma V^\top$。Weight decay 的更新为
+
+$$W^{+} = (1-\eta\lambda)\,W,\qquad \eta > 0,\ \lambda \ge 0$$
+
+代入 SVD：
+
+$$W^{+} = (1-\eta\lambda)\,U\Sigma V^\top = U\big((1-\eta\lambda)\Sigma\big)V^\top$$
+
+与 $W^{+} = U^{+}\Sigma^{+}(V^{+})^\top$ 对比，得
+
+$$U^{+} = U,\qquad V^{+} = V,\qquad \Sigma^{+} = (1-\eta\lambda)\,\Sigma$$
+
+**结论**：weight decay **不改变左右奇异子空间，只把所有奇异值按同一比例缩放**。由此奇异值在训练过程中便是有界的。
+
+> 我的理解：这个结论很实用——它说明 weight decay 在 Muon 下是一个**纯粹的谱操作**，与 msign（只改奇异值的符号/幅度、不改子空间）作用在同一个对象上，两者不冲突。
+
+### 2. Muon 更新量的 RMS 可以解析算出来
+
+Moonlight 观察到 Adam 更新量的 RMS 比较稳定（通常在 $0.2 \sim 0.4$），于是**建议用 RMS Norm 把新优化器的 update RMS 对齐到 $0.2$**，从而复用 AdamW 搜好的学习率。
+
+Muon 的更新矩阵 $\Phi_t$ 可以写成低秩分解形式
+
+$$\Phi_t = U_{[:,:r]}\,V_{[:,:r]}^\top$$
+
+其中 $U_{[:,:r]}$、$V_{[:,:r]}$ 的列是正交单位向量。**它的更新 RMS 可以精确求出**：
+
+$$\|\Phi_t\|_F^2 = \mathrm{tr}(\Phi_t^\top\Phi_t) = \mathrm{tr}\big(V_{[:,:r]}\underbrace{U_{[:,:r]}^\top U_{[:,:r]}}_{I_r}V_{[:,:r]}^\top\big) = \mathrm{tr}\big(V_{[:,:r]}V_{[:,:r]}^\top\big) = \|V_{[:,:r]}\|_F^2 = r$$
+
+（用到了 $U_{[:,:r]}^\top U_{[:,:r]} = I_r$ 与 $\|V_{[:,:r]}\|_F^2 = \mathrm{tr}(V^\top V) = r$。）
+
+由 $\mathrm{RMS}(\Phi_t)^2 = \frac{1}{nm}\sum_{i,j}\Phi_{ij}^2 = \frac{\|\Phi_t\|_F^2}{nm}$ 得
+
+$$\mathrm{RMS}(\Phi_t)^2 = \frac{r}{nm}\quad\Longrightarrow\quad \mathrm{RMS}(\Phi_t) = \sqrt{\frac{r}{nm}}$$
+
+**注意这里的正交性是关键**：原文用指标形式写成
+
+$$nm\,\mathrm{RMS}(\Phi_t)^2 = \sum_{i=1}^{n}\sum_{j=1}^{m}\sum_{k=1}^{r}U_{ik}^2V_{kj}^2 = \sum_{k=1}^{r}\Bigl(\sum_i U_{ik}^2\Bigr)\Bigl(\sum_j V_{kj}^2\Bigr) = \sum_{k=1}^r 1 = r$$
+
+这个写法默认了 $\Phi_{ij}^2 = \sum_k U_{ik}^2V_{kj}^2$，即忽略了 $k$ 交叉项。交叉项消掉的**真正原因正是列正交性**（$U^\top U = I_r$），所以上面的 trace 推导才是严格版本，二者结论一致。
+
+实践中严格低秩较少见，通常近似取 $r = \min(n,m)$，于是
+
+$$\mathrm{RMS}(\Phi_t) \approx \sqrt{\frac{\min(n,m)}{nm}} = \frac{1}{\sqrt{\max(n,m)}}$$
+
+（因为 $nm/\min(n,m) = \max(n,m)$。）
+
+### 3. 对齐后的最终更新式
+
+令学习率 $\eta_t$、解耦 L2 系数 $\lambda$，把 RMS 归一化与 weight decay 一并写进去：
+
+$$W_t = W_{t-1} - \eta_t\left(0.2\,\frac{\Phi_t}{\mathrm{RMS}(\Phi_t)} + \lambda W_{t-1}\right) = W_{t-1} - \eta_t\left(0.2\,\Phi_t\sqrt{\max(n,m)} + \lambda W_{t-1}\right)$$
+
+> 我的理解：这一步非常工程化也很漂亮——它把"要不要换优化器就得重搜学习率"这个迁移成本消掉了。注意 $0.2$ 是**目标 RMS**（对齐到 Adam 的经验值），而 $\sqrt{\max(n,m)}$ 正是 [RMS→RMS 几何](./spectral-norm-rms-geometry.md) 里那个维度因子的具体体现。
+
+### 4. QK-Clip：把 attention 缩放吸收进权重
+
+训 K2 时遇到 attention 矩阵最大值过大导致训练不稳定，Kimi 给出的修正是 **QK-Clip**。
+
+记 attention 矩阵 $S = QK^\top$，最大值为 $S_{\max}$，期望阈值为 $\tau$。当 $S_{\max} > \tau$ 时，直接令 $S \leftarrow \gamma S$，其中 $\gamma = \tau/S_{\max}$。
+
+现在的任务是把 $\gamma$ **吸收进权重**。对普通 MHA：
+
+$$\begin{aligned}
+W_t &= \mathrm{Optimizer}(W_{t-1}, G_t) \\
+\text{if } S^{(l)}_{\max} &> \tau \text{ and } W \in \{W^{(l)}_q, W^{(l)}_k\}: \\
+W_t &\leftarrow W_t \times \sqrt{\frac{\tau}{S^{(l)}_{\max}}}
+\end{aligned}$$
+
+其中 $S^{(l)}_{\max}$ 是第 $l$ 层 attention 矩阵的最大值，$W^{(l)}_q, W^{(l)}_k$ 是该层的 Q、K 权重。
+
+**为什么是 $\sqrt{\gamma}$ 而不是 $\gamma$？** 因为 $S = QK^\top$ 对 $Q$ 和 $K$ 是双线性的：
+
+$$(\sqrt\gamma\,Q)(\sqrt\gamma\,K)^\top = \sqrt\gamma\sqrt\gamma\,QK^\top = \gamma\,QK^\top$$
+
+所以**给 $W_q$ 和 $W_k$ 各乘 $\sqrt\gamma$，等价于给 $S$ 乘 $\gamma$**。对 MLA 的情况更复杂，见[苏神博客](https://kexue.fm/archives/11126)。
 
 ## 与常见优化器的关系
 
@@ -265,6 +415,8 @@ Muon 的关键不只是“用 Newton–Schulz 加速矩阵运算”，而是选�
 ## Related Knowledge
 
 - [Training Optimization](./) — 优化器与训练稳定性的主题入口
+- [最速下降的范数对偶框架](./steepest-descent-duality-map.md) — 把 SGD / SignSGD / Muon 统一成"换对偶映射"，含 msign 的完整推导
+- [谱范数与 RMS 几何](./spectral-norm-rms-geometry.md) — 为什么是谱范数、AdamW 的 $\ell_1\to\ell_\infty$ 几何缺陷
 - [torch.optim — 优化算法](../../systems/pytorch/pytorch-optim.md) — AdamW、optimizer state 和 PyTorch 源码入口
 - [自动微分 autograd](../../systems/pytorch/pytorch-autograd.md) — Muon 消费的 `.grad` 如何产生
 - [分布式训练](../../systems/pytorch/pytorch-distributed.md) — 优化器状态分片与并行训练边界
@@ -280,6 +432,13 @@ Muon 的关键不只是“用 Newton–Schulz 加速矩阵运算”，而是选�
 - [KellerJordan/Muon](https://github.com/KellerJordan/Muon) — 参考实现入口
 - [Muon is Scalable for LLM Training](https://arxiv.org/abs/2502.16982) — 大规模训练研究
 - [Old Optimizer, New Norm: An Anthology](https://arxiv.org/abs/2409.20325) — 与谱范数最速下降相关的理论背景
+
+### 本篇引用的推导来源
+
+- resnet-65536，[Muon优化器科普，但从最速下降的本质出发](https://zhuanlan.zhihu.com/p/1954634867791869927)，2025-11-10 — 最速下降的范数对偶框架、Newton–Schulz 代数、Moonlight 的 weight decay / RMS 对齐、QK-Clip
+- Jeremy Bernstein, [Deriving Muon](https://jeremybernste.in/writing/deriving-muon)
+- Laker Newhouse, [Duality, Weight Decay, and Metrized Deep Learning](https://www.lakernewhouse.com/thesis.pdf)
+- 苏剑林，[QK-Clip：让Muon在Scaleup之路上更进一步](https://kexue.fm/archives/11126)
 
 ### 对应一手论文与二手解读
 

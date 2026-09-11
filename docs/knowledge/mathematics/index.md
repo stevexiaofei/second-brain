@@ -21,7 +21,7 @@
 - Vector
 - Matrix
 - Eigenvalue
-- SVD
+- [奇异值分解 SVD](./singular-value-decomposition.md) — 代数推导、几何直觉（单位球→椭球）、低秩近似、极分解与在优化器中的用法
 
 ## Information Theory
 
