@@ -107,6 +107,8 @@ Occupancy 不足本身不会有严重后果，但它提示算子仍有访存效�
 - [CUTLASS/CuTe 02：Copy Atom 与线程分区](./cutlass/02-cute-copy-and-thread-partition.md) — 通信层的具体编程抽象
 - [CUTLASS/CuTe 05：Copy 规模核算与 128-bit 向量化](./cutlass/05-cute-copy-scaling-and-vectorization.md) — 通信量如何折算成指令数
 - [FlashAttention 系统地图](./flash-attention/flash-attention-system-map.md) — memory bound 优化的代表案例
+- [Profiling 专题](../../engineering/profiling/) — **这三个维度各自怎么测出来**：机器层 → 框架层 → 时间线 → 单 kernel
+- [Nsight Compute（ncu）](../../engineering/profiling/06-nsight-compute-ncu.md) — `Speed of Light` 的 SM%/Memory% 正是"算力 / 带宽"两轴的直接测量
 - [AI Systems](./)
 
 ## References

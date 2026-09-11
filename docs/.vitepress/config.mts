@@ -129,6 +129,7 @@ export default withMermaid(
           { text: 'Fenwick Tree 加权采样', link: '/knowledge/engineering/fenwick-tree-weighted-sampling' },
           { text: 'uv Python 包管理', link: '/knowledge/engineering/uv-python-package-manager' },
           { text: 'pyproject.toml', link: '/knowledge/engineering/pyproject-toml' },
+          { text: 'Profiling 专题', link: '/knowledge/engineering/profiling/' },
           { text: 'MongoDB 与 PyMongo', link: '/knowledge/engineering/mongodb-pymongo-getting-started' },
           { text: 'ER 图', link: '/knowledge/engineering/er-diagram' },
           { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
@@ -150,6 +151,16 @@ export default withMermaid(
           { text: '11 Helm 包管理', link: '/knowledge/engineering/kubernetes/11-helm-and-package-management' },
           { text: '12 可观测性与排障', link: '/knowledge/engineering/kubernetes/12-observability-and-troubleshooting' },
           { text: '13 CRD、Operator 与生产', link: '/knowledge/engineering/kubernetes/13-crd-operators-and-production-next-steps' }
+        ]},
+        { text: 'Profiling', collapsed: true, items: [
+          { text: '专题总览', link: '/knowledge/engineering/profiling/' },
+          { text: '01 系统层观测（htop / nvidia-smi）', link: '/knowledge/engineering/profiling/01-system-level-observability' },
+          { text: '02 Python profiling', link: '/knowledge/engineering/profiling/02-python-profiling' },
+          { text: '03 PyTorch 显存 profiling', link: '/knowledge/engineering/profiling/03-pytorch-memory-profiling' },
+          { text: '04 PyTorch latency profiling', link: '/knowledge/engineering/profiling/04-pytorch-latency-profiling' },
+          { text: '05 Nsight Systems (nsys)', link: '/knowledge/engineering/profiling/05-nsight-systems-nsys' },
+          { text: '06 Nsight Compute (ncu)', link: '/knowledge/engineering/profiling/06-nsight-compute-ncu' },
+          { text: '07 PyTorch 分布式训练性能分析', link: '/knowledge/engineering/profiling/07-pytorch-distributed-profiling' }
         ]},
         { text: 'Learning', items: [
           { text: 'Overview', link: '/knowledge/learning/' },

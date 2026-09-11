@@ -132,6 +132,8 @@ GMEM --(合并 + 向量化的连续访问)--> SMEM --(按 MMA 需要的方式重
 ## Related
 
 - [GPU 算子优化方法论：计算、通信、存储](../gpu-kernel-optimization-methodology.md) — 通信层面的宏观框架
+- [Nsight Compute（ncu）：单 kernel 的硬件计数器分析](../../engineering/profiling/06-nsight-compute-ncu.md) — 本篇的 sector 模型在 ncu 里就是 `Sectors Per Request` 这一个指标
+- [Profiling 专题](../../engineering/profiling/) — 怎么把"实际访存量翻倍"测出来
 - [CUTLASS/CuTe 09：TiledCopy 核心原理](./cutlass/09-cute-tiled-copy-principle.md) — 用 S/D/R Layout 描述"谁访问哪些地址"
 - [CUTLASS/CuTe 02：Copy Atom、TiledCopy 与线程分区](./cutlass/02-cute-copy-and-thread-partition.md) — thread/value layout 如何决定访问形状
 - [CUTLASS/CuTe 05：Copy 规模核算与 128-bit 向量化](./cutlass/05-cute-copy-scaling-and-vectorization.md) — 向量化约束的 TiledCopy 侧推导
