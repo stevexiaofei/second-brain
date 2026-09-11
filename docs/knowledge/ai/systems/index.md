@@ -5,6 +5,8 @@
 ## 学习路线
 
 - [AI 开源项目源码精读指南](./ai-open-source-source-reading.md) — 从 Framework、Runtime、Compiler、Distributed 到 GPU 的项目选择地图
+- [GPU 算子优化方法论：计算、通信、存储](./gpu-kernel-optimization-methodology.md) — 性能瓶颈的排查顺序与三层存储约束
+- [GPU 全局内存访存模型：向量化与合并访存](./gpu-memory-access-model.md) — sector / transaction 模型与实际访存量的放大
 - [PyTorch 专题](./pytorch/) — 框架架构、autograd、编译栈、分布式训练与源码阅读
 - [FlashAttention 专题](./flash-attention/) — 从 IO-aware 算法到 CUDA kernel 与 PyTorch 接入
 - [CUTLASS / CuTe 专题](./cutlass/) — Tensor、Layout、TiledCopy、TiledMMA 与 GEMM 数据流

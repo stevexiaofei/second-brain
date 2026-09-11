@@ -71,6 +71,8 @@ $$
 
 ## 128-bit 向量化的硬条件
 
+> 硬件层面的完整阐释（sector / transaction / 合并访存）见 [GPU 全局内存访存模型：向量化与合并访存](../gpu-memory-access-model.md)。本节的表只是它在 TiledCopy 布局参数上的落地形式。
+
 ### 先看指令
 
 向量化的上限与对齐来自 `Copy_Atom` 对应的硬件指令：`cp.async` 支持 4/8/16 字节；`AutoVectorizingCopyWithAssumedAlignment<128>` 表示"按 128-bit（16 字节）对齐/向量化"的假设（不是 128 线程）。要真正合成 128-bit 访问，必须满足：
@@ -119,6 +121,8 @@ thread layout 决定 warp 内 32 个线程的地址推进方式：想要 gmem �
 - [CUTLASS/CuTe 01：Tensor、Layout 与坐标映射](./01-cute-tensor-and-layout.md)
 - [CUTLASS/CuTe 02：Copy Atom、TiledCopy 与线程分区](./02-cute-copy-and-thread-partition.md) — 本笔记的公式与 `make_tiled_copy` 语义来源
 - [CUTLASS/CuTe 04：从 Global 到 Shared 再到 MMA 的 GEMM 数据流](./04-cute-gemm-pipeline.md)
+- [CUTLASS/CuTe 09：TiledCopy 核心原理](./09-cute-tiled-copy-principle.md) — 向量化与合并访存如何落到 `partition_S/D` 的复合映射上
+- [GPU 全局内存访存模型：向量化与合并访存](../gpu-memory-access-model.md) — 128-bit 向量化与 sector 模型的硬件依据
 - [CUTE 入门：FlashAttention 中的 GmemTiledCopyO 与边界处理](../flash-attention/cute-basics.md)
 
 ## References

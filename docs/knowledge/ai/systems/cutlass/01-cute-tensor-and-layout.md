@@ -142,6 +142,8 @@ CuTe 最核心的价值不是隐藏索引，而是把索引数学变成可组合
 - [CUTLASS/CuTe 02：Copy Atom 与线程分区](./02-cute-copy-and-thread-partition.md)
 - [CUTLASS/CuTe 03：TiledMMA 与 fragment](./03-cute-tiled-mma.md)
 - [CUTLASS/CuTe 04：从 global → shared → MMA 串起 GEMM](./04-cute-gemm-pipeline.md)
+- [CUTLASS/CuTe 06：GEMM 三级 Tiling](./06-gemm-three-level-tiling.md)
+- [CUTLASS/CuTe 07：CuTe Permutation Layout](./07-cute-permutation-layout.md) — 第 4 种 Layout：坐标 → 新位置
 - [CUTE 入门：FlashAttention kernel 中的 Tensor/Layout](../flash-attention/cute-basics.md)
 
 ## References

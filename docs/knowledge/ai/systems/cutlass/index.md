@@ -4,8 +4,8 @@ type: index
 status: growing
 tags: [AI, CUDA, CUTLASS, CUTE, GPU]
 created: 2026-09-02
-updated: 2026-09-02
-source: CUTLASS 官方文档、third_party/cutlass 本地源码与知乎 CUTLASS 系列
+updated: 2026-09-11
+source: CUTLASS 官方文档、third_party/cutlass 本地源码与知乎 CUTLASS 系列（已可读取，见文末映射）
 ---
 
 # CUTLASS / CuTe 专题
@@ -34,23 +34,36 @@ FlashAttention 等真实 kernel
 
 ## 推荐阅读顺序
 
-1. [Tensor、Layout 与坐标映射](./01-cute-tensor-and-layout.md)：先理解 Engine、Shape、Stride 和嵌套 Layout；
-2. [Copy Atom、TiledCopy 与线程分区](./02-cute-copy-and-thread-partition.md)：理解 global → shared 搬运和 `partition_S/D`；
-3. [TiledMMA 与 fragment](./03-cute-tiled-mma.md)：理解 MMA atom 如何复制成大 tile；
-4. [GEMM 数据流](./04-cute-gemm-pipeline.md)：把 copy、shared memory、MMA、accumulator 和写回串起来；
-5. [Copy 规模核算与 128-bit 向量化](./05-cute-copy-scaling-and-vectorization.md)：把 thread/value layout 算到 warp/CTA 吞吐，并核对向量化约束；
-6. 回到 [FlashAttention 中的 CuTe 入门](../flash-attention/cute-basics.md)：用真实 attention kernel 验证这些抽象。
+> 文件编号是**创建顺序**，下面是**学习顺序**。核心原则：先建立"为什么要分层"的模型，再看每一层怎么做。
+
+1. **硬件前置** → [GPU 全局内存访存模型：向量化与合并访存](../gpu-memory-access-model.md)：先搞清访存效率由什么决定（sector / transaction），后面所有布局取舍才有物理依据；
+2. [06 GEMM 三级 Tiling](./06-gemm-three-level-tiling.md)：理解 Global → Block → Tile → MMA Atom 为什么要分三级、每级受什么硬件约束（配合[算子优化方法论](../gpu-kernel-optimization-methodology.md)）；
+3. [01 Tensor、Layout 与坐标映射](./01-cute-tensor-and-layout.md)：理解 Engine、Shape、Stride 和嵌套 Layout；
+4. [02 Copy Atom、TiledCopy 与线程分区](./02-cute-copy-and-thread-partition.md)：理解 `make_tiled_copy`、`Copy_Traits` 三 Layout、`retile_S/D` 与 metadata；
+5. [09 TiledCopy 核心原理](./09-cute-tiled-copy-principle.md)：理解 `partition_S/D` 背后的 $S$/$D$/$R$ 复合映射；
+6. [03 TiledMMA 与 fragment](./03-cute-tiled-mma.md)：理解 MMA atom 如何复制成大 tile（第三级的具体实现）；
+7. [08 MMA 指令语义与累加方向](./08-mma-instruction-and-accumulation.md)：理解展开后的每一条 mma 到底在算什么、为什么 K 是串行链；
+8. [07 Permutation Layout](./07-cute-permutation-layout.md)：理解同一 tile 内 Atom 的排列如何被重排；
+9. [04 GEMM 数据流](./04-cute-gemm-pipeline.md)：把 copy、shared memory、MMA、accumulator 和写回串起来；
+10. [05 Copy 规模核算与 128-bit 向量化](./05-cute-copy-scaling-and-vectorization.md)：把 thread/value layout 算到 warp/CTA 吞吐，并核对向量化约束；
+11. 回到 [FlashAttention 中的 CuTe 入门](../flash-attention/cute-basics.md)：用真实 attention kernel 验证这些抽象。
 
 ## 知识地图
 
 | 层次 | 关键问题 | 对应笔记 |
 |---|---|---|
+| 优化动机 | 算子优化有哪三个维度？瓶颈通常在哪？ | [GPU 算子优化方法论](../gpu-kernel-optimization-methodology.md) |
+| 访存硬件 | 向量化与合并访存如何决定实际搬运的字节数？ | [GPU 访存模型](../gpu-memory-access-model.md) |
+| 分层动机 | 为什么 GEMM 要三级 Tiling？每级对应哪条硬件特性？ | [06](./06-gemm-three-level-tiling.md) |
 | 数据表示 | Tensor 如何把 Engine 和 Layout 结合？ | [01](./01-cute-tensor-and-layout.md) |
 | 坐标映射 | Shape/Stride 如何映射到 offset？ | [01](./01-cute-tensor-and-layout.md) |
+| 位置重排 | 如何在保留数据的前提下改变位置次序？ | [07](./07-cute-permutation-layout.md) |
 | 数据搬运 | 谁从 global 读、谁向 shared 写？ | [02](./02-cute-copy-and-thread-partition.md) |
+| 拷贝原理 | `partition_S/D` 背后的复合映射是什么？ | [09](./09-cute-tiled-copy-principle.md) |
 | 线程分工 | `get_thread_slice` 和 `partition_S/D` 做什么？ | [02](./02-cute-copy-and-thread-partition.md) |
 | 规模与约束 | tile 槽位如何换算成 warp/CTA 吞吐？128-bit 向量化要求什么？ | [05](./05-cute-copy-scaling-and-vectorization.md) |
 | 矩阵计算 | 一条 MMA 如何扩展成大 tile？ | [03](./03-cute-tiled-mma.md) |
+| 指令语义 | 一条 mma 内部算什么？累加器归谁？K 为什么不能拆线程？ | [08](./08-mma-instruction-and-accumulation.md) |
 | 完整流水线 | copy → shared → fragment → MMA → store 如何连接？ | [04](./04-cute-gemm-pipeline.md) |
 | 真实应用 | Q/K/V tile 如何使用这些视图？ | [FlashAttention](../flash-attention/cute-basics.md) |
 
@@ -69,7 +82,31 @@ tQgQ / tQsQ             FlashAttention 中 Q 的 global source / shared destinat
 
 ## 与知乎系列的关系
 
-本专题以用户提供的 [知乎 CUTLASS 系列来源文章](https://zhuanlan.zhihu.com/p/1937220431728845963) 作为后续整理入口，同时用 CUTLASS 官方文档和本地源码校验概念。目前环境无法稳定读取该知乎页面，因而本轮不臆造原文的作者、篇目标题或文章顺序；已确认并沉淀的笔记先按知识依赖组织。后续获得可读页面或用户提供系列目录后，再将每篇来源映射到对应原子笔记，并补充文章级链接。
+本专题以 [知乎 CUTLASS 系列](https://zhuanlan.zhihu.com/p/1937220431728845963)（作者杨远航）作为整理入口，同时用 CUTLASS 官方文档和本地源码校验概念。该系列页面现已可读取（2026-09-11 起），因此可以建立文章 → 原子笔记的映射：
+
+| 原文章节 | 已沉淀笔记 |
+|---|---|
+| 笔记 (1)：Minimal GEMM Kernel | [01](./01-cute-tensor-and-layout.md)、[03](./03-cute-tiled-mma.md) |
+| 笔记 (2)：混合精度 GEMM Kernel | [03](./03-cute-tiled-mma.md)（混合精度部分） |
+| 笔记 (3) §1 算子优化方法论 | [GPU 算子优化方法论：计算、通信、存储](../gpu-kernel-optimization-methodology.md) |
+| 笔记 (3) §2 GEMM 三级 Tiling | [06 GEMM 三级 Tiling](./06-gemm-three-level-tiling.md) |
+| 笔记 (3) §3.1 `make_tiled_mma` API | [03 TiledMMA 与 fragment](./03-cute-tiled-mma.md) |
+| 笔记 (3) §3.1 Permutation Layout | [07 Permutation Layout](./07-cute-permutation-layout.md) |
+| 笔记 (3) §3.2 Tensor Metadata 打印格式 | [03 TiledMMA 与 fragment](./03-cute-tiled-mma.md) |
+| 笔记 (3) §3.3 SASS 分析（mma 语义与累加） | [03](./03-cute-tiled-mma.md)、[08 MMA 指令语义与累加方向](./08-mma-instruction-and-accumulation.md) |
+| 笔记 (4) §1 NV GPU 的全局内存访存特性 | [GPU 全局内存访存模型：向量化与合并访存](../gpu-memory-access-model.md) |
+| 笔记 (4) §2 TiledCopy 的核心原理 | [09 TiledCopy 核心原理](./09-cute-tiled-copy-principle.md) |
+| 笔记 (4) §3 Tiled Copy 实现（Copy_Traits / ThrCopy / make_tiled_copy） | [02](./02-cute-copy-and-thread-partition.md) |
+| 笔记 (4) §3.5 metadata 解析与 LaTeX 图解 | [02](./02-cute-copy-and-thread-partition.md)、[05](./05-cute-copy-scaling-and-vectorization.md) |
+
+原文章节链接：
+
+- 导读：<https://zhuanlan.zhihu.com/p/1937220431728845963>
+- 笔记 (1)：<https://zhuanlan.zhihu.com/p/1937517614084650073>
+- 笔记 (2)：<https://zhuanlan.zhihu.com/p/1940158874255602181>
+- 笔记 (3)：<https://zhuanlan.zhihu.com/p/1950555644814946318>
+- 笔记 (4)：<https://zhuanlan.zhihu.com/p/1968745447741972494>
+- 笔记 (5)：<https://zhuanlan.zhihu.com/p/1970162570636816559>
 
 整理原则：
 
