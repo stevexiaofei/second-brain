@@ -46,7 +46,8 @@ FlashAttention 等真实 kernel
 8. [07 Permutation Layout](./07-cute-permutation-layout.md)：理解同一 tile 内 Atom 的排列如何被重排；
 9. [04 GEMM 数据流](./04-cute-gemm-pipeline.md)：把 copy、shared memory、MMA、accumulator 和写回串起来；
 10. [05 Copy 规模核算与 128-bit 向量化](./05-cute-copy-scaling-and-vectorization.md)：把 thread/value layout 算到 warp/CTA 吞吐，并核对向量化约束；
-11. 回到 [FlashAttention 中的 CuTe 入门](../flash-attention/cute-basics.md)：用真实 attention kernel 验证这些抽象。
+11. 回到 [FlashAttention 中的 CuTe 入门](../flash-attention/cute-basics.md)：用真实 attention kernel 验证这些抽象；
+12. [10 混合精度 MMA 与自定义 FP8 MMA op](./10-cute-mixed-precision-mma.md)（进阶）：MMA 内部精度体系、寄存器精度转换与手写 MMA op。
 
 ## 知识地图
 
@@ -65,6 +66,8 @@ FlashAttention 等真实 kernel
 | 矩阵计算 | 一条 MMA 如何扩展成大 tile？ | [03](./03-cute-tiled-mma.md) |
 | 指令语义 | 一条 mma 内部算什么？累加器归谁？K 为什么不能拆线程？ | [08](./08-mma-instruction-and-accumulation.md) |
 | 完整流水线 | copy → shared → fragment → MMA → store 如何连接？ | [04](./04-cute-gemm-pipeline.md) |
+| MMA 内部映射 | 一条指令内线程持哪些元素（TV/MN Layout）？ | [10](./10-cute-mixed-precision-mma.md) |
+| 精度控制 | 混合精度如何实现？FP8 如何自定义 op？ | [10](./10-cute-mixed-precision-mma.md) |
 | 真实应用 | Q/K/V tile 如何使用这些视图？ | [FlashAttention](../flash-attention/cute-basics.md) |
 
 ## 一组必须掌握的命名
