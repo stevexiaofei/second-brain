@@ -64,7 +64,7 @@ auto tiler     = product_each(shape(layout_mn));          // 这个 tile 在 M�
 `layout_tv` 的 domain 形状是 `(size(thr_layout), size(val_layout))` = `(线程数, 每线程值数)`，并且它是 `(thr,val) -> (M,N)` 的一一对应（`right_inverse`）。因此槽位总数守恒，这是后面两个小节的前提：
 
 $$
-\text{tile 元素数} = M \times N = \underbrace{\text{prod(shape(thread_layout))}}_{\text{线程数}} \times \underbrace{\text{prod(shape(value_layout))}}_{\text{每线程值数}}
+\text{tile 元素数} = M \times N = \underbrace{\text{prod(shape(thread\_layout))}}_{\text{线程数}} \times \underbrace{\text{prod(shape(value\_layout))}}_{\text{每线程值数}}
 $$
 
 ### raked_product 返回什么：blocked vs raked

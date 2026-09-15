@@ -32,7 +32,7 @@ source: DeepSeek 分享对话（2026-09-07 抓取）https://chat.deepseek.com/sh
 `make_tiled_copy(atom, thr_layout, val_layout)` 合成的 `TiledCopy`，其"覆盖表"是一个 `(thr, val) -> (M, N)` 的一一对应（02 已按源码解释），因此槽位守恒：
 
 $$
-M_{\text{tile}} \times N_{\text{tile}} = \text{size(thr_layout)} \times \text{size(val_layout)}
+M_{\text{tile}} \times N_{\text{tile}} = \text{size(thr\_layout)} \times \text{size(val\_layout)}
 $$
 
 当 thread/value layout 都能沿 $M,N$ 分离时（教学例最常用），还能按维展开：
@@ -96,8 +96,8 @@ $$
 
 thread layout 决定 warp 内 32 个线程的地址推进方式：想要 gmem 合并访问与 smem 低 bank 冲突，通常让相邻线程落在相邻的 16B 段上，再由 value layout 在段内做连续向量读。可自洽的检查是同时满足三件事：
 
-- $\text{size(val_layout)}$ = 每线程元素数；
-- $\text{size(thr_layout)} \times \text{size(val_layout)}$ = 单 tile 槽位数；
+- $\text{size(val\_layout)}$ = 每线程元素数；
+- $\text{size(thr\_layout)} \times \text{size(val\_layout)}$ = 单 tile 槽位数；
 - 每线程连续段字节数能整除 16B，且段起始地址按 16B 对齐。
 
 ## 对话里踩过的两个易混点

@@ -68,7 +68,8 @@ export default withMermaid(
           { text: '07 Permutation Layout', link: '/knowledge/ai/systems/cutlass/07-cute-permutation-layout' },
           { text: '08 MMA 指令语义与累加方向', link: '/knowledge/ai/systems/cutlass/08-mma-instruction-and-accumulation' },
           { text: '09 TiledCopy 核心原理', link: '/knowledge/ai/systems/cutlass/09-cute-tiled-copy-principle' },
-          { text: '10 混合精度 MMA 与 FP8', link: '/knowledge/ai/systems/cutlass/10-cute-mixed-precision-mma' }
+          { text: '10 混合精度 MMA 与 FP8', link: '/knowledge/ai/systems/cutlass/10-cute-mixed-precision-mma' },
+          { text: 'MMA Atom 官方文档译文', link: '/knowledge/ai/systems/cutlass/mma-atom-official-doc-zh' }
         ]},
         { text: 'FlashAttention', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/flash-attention/' },

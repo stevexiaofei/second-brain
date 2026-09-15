@@ -134,6 +134,10 @@ tQgQ / tQsQ             FlashAttention 中 Q 的 global source / shared destinat
 
 性能结论应通过编译、运行和 profiler 验证；不能仅凭变量名或模板形状推断性能。
 
+## 官方文档译文
+
+- [CuTe MMA Atom 官方文档（中文译）](./mma-atom-official-doc-zh.md) — 译自 `media/docs/cpp/cute/0t_mma_atom.md`：Operation / Traits / Atom / TiledMMA 的完整推导，含 Volta 与 Hopper 的 CLayout 构造过程
+
 ## Related
 
 - [FlashAttention 专题](../flash-attention/) — CuTe 在 attention kernel 中的应用
