@@ -30,6 +30,8 @@ Choose the clearest representation for the context:
 
 Use whichever communicates the idea more clearly. No hard requirements on format.
 
+All node-based Mermaid diagrams (`flowchart` / `graph` / `stateDiagram-v2`) MUST use the 5 shared `classDef`s defined in `docs/.vitepress/mermaid-style.md`, so styling stays consistent across notes. `sequenceDiagram` does not support `classDef` syntax (adding it breaks the diagram) and is therefore exempt.
+
 ## Math formulas
 Use LaTeX syntax for all mathematical formulas and symbols: `$...$` for inline, `$$...$$` for block. KaTeX renders them automatically in VitePress. Do not use backticks (e.g. `q_σ`) or plain text for math symbols — they will display as raw characters. Examples: write `$\sigma$` not `\`σ\``, write `$q_\sigma(x_{1:T} \| x_0)$` not `\`q_σ(x_{1:T} | x_0)\``.
 

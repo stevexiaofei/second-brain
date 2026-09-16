@@ -40,6 +40,20 @@ classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
 
 VitePress 的 `theme` 在 [config.mts](../../.vitepress/config.mts) 已配置 `fontSize: 20px` / `noteFontSize: 16px`,无需在每张图重复声明。
 
+## 例外:不支持 classDef 的图类型
+
+**`sequenceDiagram` 不支持 `classDef` 语法**——在块内写 `classDef` 会导致整张图解析失败。因此时序图**豁免**配色要求,使用 Mermaid 默认主题即可。
+
+适用范围:
+
+| 图类型 | 支持 classDef | 处理方式 |
+|---|---|---|
+| `flowchart` / `graph` | 是 | 必须使用本文件的 5 个 classDef |
+| `stateDiagram-v2` | 是 | 必须使用(classDef 照常声明,用 `class 状态名 classDef名` 应用到状态) |
+| `sequenceDiagram` | **否** | **豁免**,块内不写 classDef |
+
+> 时序图若需要视觉区分,优先靠措辞与 `Note over` 表达语义(例如"release 是一条分界线"),不要为了配色牺牲可渲染性。
+
 ## 反例(避免)
 
 - **不要**再用 `<div class="diagram"><span class="d-node">` 拼流程图——字符箭头无法精准对齐
