@@ -2,9 +2,9 @@
 title: 最速下降的范数对偶框架：SGD、SignSGD 与 Muon 是同一条公式
 type: concept
 status: seed
-tags: [AI, optimization, norm, dual-norm, duality-map, msign, spectral-norm, Muon, SignSGD]
+tags: [AI, optimization, norm, dual-norm, duality-map, polar-set, support-function, msign, spectral-norm, Muon, SignSGD]
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-09-14
 source: 知乎《Muon优化器科普，但从最速下降的本质出发》（https://zhuanlan.zhihu.com/p/1954634867791869927）+ Bernstein & Newhouse《Old Optimizer, New Norm》+ 本人补齐的推导中间步骤
 ---
 
@@ -121,7 +121,144 @@ $$\mathrm{dualize}_{\|\cdot\|}(g) = \arg\max_{\|t\|=1}\langle g,t\rangle$$
 
 ---
 
-## 三、为什么要"对偶"：参数与梯度的类型错误
+## 三、把"对偶"这个词讲清楚
+
+第 19 行的公式里"对偶"出现了两次：$\|g\|^\dagger$ 叫**对偶范数**，$\mathrm{dualize}$ 叫**对偶映射**。这个词之所以显得玄，是因为它其实同时指**三个层层依赖的概念**；拆开看就清楚了。
+
+| 层次 | 对偶的对象 | 记法 | 一句话 |
+|---|---|---|---|
+| ① 空间对偶 | 向量空间 $V$ | $V^*$ | $V$ 上全体**线性泛函**构成的空间 |
+| ② 范数对偶 | 范数 $\|\cdot\|$ | $\|\cdot\|^\dagger$ | $V^*$ 上"配套"的那个范数 |
+| ③ 映射对偶 | 方向 | $\mathrm{dualize}$ | 把泛函送回向量：$V^* \to V$ |
+
+依赖关系是**层层往下**的：先有配对定义出 $V^*$，再由 $\|\cdot\|$ 在 $V^*$ 上诱导出 $\|\cdot\|^\dagger$，最后"取极值点"给出 $\mathrm{dualize}$。
+
+### 3.1 空间对偶：泛函住在另一个空间（$V^*$）
+
+**核心机制只有一个：配对（pairing）** $\langle\cdot,\cdot\rangle : V^*\times V \to \mathbb{R}$。
+
+一个对象要"吃掉"$V$ 里的向量并吐出一个数，它就属于 $V^*$：
+
+- 参数 $W$、更新量 $\Delta w$ 住在 $V$（因为要和 $W$ 相加）；
+- 梯度 $g = \nabla_W L$ 的作用方式是"输入一个方向 $v$，输出该方向的方向导数"$\langle g,v\rangle$ —— 这正是**线性泛函**的定义，所以 $g$ 住在 $V^*$。
+
+最具体的图像就是**行向量 vs 列向量**：
+
+```text
+     g ∈ V*（行向量）  [ g₁  g₂ ] · [ v₁ ]  =  标量 ⟨g, v⟩
+                                   [ v₂ ]
+     v ∈ V （列向量）
+```
+
+**"对偶对象 = 专门作用在它身上的东西"**，这就是 dual 最原始的语义。有限维时 $\dim V^* = \dim V$，且 $(V^*)^* = V$ —— **对偶的对偶回到自己**，这是对偶性最本质的特征，下面每一层都会有它的版本。
+
+### 3.2 范数对偶：极集与支撑函数
+
+$V$ 上有了范数 $\|\cdot\|$ 之后，$V^*$ 上的元素该怎么量大小？标准（也是唯一自然的）答案是
+
+$$\boxed{\ \|g\|^\dagger := \max_{\|t\|=1}\langle g,t\rangle \;=\; \max_{\|t\|=1}|\langle g,t\rangle|\ }$$
+
+（第二个等号用了范数球的对称性：$\|t\|=1 \Rightarrow \|-t\|=1$。）
+
+**为什么写成 max？** 因为这样才能让广义 Cauchy–Schwarz
+
+$$|\langle g,t\rangle| \le \|g\|^\dagger\,\|t\|,\qquad \forall t$$
+
+成立，而且常数 $\|g\|^\dagger$ **最优、不能再小**（取 $t$ 为达到 max 的那个单位向量即取等号）。
+
+> **操作性含义**：$\|g\|^\dagger$ 是使 $|\langle g,t\rangle|\le C\|t\|$ 恒成立的最小常数 $C$。它回答的不是"$g$ 有多大"，而是"**$g$ 最多能从单位球里榨出多少**"。
+
+**几何图像：极集（polar）。** 把 $\|g\|^\dagger\le1$ 展开：
+
+$$\|g\|^\dagger \le 1 \iff \langle g,t\rangle \le 1,\quad \forall\, t \text{ with } \|t\|\le1$$
+
+这正是 $V$ 的单位球 $B$ 的**极集** $B^\circ$。所以 $B^\circ$ 恰好是 $\|\cdot\|^\dagger$ 的单位球：
+
+```text
+      ℓ₁ 球（二维菱形）              ℓ∞ 球（二维正方形）= 它的极集
+
+             ▲                            ┌─────────┐
+            ╱ ╲                           │         │
+           ◀   ▶           ⟷              │         │
+            ╲ ╱                           │         │
+             ▼                            └─────────┘
+
+       |t₁| + |t₂| ≤ 1             max(|t₁|, |t₂|) ≤ 1
+```
+
+完整对照：
+
+| $\|\cdot\|$ 的单位球 | 极集 $B^\circ$（= $\|\cdot\|^\dagger$ 的单位球） |
+|---|---|
+| $\ell_2$ 球 | $\ell_2$ 球（**自对偶**） |
+| $\ell_1$ 球（二维菱形） | $\ell_\infty$ 球（正方形） |
+| $\ell_\infty$ 球（正方形） | $\ell_1$ 球（菱形） |
+| 谱范数球 $\{t:\sigma_1(t)\le1\}$ | 核范数球 $\{g:\sum_i\sigma_i(g)\le1\}$ |
+
+**"菱形 ↔ 正方形"是这一节最值得记住的一对**（二维可画、高维也成立）。极集还能再取一次：$B^{\circ\circ}=B$（单位球是闭凸集）—— 又一次"回到自己"。
+
+**与层次 ① 的连通：对偶范数就是算子范数。** 把 $g\in V^*$ 看成线性映射 $g: (V,\|\cdot\|)\to(\mathbb{R},|\cdot|)$，则
+
+$$\|g\|^\dagger = \sup_{t\ne0}\frac{|g(t)|}{\|t\|}$$
+
+**这就是算子范数。** 所以"对偶范数"不是新东西，只是"把泛函当算子看"的算子范数。本笔记里谱范数与核范数的关系正是这个机制的一个实例：
+
+$$\|g\|_{2\to2} = \sigma_1(g),\qquad \|g\|^\dagger_{2\to2} = \sum_i\sigma_i(g)$$
+
+"最大奇异值 ↔ 奇异值之和"与"最大分量 ↔ 绝对值之和"是**同一机制的两种尺度**。
+
+### 3.3 对偶映射：在球上取支撑点
+
+层次 ② 给的是**数值**，层次 ③ 给的是**方向**：
+
+$$\mathrm{dualize}_{\|\cdot\|}(g) \;=\; \arg\max_{\|t\|=1}\langle g,t\rangle$$
+
+几何上就是：**把 $g$ 当作法向量，在单位球上找那个"最支撑"的点。**
+
+| 范数 | 单位球的性格 | 支撑点（对偶映射） | 对应优化器 |
+|---|---|---|---|
+| $\ell_2$ | 光滑，无棱角 | $g/\|g\|_2$（唯一） | SGD |
+| $\ell_\infty$ | 超立方体，极值在**顶点** | $\mathrm{sign}(g)$ | SignSGD |
+| 谱范数 | $\mathrm{conv}\{uv^\top\}$，极值在**极端点** | $UV^\top$ | Shampoo / Muon |
+
+这三行就是 SGD / SignSGD / Muon 差异的全部来源。
+
+**三条自洽性检查**（用来判断有没有算对）：
+
+1. **配对取到最大**：$\langle g,\ \mathrm{dualize}(g)\rangle = \|g\|^\dagger$；
+2. **落在球边界上**：$\|\mathrm{dualize}(g)\| = 1$；
+3. **对偶的对偶回到自己**：$(\|\cdot\|^\dagger)^\dagger = \|\cdot\|$。
+
+以 $\ell_\infty$ 验证：$\langle g,\mathrm{sign}(g)\rangle = \sum_i|g_i| = \|g\|_1 = \|g\|^\dagger_\infty$ ✓，$\|\mathrm{sign}(g)\|_\infty = 1$ ✓。
+
+### 3.4 为什么叫"对偶"，而不是"归一化"
+
+因为它满足两个只有对偶才有的性质：
+
+**（1）与转置（伴随）的范数守恒。** 对偶性的经典原型是"算子与它的伴随"：对 $A : (V,\|\cdot\|_a)\to(W,\|\cdot\|_b)$，有 $A^\top : (W,\|\cdot\|_b^\dagger)\to(V,\|\cdot\|_a^\dagger)$ 且
+
+$$\|A\|_{a\to b} \;=\; \|A^\top\|_{b^\dagger\to a^\dagger}$$
+
+例：$\|A\|_{2\to2} = \|A^\top\|_{2\to2} = \sigma_1$；$\|A\|_{1\to\infty} = \|A^\top\|_{1\to\infty} = \max_{ij}|a_{ij}|$。**"转置"就是对偶的具体化身。**
+
+**（2）对偶的对偶回到自己。** $V^{**}=V$、$B^{\circ\circ}=B$、$(\|\cdot\|^\dagger)^\dagger = \|\cdot\|$。一个操作做两次回到原点，才算"对偶"：$\ell_1 \leftrightarrow \ell_\infty$ 成对，$\ell_2$ 与自己成对。
+
+**（3）与 Lagrangian 对偶同源。** 把第 19 行的式子改写成硬约束形式
+
+$$\min_{\Delta w}\ \langle g,\Delta w\rangle \quad \text{s.t.}\quad \|\Delta w\| \le r$$
+
+它的解恰是 $\Delta w = -r\,\mathrm{dualize}(g)$ —— 与二次阻尼版本共享**同一个方向**，只在模长上通过 $r = \|g\|^\dagger/\lambda$ 换算；此时 $\lambda$ 扮演的就是约束的 **Lagrange 乘子**。**"对偶范数"与"Lagrangian 对偶"共用同一个配对 $\langle\cdot,\cdot\rangle$**，这正是本笔记 Related 里连到 [Lagrangian 与约束优化](../../../mathematics/lagrangian-and-constrained-optimization.md) 的原因——名字相同，底层机制（配对 + 极值）也相同。
+
+### 3.5 为什么不能直接减梯度（原文论述 + 一点严谨性补充）
+
+> **严谨性补充（本人添加，非原文内容）**：在有限维、且固定了内积（这里是 Frobenius 内积）之后，Riesz 表示定理给出 $V\cong V^*$，**所以 $W-\eta g$ 在代数上并不是非法的**。需要精确化的是：**"该用哪个等同"取决于你选的范数**。内积诱导的那个等同只是众多等同中的一种；当声明"要在谱范数几何下做最速下降"时，参数空间带的已经是**另一个范数**，正确的搬运规则是**范数的对偶映射**，而不是内积代表元。
+>
+> 两者关系可以一句话说清：**范数对偶映射 = 内积诱导的等同，当且仅当这个范数就是内积诱导的范数（$\ell_2$）**。于是
+>
+> - $\ell_2$ 几何下，直接减梯度就是对的 —— 这解释了 SGD 为什么"看起来天经地义"；
+> - 换成 $\ell_\infty$ 或谱范数后，直接减梯度就变成"用 $\ell_2$ 的答案回答 $\ell_\infty$ 的问题"——**方向也许对，形状完全错**（$g$ 与 $\mathrm{sign}(g)$、$g$ 与 $UV^\top$ 的差别就在这里）。
+
+**以下是原文论述，其中"类型错误"一词请按上面的补充理解：**
 
 这是全文最有洞察力的一步。
 
@@ -345,3 +482,4 @@ $$L^{-1/4}GR^{-1/4} = U\Sigma^{-1/2}\,U^\top\cdot U\Sigma V^\top\cdot V\Sigma^{-
 - Vineet Gupta, Tomer Koren, Yoram Singer. *Shampoo: Preconditioned Stochastic Tensor Optimization*, ICML 2018.
 - 范数基础（定义、性质、边界图像）：<https://zhuanlan.zhihu.com/p/671815885>
 - 本笔记的推导中间步骤（第 2.2、4.1、5.2 节）为对照原文补齐，非原文逐字内容。
+- 第 三 节（三层对偶、极集/支撑函数几何、对偶映射与自洽性、与 Lagrangian 对偶的同源关系）为本人整理与补充，非原文内容；其中 §3.5 的"严谨性补充"是对原文"类型错误"这一说法的精确化，原文论述已在该节完整保留。
