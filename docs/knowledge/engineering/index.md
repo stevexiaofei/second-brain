@@ -17,6 +17,7 @@
 - [uv — 极速 Python 包管理工具](./uv-python-package-manager.md) — Astral 出品的一体化 Python 工具链
 - [pyproject.toml — Python 项目的声明式控制面](./pyproject-toml.md) — 项目元数据、构建后端与开发工具配置的标准入口
 - [Profiling 专题](./profiling/) — 性能问题的分层排查工具箱：htop → py-spy → torch.profiler → nsys → ncu
+- [C++ 内存顺序专题](./cpp/) — 从编译器重排/CPU 乱序/缓存一致性，到六种内存顺序、各架构屏障与无锁实战
 - [Kubernetes 入门 Wiki](./kubernetes/) — 按 roadmap.sh 路径学习容器编排、工作负载、网络、存储、安全与运维
 - [MongoDB 与 PyMongo 入门指南](./mongodb-pymongo-getting-started.md) — Python 文档数据库入门：CRUD、索引、聚合与建模
 - [ER 图（实体-关系图）](./er-diagram.md) — 数据库概念设计的图形化工具

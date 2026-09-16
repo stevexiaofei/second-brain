@@ -132,6 +132,7 @@ export default withMermaid(
           { text: 'uv Python 包管理', link: '/knowledge/engineering/uv-python-package-manager' },
           { text: 'pyproject.toml', link: '/knowledge/engineering/pyproject-toml' },
           { text: 'Profiling 专题', link: '/knowledge/engineering/profiling/' },
+          { text: 'C++ 内存顺序专题', link: '/knowledge/engineering/cpp/' },
           { text: 'MongoDB 与 PyMongo', link: '/knowledge/engineering/mongodb-pymongo-getting-started' },
           { text: 'ER 图', link: '/knowledge/engineering/er-diagram' },
           { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
@@ -163,6 +164,14 @@ export default withMermaid(
           { text: '05 Nsight Systems (nsys)', link: '/knowledge/engineering/profiling/05-nsight-systems-nsys' },
           { text: '06 Nsight Compute (ncu)', link: '/knowledge/engineering/profiling/06-nsight-compute-ncu' },
           { text: '07 PyTorch 分布式训练性能分析', link: '/knowledge/engineering/profiling/07-pytorch-distributed-profiling' }
+        ]},
+        { text: 'C++ 内存顺序', collapsed: true, items: [
+          { text: '专题总览', link: '/knowledge/engineering/cpp/' },
+          { text: '01 顺序为什么会变', link: '/knowledge/engineering/cpp/01-reordering-and-cache-coherence' },
+          { text: '02 六种内存顺序全景', link: '/knowledge/engineering/cpp/02-six-memory-orders' },
+          { text: '03 各架构的内存模型与屏障指令', link: '/knowledge/engineering/cpp/03-barriers-by-architecture' },
+          { text: '04 无锁实战：自旋锁 / SPSC / RCU', link: '/knowledge/engineering/cpp/04-lock-free-patterns' },
+          { text: '05 检测、验证与查看真实指令', link: '/knowledge/engineering/cpp/05-detection-and-tools' }
         ]},
         { text: 'Learning', items: [
           { text: 'Overview', link: '/knowledge/learning/' },
