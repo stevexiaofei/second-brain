@@ -240,4 +240,4 @@ AI 训练经常需要：
 - [分布式存储基础总览](./index.md)
 - [对象存储](./object-storage.md)
 - [元数据与性能瓶颈](./metadata-and-performance.md)
-- [分布式存储系统知识地图](../../engineering/distributed-storage-knowledge-map.md)
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)

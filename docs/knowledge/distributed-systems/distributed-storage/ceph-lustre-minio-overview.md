@@ -189,4 +189,4 @@ MinIO 更像一个“学习对象存储和快速搭实验环境”的入口。
 - [块存储、文件存储与对象存储对比](./block-file-object-comparison.md)
 - [对象存储](./object-storage.md)
 - [并行文件系统](./parallel-file-systems.md)
-- [分布式存储系统知识地图](../../engineering/distributed-storage-knowledge-map.md)
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)

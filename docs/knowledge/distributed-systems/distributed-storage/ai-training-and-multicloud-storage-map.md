@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Storage, Distributed Systems, Object Storage, PFS, Ceph, Lustre, RDMA, NVMe-oF, AI Training, Multi-Cloud]
 created: 2026-08-12
-updated: 2026-08-12
+updated: 2026-09-18
 ---
 
 # 分布式存储系统知识地图（面向 AI 训练与多云场景）
@@ -44,6 +44,16 @@ flowchart TD
     OBJ --> OBJ2["接口：HTTP / S3 API"]
     OBJ --> OBJ3["语义：扁平命名空间 + 桶"]
     OBJ --> OBJ4["代表：OSS/COS/OBS/BOS/TOS、MinIO"]
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+
+    class ROOT step
+    class BLK,FILE,OBJ action
+    class BLK1,BLK2,BLK3,BLK4,FILE1,FILE2,FILE3,FILE4,OBJ1,OBJ2,OBJ3,OBJ4 branchNo
 ```
 
 | 维度 | 块存储 | 文件存储 | 对象存储 |
@@ -85,6 +95,16 @@ flowchart LR
     end
     LEADER -->|"AppendEntries<br/>多数派确认即提交"| FOLLOWER
     CAND -->|"RequestVote<br/>获得多数票即当选"| LEADER
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+
+    class LEADER action
+    class FOLLOWER step
+    class CAND decide
 ```
 
 - **Raft**：可理解性优先（领导者选举 + 日志复制 + 安全）。etcd、Ceph Mon、K8s 均用它
@@ -216,6 +236,16 @@ flowchart TB
     L3["③ 并行文件系统 PFS<br/>ms 级 · 集群共享"]
     L4["④ 对象存储<br/>几十 ms · 容量最大 · 最便宜"]
     L1 -->|"越往下：容量↑ 延迟↑ 成本↓"| L2 --> L3 --> L4
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+
+    class L1 decide
+    class L2,L3 action
+    class L4 branchYes
 ```
 
 ### AI 训练数据流水线
@@ -277,6 +307,16 @@ flowchart TD
     B --> C["阶段三：源码精读<br/>Raft 实现 / Ceph 架构 / 文件系统"]
     C --> D["阶段四：系统设计<br/>多云架构 / 缓存方案 / 面试题"]
     D --> E["阶段五：前沿跟进<br/>NVMe-oF / 数据编排 / 具身智能存储"]
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+
+    class A,B step
+    class C,D action
+    class E branchYes
 ```
 
 ### 阶段一：理论基础（1-2 周）

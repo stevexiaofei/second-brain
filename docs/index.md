@@ -13,7 +13,10 @@
 
 - [AI](/knowledge/ai/)
 - [Autonomous Driving](/knowledge/autonomous-driving/)
+- [Distributed Systems](/knowledge/distributed-systems/)
 - [Engineering](/knowledge/engineering/)
+- [Investing](/knowledge/investing/)
+- [Learning](/knowledge/learning/)
 - [Mathematics](/knowledge/mathematics/)
 
 ## 🚀 Projects

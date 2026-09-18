@@ -121,13 +121,14 @@ export default withMermaid(
         ]},
         { text: 'Distributed Systems', items: [
           { text: 'Overview', link: '/knowledge/distributed-systems/' },
-          { text: '核心理论基础', link: '/knowledge/distributed-systems/distributed-systems-foundations' }
+          { text: '核心理论基础', link: '/knowledge/distributed-systems/distributed-systems-foundations' },
+          { text: '分布式存储基础总览', link: '/knowledge/distributed-systems/distributed-storage/' },
+          { text: 'AI 训练与多云存储地图', link: '/knowledge/distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map' }
         ]},
         { text: 'Engineering', items: [
           { text: 'Overview', link: '/knowledge/engineering/' },
           { text: 'RVV 算子开发', link: '/knowledge/engineering/rvv-operator-development' },
           { text: 'RVV 算子设计大赛', link: '/knowledge/engineering/rvv-operator-challenge' },
-          { text: '分布式存储知识地图', link: '/knowledge/engineering/distributed-storage-knowledge-map' },
           { text: 'Fenwick Tree 加权采样', link: '/knowledge/engineering/fenwick-tree-weighted-sampling' },
           { text: 'uv Python 包管理', link: '/knowledge/engineering/uv-python-package-manager' },
           { text: 'pyproject.toml', link: '/knowledge/engineering/pyproject-toml' },

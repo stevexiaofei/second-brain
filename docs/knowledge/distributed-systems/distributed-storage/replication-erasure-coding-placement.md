@@ -253,4 +253,4 @@ CRUSH 是一种经典的放置算法，核心特点是：
 
 - [分布式存储基础总览](./index.md)
 - [一致性、共识与故障恢复](./consistency-consensus-failure.md)
-- [分布式存储系统知识地图](../../engineering/distributed-storage-knowledge-map.md)
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)

@@ -463,7 +463,7 @@ source:
 - [Second Brain 使用工作流](../../projects/second-brain-workflow.md) — 从捕捉、整理到稳定知识的仓库工作流
 - [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — 用源码、最小实现和系统对比驱动技术学习
 - [FlashAttention 系统地图](../ai/systems/flash-attention/flash-attention-system-map.md) — 围绕数据流组织复杂技术知识的实例
-- [分布式存储系统知识地图](../engineering/distributed-storage-knowledge-map.md) — 从基础原理到系统实践的领域学习路径实例
+- [面向 AI 训练与多云场景的存储工程地图](../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md) — 从基础原理到系统实践的领域学习路径实例
 
 ## References
 

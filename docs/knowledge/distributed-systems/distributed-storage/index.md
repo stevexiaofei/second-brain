@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Distributed Storage, Object Storage, File System, Consistency, Replication, Erasure Coding, Metadata]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-09-18
 ---
 
 # 分布式存储基础总览
@@ -172,7 +172,22 @@ flowchart TB
     A --> G[元数据与放置]
     A --> H[缓存与性能]
     A --> I[故障恢复]
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+
+    class A step
+    class B,C,D action
+    class E,F,G,H,I branchNo
 ```
+
+## 两份总览的分工
+
+- 本文是**基础总览**：先建立存储语义、数据放置、故障恢复与性能取舍的通用心智模型。
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md) 是**场景化地图**：在上述基础上串联多级缓存、RDMA / NVMe-oF、云原生存储和多模态数据流水线。
 
 ## 建议学习顺序
 
@@ -183,6 +198,7 @@ flowchart TB
 3. 然后看 [副本、纠删码与放置](./replication-erasure-coding-placement.md)
 4. 接着看 [一致性、共识与故障恢复](./consistency-consensus-failure.md)
 5. 最后看 [元数据与性能瓶颈](./metadata-and-performance.md)
+6. 若目标是 AI 训练、多云或云原生存储，再看 [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)
 
 ## 这一套知识的底层逻辑
 
@@ -197,5 +213,5 @@ flowchart TB
 ## Related
 
 - [分布式系统核心理论基础](../distributed-systems-foundations.md) — CAP、FLP、一致性模型、共识算法的理论底座
-- [分布式存储系统知识地图](../../engineering/distributed-storage-knowledge-map.md) — 面向 AI 训练与多云场景的工程版总图
-- [工程索引](../../engineering/index.md) — 同目录下的工程知识入口
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md) — 多级缓存、RDMA / NVMe-oF、Kubernetes 与多模态数据场景
+- [工程索引](../../engineering/index.md) — 关联的工程实践与工具入口

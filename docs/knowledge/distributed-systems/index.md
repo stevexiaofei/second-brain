@@ -7,6 +7,7 @@
 ## Distributed Storage
 
 - [分布式存储基础总览](./distributed-storage/index.md) — 给初学者的总入口：先建立分布式存储的整体框架
+- [面向 AI 训练与多云场景的存储工程地图](./distributed-storage/ai-training-and-multicloud-storage-map.md) — 多级缓存、RDMA / NVMe-oF、Kubernetes 与多模态数据场景
 - [对象存储](./distributed-storage/object-storage.md) — Bucket/Object/Key、S3、Multipart、生命周期、一致性
 - [并行文件系统](./distributed-storage/parallel-file-systems.md) — POSIX 语义、元数据、条带化、锁、Lustre/CephFS/GPFS
 - [副本、纠删码与放置](./distributed-storage/replication-erasure-coding-placement.md) — 复制、EC、故障域、CRUSH、重平衡

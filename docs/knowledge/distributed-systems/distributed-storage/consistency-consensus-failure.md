@@ -304,4 +304,4 @@ fencing 的意思是：
 - [分布式存储基础总览](./index.md)
 - [副本、纠删码与放置](./replication-erasure-coding-placement.md)
 - [分布式系统核心理论基础](../distributed-systems-foundations.md)
-- [分布式存储系统知识地图](../../engineering/distributed-storage-knowledge-map.md)
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)

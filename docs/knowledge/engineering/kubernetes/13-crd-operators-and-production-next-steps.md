@@ -115,7 +115,7 @@ CSI：Pod 如何申请并挂载卷
 Operator：Ceph/数据库等系统如何部署、扩容、升级、自愈
 ```
 
-两者可以协作，但职责不同。更多存储背景见 [分布式存储系统知识地图](../distributed-storage-knowledge-map.md)。
+两者可以协作，但职责不同。更多存储背景见 [面向 AI 训练与多云场景的存储工程地图](../../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md)。
 
 ## 学完入门后的生产路线
 
@@ -200,7 +200,7 @@ CRD/Operator 揭示了 Kubernetes 最核心的可复用思想：把运维意图�
 - [08 PV、PVC、StorageClass 与 CSI](./08-storage-pv-pvc-and-csi.md)
 - [11 Helm 与 Kubernetes 包管理](./11-helm-and-package-management.md)
 - [12 可观测性与故障排查](./12-observability-and-troubleshooting.md)
-- [分布式存储系统知识地图](../distributed-storage-knowledge-map.md)
+- [面向 AI 训练与多云场景的存储工程地图](../../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md)
 
 ## References
 

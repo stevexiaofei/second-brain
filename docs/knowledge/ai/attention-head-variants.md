@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [AI, LLM, Attention, MHA, MQA, GQA, MLA, KV Cache]
 created: 2026-08-25
-updated: 2026-08-25
+updated: 2026-09-18
 source: Vaswani et al. (2017), Shazeer (2019), Ainslie et al. (2023), DeepSeek-V2 (2024)
 ---
 
@@ -170,7 +170,7 @@ flowchart LR
 
 ## 在 FlashAttention 代码中的体现
 
-- [flash_api.cpp](file:///Users/weijunzhang/project/pytorch/third_party/flash-attention/csrc/flash_attn/flash_api.cpp) 中 `TORCH_CHECK(num_heads % num_heads_k == 0)`：合法 GQA 的约束
+- flash-attn 源码的 `csrc/flash_attn/flash_api.cpp` 中 `TORCH_CHECK(num_heads % num_heads_k == 0)`：合法 GQA 的约束
 - `const int ngroups = num_heads / num_heads_k;`：KV 头数 = Q 头数 / 组大小
 - `seqlenq_ngroups_swapped`：decode（$seqlen\_q = 1$）时把 q 从 `(b, 1, num_heads_k·ngroups, d)` 重排成 `(b, ngroups, num_heads_k, d)`，**把 ngroups 当序列维**提供并行度
 - kernel 侧 `h / h_k / h_h_k_ratio`：同一份内核同时支持 MHA / GQA / MQA
@@ -192,10 +192,10 @@ flowchart LR
 
 ## Related Knowledge
 
-- [FlashAttention 源码精读](./flash-attention-source-reading.md) — MQA/GQA 通过 `h / h_k` 处理
-- [FlashAttention PyTorch ATen 接入层](./flash-attention-pytorch-aten-integration.md) — `num_heads % num_heads_k`、`seqlenq_ngroups_swapped`、`dk_expanded / dv_expanded`
-- [FlashAttention 接口与 Autograd](./flash-attention-interface-and-autograd.md) — packed qkv `(B, S, 3, H, D)`、varlen 场景
-- [FlashAttention 术语表与关键状态表](./flash-attention-glossary-and-state-table.md) — MQA/GQA 相关状态项
+- [FlashAttention 源码精读](./systems/flash-attention/flash-attention-source-reading.md) — MQA/GQA 通过 `h / h_k` 处理
+- [FlashAttention PyTorch ATen 接入层](./systems/flash-attention/flash-attention-pytorch-aten-integration.md) — `num_heads % num_heads_k`、`seqlenq_ngroups_swapped`、`dk_expanded / dv_expanded`
+- [FlashAttention 接口与 Autograd](./systems/flash-attention/flash-attention-interface-and-autograd.md) — packed qkv `(B, S, 3, H, D)`、varlen 场景
+- [FlashAttention 术语表与关键状态表](./systems/flash-attention/flash-attention-glossary-and-state-table.md) — MQA/GQA 相关状态项
 
 ## References
 

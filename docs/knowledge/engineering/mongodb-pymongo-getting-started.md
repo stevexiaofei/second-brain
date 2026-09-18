@@ -2,13 +2,14 @@
 title: MongoDB 与 PyMongo 入门指南
 type: guide
 status: seed
-tags: [MongoDB, PyMongo, Python, Database, NoSQL]
+tags: [MongoDB, PyMongo, Python, Database, NoSQL, update-operators, upsert]
 created: 2026-08-19
-updated: 2026-08-19
+updated: 2026-09-14
 source:
   - https://www.mongodb.com/docs/languages/python/pymongo-driver/
   - https://www.mongodb.com/docs/manual/crud/
   - https://www.mongodb.com/docs/manual/indexes/
+  - https://www.mongodb.com/docs/manual/reference/operator/update/
 ---
 
 # MongoDB 与 PyMongo 入门指南
@@ -269,23 +270,139 @@ result = users.update_one(
 print(result.matched_count, result.modified_count)
 ```
 
-### 常用更新操作符
+### 更新操作符全景
+
+MongoDB 的更新操作符分四组，**先按"改什么"选组，再按"怎么改"选操作符**：
+
+#### 一、字段类（作用于标量或整个嵌套文档）
+
+| 操作符 | 作用 | 字段不存在时 | 备注 |
+|---|---|---|---|
+| `$set` | 直接赋值 | 创建该字段 | 最常用；可用点号写嵌套字段 `"profile.city"` |
+| `$setOnInsert` | **只在 upsert 导致插入时**赋值 | 创建该字段 | 匹配到已有文档时**完全跳过**，详见下文「`$set` 与 `$setOnInsert`」 |
+| `$unset` | 删除字段 | 无副作用 | 值随便给（`""` 或 `1` 都行） |
+| `$inc` | 数值加减（可负） | 以该值作为初值 | **只能用于数值字段**，否则报错 |
+| `$mul` | 数值乘法 | **设为 0**（不是乘以该值！） | 反直觉点，见下方提醒 |
+| `$min` | 仅当指定值**更小**时更新 | 设为该值 | 用于"只降不升"的字段 |
+| `$max` | 仅当指定值**更大**时更新 | 设为该值 | 用于"只升不降"的字段 |
+| `$rename` | 重命名字段 | 无副作用 | **不能用于数组元素** |
+| `$currentDate` | 设为当前时间 | 创建该字段 | `{"$currentDate": {"updated_at": true}}` 存 Date；`{"$type": "timestamp"}` 存 Timestamp |
 
 ```python
-# 设置字段
-{"$set": {"name": "Alice Chen"}}
+# 赋值（含嵌套字段）
+{"$set": {"name": "Alice Chen", "profile.city": "Beijing"}}
 
-# 数字加一
-{"$inc": {"login_count": 1}}
+# 自增（可负）
+{"$inc": {"login_count": 1, "balance": -10}}
 
 # 删除字段
 {"$unset": {"temporary_field": ""}}
 
-# 向数组追加值
-{"$push": {"skills": "Docker"}}
+# 只降不升 / 只升不降
+{"$min": {"lowest_price": 99}}
+{"$max": {"highest_score": 88}}
 
-# 仅在数组中不存在时添加
-{"$addToSet": {"skills": "Python"}}
+# 改名
+{"$rename": {"nickname": "display_name"}}
+
+# 服务端时间（避免应用与数据库时钟不一致）
+{"$currentDate": {"updated_at": True}}
+```
+
+> ⚠️ **`$mul` 的坑**：如果字段**不存在**，`$mul` 会把字段设为 **0**，而不是"乘以乘数"。所以 `{"$mul": {"price": 1.1}}` 在 `price` 缺失时得到 `0`——想做"涨价 10% 且缺省给初值"，应先 `$set` 或用聚合管道式更新。
+
+> ⚠️ **`$set` 作用于数组字段会整体替换数组**。想只改数组里的某个元素，要用定位符（见下）。
+
+#### 二、数组类
+
+| 操作符 | 作用 | 典型写法 |
+|---|---|---|
+| `$push` | 追加元素 | `{"$push": {"skills": "Docker"}}` |
+| `$addToSet` | **不存在才**追加 | `{"$addToSet": {"skills": "Python"}}` |
+| `$pop` | 删首 / 删尾 | `{"$pop": {"queue": -1}}` 删首个；`1` 删末尾 |
+| `$pull` | 按**条件**删除所有匹配元素 | `{"$pull": {"scores": {"$lt": 60}}}` |
+| `$pullAll` | 删除所有**等于给定值**的元素 | `{"$pullAll": {"scores": [0, 5]}}` |
+
+**定位符**（修改数组中的特定元素，而不是整个数组）：
+
+```python
+# $  ：第一个匹配查询条件的元素
+users.update_one(
+    {"email": "alice@example.com", "skills": "Python"},
+    {"$set": {"skills.$": "Python 3"}},
+)
+
+# $[] ：数组中的所有元素
+users.update_one({"email": "alice@example.com"}, {"$inc": {"scores.$[]": 1}})
+
+# $[<identifier>] + arrayFilters ：按条件筛选要改的元素
+users.update_one(
+    {"email": "alice@example.com"},
+    {"$set": {"addresses.$[elem].is_default": False}},
+    array_filters=[{"elem.city": "Beijing"}],
+)
+```
+
+>`$addToSet` 判断的是**整体是否相等**（对子文档不做字段级比较），且**只保证不新增重复项，不会清理已有的重复项**。
+
+#### 三、数组修饰符（只挂在 `$push` 上）
+
+| 修饰符 | 作用 |
+|---|---|
+| `$each` | 追加多个元素（`$addToSet` 也支持） |
+| `$position` | 指定插入位置 |
+| `$slice` | 追加后把数组**截断**到指定长度（可用于实现固定长度的"最近 N 条"列表） |
+| `$sort` | 追加后对数组排序（注意排序的是**整个数组**） |
+
+```python
+# 保留最近 10 条日志：追加 + 倒序 + 截断，一步完成
+{"$push": {
+    "logs": {
+        "$each": [{"at": now, "msg": "login"}],
+        "$sort": {"at": -1},
+        "$slice": 10,
+    }
+}}
+```
+
+> `$slice` / `$sort` / `$position` **必须和 `$each` 一起使用**，否则报错。
+
+#### 四、聚合管道式更新：当"新值依赖旧值"时
+
+如果新值需要**基于当前字段值计算**，或者要**引用同文档的其他字段**，普通操作符就不够用了（`$inc` 只能加减）。这时把第二个参数写成**聚合管道**（一个 list）：
+
+```python
+users.update_one(
+    {"email": "alice@example.com"},
+    [
+        {"$set": {
+            "full_name": {"$concat": ["$first_name", " ", "$last_name"]},
+            "level": {"$cond": [{"$gte": ["$age", 18]}, "adult", "minor"]},
+        }},
+    ],
+)
+```
+
+| 能力 | 普通操作符 | 聚合管道式更新 |
+|---|---|---|
+| 赋值 / 自增 / 数组操作 | ✅ | ✅ |
+| 引用同文档其他字段 | ❌ | ✅ |
+| 条件分支（`$cond`）、字符串拼接（`$concat`） | ❌ | ✅ |
+| `$setOnInsert` | ✅ | ❌ **不支持** |
+
+> 注意：管道里的 `$set` 是**聚合阶段**，语义和同名的更新操作符不同——它是"按表达式算出新值"，而不是"直接赋这个字面量"。
+
+#### 选择口诀
+
+```text
+直接给值            → $set
+只在"出生那一刻"给值 → $setOnInsert
+在旧值基础上加减乘   → $inc / $mul
+只在更小/更大时改   → $min / $max
+往数组里放          → $push（要限长/排序就配 $each + $slice + $sort）
+往数组里放且不重复   → $addToSet
+从数组里拿          → $pop / $pull / $pullAll
+新值要靠旧值算出来   → 聚合管道式更新
 ```
 
 ### Upsert
@@ -300,9 +417,164 @@ users.update_one(
 )
 ```
 
-> 不要把新文档直接作为第二个参数传给 `update_one()`；通常应明确使用 `$set`、`$inc` 等更新操作符。
+> 不要把新文档直接作为第二个参数传给 `update_one()`；通常应明确使用 `$set`、`$inc` 等更新操作符。混合会出现两种错误之一：把 `$set` 这类键当成普通字段写进文档（`The dollar ($) prefixed field ... is not valid for storage`），或与替换语义冲突。
 
----
+**怎么知道这次是插入还是更新**：看 `upserted_id`。
+
+```python
+result = users.update_one(filter_, update, upsert=True)
+
+if result.upserted_id is not None:
+    print("插入了新文档，_id =", result.upserted_id)
+else:
+    print("命中了已有文档")
+```
+
+（插入路径下 `matched_count == 0`、`modified_count == 0`，只有 `upserted_id` 非空。）
+
+**并发注意：`upsert=True` 不是"原子的查找或插入"。** 在没有任何唯一约束时，两个并发请求可能各自找不到文档、各自插入，于是产生两条重复文档。正确做法是让**唯一索引**把这件事变成确定性的：
+
+```python
+from pymongo.errors import DuplicateKeyError
+
+try:
+    users.update_one({"email": email}, {"$setOnInsert": {"created_at": now}}, upsert=True)
+except DuplicateKeyError:
+    # 另一个请求刚刚插入了同一 email，重试一次即可命中并走更新路径
+    users.update_one({"email": email}, {"$set": {"last_login": now}}, upsert=True)
+```
+
+> `update_many` + `upsert`：只有在**一条都没匹配到**时才插入一条新文档，不会为每条不存在的记录各插一条。
+
+### `$set` 与 `$setOnInsert`：一次写入 vs 只在插入时写入
+
+这两个操作符的区别**只在 upsert 场景下才显现**，但它是"创建时间/初始状态"这类字段唯一正确的写法。
+
+| | `$set` | `$setOnInsert` |
+|---|---|---|
+| 生效时机 | **插入 + 更新**，两条路径都生效 | **只在 upsert 真的插入时**生效 |
+| 匹配到已有文档时 | 正常写入 | **完全跳过**（官方原文：*Has no effect on update operations that modify existing documents*） |
+| 没开 `upsert` 时 | 正常写入 | **永远不生效** |
+
+**一句话**：`$set` 是"无条件写"，`$setOnInsert` 是"只在新生儿身上写一次"。
+
+#### upsert 的两条路径
+
+```mermaid
+flowchart TD
+    A(["update_one(filter, update, upsert=True)"]) --> B{"filter 匹配到文档?"}
+
+    B -- "是" --> C["走『更新』路径"]
+    C --> C1["只应用 $set / $inc 等操作符"]
+    C1 --> C2["$setOnInsert 被完整跳过"]
+
+    B -- "否" --> D["走『插入』路径"]
+    D --> D1["新文档 = filter 里的等值字段"]
+    D1 --> D2["再应用 $set / $inc 等操作符"]
+    D2 --> D3["最后应用 $setOnInsert"]
+
+    classDef step     fill:#eef2ff,stroke:#c7d2fe,color:#312e81,stroke-width:1.5px
+    classDef action   fill:#fff7ed,stroke:#fdba74,color:#7c2d12,stroke-width:1.5px
+    classDef decide   fill:#fef3c7,stroke:#fcd34d,color:#78350f,stroke-width:1.5px
+    classDef branchNo fill:#f0fdf4,stroke:#86efac,color:#166534,stroke-width:1.5px
+    classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
+
+    class A step
+    class B decide
+    class C,C1,C2,D,D1,D2,D3 action
+```
+
+#### 最典型的用法：`created_at` 用 `$setOnInsert`，`updated_at` 用 `$set`
+
+```python
+from datetime import datetime, timezone
+
+now = datetime.now(timezone.utc)
+
+users.update_one(
+    {"email": "alice@example.com"},
+    {
+        "$set":         {"last_login": now},                       # 每次访问都刷新
+        "$setOnInsert": {"created_at": now, "status": "active"},   # 只在首次注册写
+    },
+    upsert=True,
+)
+```
+
+- 第一次调用 → 插入文档，`created_at` / `status` / `last_login` 都有值；
+- 之后每次调用 → 只有 `last_login` 刷新，`created_at` **保持不动**。
+
+**如果用 `$set` 写 `created_at`**，它每次都会被刷成当前时间——见 §12 的静默错误提醒。
+
+#### PyMongo 实操要点
+
+**① 可以在 `$setOnInsert` 里指定 `_id`**，用业务自己生成的 ID，而不是让 MongoDB 生成 `ObjectId`：
+
+```python
+users.update_one(
+    {"email": email},
+    {"$setOnInsert": {"_id": my_object_id, "created_at": now}},
+    upsert=True,
+)
+```
+
+**② 支持它的方法**：
+
+| 方法 | 支持 `$setOnInsert` |
+|---|---|
+| `update_one` / `update_many`（带 `upsert=True`） | ✅ |
+| `find_one_and_update`（带 `upsert=True`） | ✅ |
+| `replace_one` | ❌ 替换式文档不能用任何更新操作符 |
+| 聚合管道式更新 | ❌ 管道里没有 `$setOnInsert` |
+
+**③ 它必须和唯一索引配套，才能真正做到"只初始化一次"**：
+
+> **唯一索引负责"只能有一条"，`$setOnInsert` 负责"只初始化一次"。** 两个职责不能互相替代。并发场景、`DuplicateKeyError` 重试写法与 `upserted_id` 判据见上一节「Upsert」。
+
+#### 两个容易踩的坑
+
+**① 不要让同一字段同时出现在 `$set` 和 `$setOnInsert` 里。**
+
+```python
+# ⚠️ 不要这样写
+{"$set": {"a": 1}, "$setOnInsert": {"a": 2}}
+```
+
+这属于"多个操作符修改同一路径"，会触发错误码 **40**：
+
+```text
+MongoServerError: Updating the path 'a' would create a conflict at 'a'
+```
+
+**稳妥原则**：一个字段只归一个操作符管——`created_at` 归 `$setOnInsert`、`updated_at` 归 `$set`，天然不冲突。
+
+**② filter 里的等值字段也会进入新文档。**
+
+```python
+users.update_one(
+    {"email": email, "age": {"$gt": 18}},        # $gt 是操作符条件，不会进新文档
+    {"$setOnInsert": {"created_at": now}},
+    upsert=True,
+)
+```
+
+- **等值条件**（`email: ...`）会被复制进新文档；
+- **操作符条件**（`$gt` / `$in` 等）不会。
+
+所以别在 filter 和更新操作符里写同一字段去赌谁赢——这种写法即使当前版本能跑，语义也不值得依赖。
+
+### 更新操作符的冲突与限制
+
+| 限制 | 说明 |
+|---|---|
+| **同一路径只能被一个操作符修改** | 否则错误码 40：`Updating the path 'x' would create a conflict at 'x'`。例：`{"$set": {"a": 1}, "$inc": {"a": 1}}`、`{"$set": {"a": 1}, "$setOnInsert": {"a": 2}}` |
+| **不能用"嵌套操作符"来规避冲突** | 更新文档是"操作符 → 字段"的**扁平映射**，没有优先级或执行顺序可以依赖 |
+| **`$inc` / `$mul` 只能用于数值字段** | 对非数值字段会报错 |
+| **`$rename` 不能用于数组元素** | 只对文档字段有效 |
+| **替换式更新不能混用操作符** | `replace_one` 的第二个参数是完整文档；聚合管道式更新（list）里也不能用更新操作符 |
+| **5.0 起字段处理顺序按字典序** | 字符串字段名按字典序、数字字段名按数值序；这影响 `$rename` 等多字段操作的中间状态，但**不要依赖它来实现逻辑** |
+
+排查冲突的实用做法：**把一次更新拆成"操作符 → 目标路径"两列写出来，逐一检查同一路径是否出现两次**。
 
 ## 8. Delete：删除文档
 
@@ -502,6 +774,41 @@ except PyMongoError as exc:
 ```
 
 在真实服务中应记录异常并返回合适的业务错误，不要把数据库连接信息直接暴露给客户端。
+
+### 6）用 `$set` 写 `created_at`：一个静默错误
+
+```python
+# ⚠️ created_at 每次都会被刷新，但字段名写着 created
+users.update_one(
+    {"email": email},
+    {"$set": {"created_at": now, "last_login": now}},
+    upsert=True,
+)
+```
+
+这个写法**不会报错、不会崩**，只是"创建时间"悄悄变成了"最后访问时间"。等发现时，历史数据已经无法恢复。
+
+正确写法是把两类时间分给两个操作符（详见 §7）：
+
+```python
+users.update_one(
+    {"email": email},
+    {
+        "$set":         {"last_login": now},
+        "$setOnInsert": {"created_at": now},
+    },
+    upsert=True,
+)
+```
+
+同类静默错误还有几个，值得在 code review 时盯一眼：
+
+| 写法 | 实际行为 | 应该怎么写 |
+|---|---|---|
+| `$set` 写 `created_at` | 每次被刷新 | `$setOnInsert` |
+| `$mul` 一个可能不存在的字段 | 缺失时得到 **0** | 先 `$set` 初值，或改用聚合管道式更新 |
+| `$set` 写整个数组字段 | **整体替换**，旧元素全丢 | 用定位符 `$` / `$[]` / `$[elem]` 改单个元素 |
+| 以为 `$addToSet` 能去重 | 只保证不**新增**重复，不清理已有重复 | 先清理历史重复项 |
 
 ---
 

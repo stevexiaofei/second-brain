@@ -17,7 +17,7 @@ updated: 2026-08-21
 
 ## 当前状态（2026-08-21）
 
-- `inbox/` 目前只保留 AI Infra 论文地图；已完成一轮“消化 → 稳定知识”的迁移。
+- `inbox/` 目前保留 AI Infra 论文地图、CUDA 硬件与编程模型研究地图、CUDA 初学者学习路径与最小实验三条待核验学习地图；已完成一轮“消化 → 稳定知识”的迁移。
 - `knowledge/ai/` 已按 Foundations / Systems 组织，并形成 Reinforcement Learning、Diffusion、Reasoning、FlashAttention 和 nanobot 等专题入口。
 - `knowledge/autonomous-driving/`、`mathematics/` 已有种子笔记，但与 AI Systems 中的 PyTorch 专题相比，主题深度仍不足。
 - `knowledge/learning/` 已承接学习科学和通用源码阅读方法。

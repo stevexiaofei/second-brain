@@ -159,7 +159,7 @@ Kubernetes 存储的核心是「需求与实现解耦」：应用通过 PVC 描�
 - [05 Workload：Deployment、StatefulSet 与 Job](./05-workloads-deployments-and-jobs.md)
 - [07 ConfigMap 与 Secret](./07-configuration-configmap-and-secrets.md)
 - [09 资源、调度与自动扩缩容](./09-resources-scheduling-and-autoscaling.md)
-- [分布式存储系统知识地图](../distributed-storage-knowledge-map.md) — 分布式存储、CSI 与 Operator 的工程背景
+- [面向 AI 训练与多云场景的存储工程地图](../../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md) — 分布式存储、CSI 与 Operator 的工程背景
 
 ## References
 

@@ -162,12 +162,12 @@ Pod 会被重建、IP 会变化。Service 通过 selector 找到一组符合条�
 - **应用交付**：镜像构建、Helm、Kustomize、GitOps、部署策略和发布观测；
 - **平台开发**：client-go、Controller Runtime、CRD、Operator、Webhook 和测试；
 - **云原生网络**：CNI、Service 流量路径、NetworkPolicy、Gateway API、服务网格；
-- **云原生存储**：CSI、快照、备份、容量管理和有状态工作负载；可结合 [分布式存储知识地图](../distributed-storage-knowledge-map.md) 学习。
+- **云原生存储**：CSI、快照、备份、容量管理和有状态工作负载；可结合 [面向 AI 训练与多云场景的存储工程地图](../../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md) 学习。
 
 ## Related
 
 - [分布式系统核心理论基础](../../distributed-systems/distributed-systems-foundations.md) — 理解控制面、共识、故障与一致性的理论背景
-- [分布式存储系统知识地图](../distributed-storage-knowledge-map.md) — K8s 存储、CSI、Operator 与 AI 数据场景
+- [面向 AI 训练与多云场景的存储工程地图](../../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md) — K8s 存储、CSI、Operator 与 AI 数据场景
 - [Engineering 知识索引](../index.md)
 
 ## References
