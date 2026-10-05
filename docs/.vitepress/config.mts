@@ -197,7 +197,9 @@ export default withMermaid(
           { text: 'Overview', link: '/knowledge/mathematics/' },
           { text: '高斯分布', link: '/knowledge/mathematics/gaussian-distribution' },
           { text: 'Lagrangian 与约束优化', link: '/knowledge/mathematics/lagrangian-and-constrained-optimization' },
-          { text: '奇异值分解 SVD', link: '/knowledge/mathematics/singular-value-decomposition' }
+          { text: '奇异值分解 SVD', link: '/knowledge/mathematics/singular-value-decomposition' },
+          { text: '魔方群的数学结构', link: '/knowledge/mathematics/rubiks-cube-group-theory' },
+          { text: '魔方层先法实操', link: '/knowledge/mathematics/rubiks-cube-solving-guide' }
         ]}
       ],
       '/projects/': [{ text: 'Projects', items: [

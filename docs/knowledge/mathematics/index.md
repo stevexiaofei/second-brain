@@ -28,3 +28,8 @@
 - Entropy
 - KL Divergence
 - Mutual Information
+
+## Group Theory
+
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — 状态空间 $4.33\times10^{19}$、三个守恒律的完整证明、交换子与共轭、上帝之数
+- [魔方层先法实操](./rubiks-cube-solving-guide.md) — 七步入门解法、公式速查、常见卡点
