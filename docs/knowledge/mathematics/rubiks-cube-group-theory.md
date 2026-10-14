@@ -506,6 +506,7 @@ $$
 ## Related
 
 - [魔方层先法实操](./rubiks-cube-solving-guide.md) — 本文结论对应的可执行解法
+- [群论与抽象代数专题](./group-theory/index.md) — 本文用到的前置概念（置换、交错群、同构定理、商群）的系统性沉淀；$|G|$ 的计算（§5）是第一同构定理的直用
 - [奇异值分解 SVD](./singular-value-decomposition.md) — 同样以"结构分解"理解线性算子
 - [Lagrangian 与约束优化](./lagrangian-and-constrained-optimization.md) — 另一类"约束下求极值"的形式化
 

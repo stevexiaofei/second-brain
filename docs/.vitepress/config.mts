@@ -199,7 +199,29 @@ export default withMermaid(
           { text: 'Lagrangian 与约束优化', link: '/knowledge/mathematics/lagrangian-and-constrained-optimization' },
           { text: '奇异值分解 SVD', link: '/knowledge/mathematics/singular-value-decomposition' },
           { text: '魔方群的数学结构', link: '/knowledge/mathematics/rubiks-cube-group-theory' },
-          { text: '魔方层先法实操', link: '/knowledge/mathematics/rubiks-cube-solving-guide' }
+          { text: '魔方层先法实操', link: '/knowledge/mathematics/rubiks-cube-solving-guide' },
+          { text: '群论与抽象代数专题', link: '/knowledge/mathematics/group-theory/' },
+          { text: '01 群论导论', link: '/knowledge/mathematics/group-theory/01-introduction-to-group-theory' },
+          { text: '02 模 n 加法群与二面体群', link: '/knowledge/mathematics/group-theory/02-mod-n-and-dihedral-groups' },
+          { text: '03 对称群与循环群', link: '/knowledge/mathematics/group-theory/03-symmetric-and-cyclic-groups' },
+          { text: '04 群的性质（上）', link: '/knowledge/mathematics/group-theory/04-group-properties-I' },
+          { text: '05 群的性质（下）', link: '/knowledge/mathematics/group-theory/05-group-properties-II' },
+          { text: '06 正规子群与商群', link: '/knowledge/mathematics/group-theory/06-normal-subgroup-and-quotient-group' },
+          { text: '07 自同构、直积与半直积', link: '/knowledge/mathematics/group-theory/07-automorphism-and-products' },
+          { text: '08 同构定理（上）', link: '/knowledge/mathematics/group-theory/08-isomorphism-theorems-I' },
+          { text: '09 同构定理（下）与有限阿贝尔群分类', link: '/knowledge/mathematics/group-theory/09-isomorphism-theorems-II' }
+        ]},
+        { text: '群论与抽象代数', collapsed: true, items: [
+          { text: '专题总览', link: '/knowledge/mathematics/group-theory/' },
+          { text: '01 群论导论', link: '/knowledge/mathematics/group-theory/01-introduction-to-group-theory' },
+          { text: '02 模 n 加法群与二面体群', link: '/knowledge/mathematics/group-theory/02-mod-n-and-dihedral-groups' },
+          { text: '03 对称群与循环群', link: '/knowledge/mathematics/group-theory/03-symmetric-and-cyclic-groups' },
+          { text: '04 群的性质（上）', link: '/knowledge/mathematics/group-theory/04-group-properties-I' },
+          { text: '05 群的性质（下）', link: '/knowledge/mathematics/group-theory/05-group-properties-II' },
+          { text: '06 正规子群与商群', link: '/knowledge/mathematics/group-theory/06-normal-subgroup-and-quotient-group' },
+          { text: '07 自同构、直积与半直积', link: '/knowledge/mathematics/group-theory/07-automorphism-and-products' },
+          { text: '08 同构定理（上）', link: '/knowledge/mathematics/group-theory/08-isomorphism-theorems-I' },
+          { text: '09 同构定理（下）与有限阿贝尔群分类', link: '/knowledge/mathematics/group-theory/09-isomorphism-theorems-II' }
         ]}
       ],
       '/projects/': [{ text: 'Projects', items: [
