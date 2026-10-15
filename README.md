@@ -43,6 +43,18 @@ Build:
 npm run docs:build
 ```
 
+Print a knowledge directory as a single self-contained HTML (+PDF with `--pdf`):
+
+```bash
+npm run print -- docs/knowledge/mathematics/group-theory --pdf
+```
+
+Print a knowledge directory to a self-contained HTML (+ PDF with `--pdf`):
+
+```bash
+npm run print -- docs/knowledge/mathematics/group-theory --pdf
+```
+
 ## Deployed Site
 
 <https://stevexiaofei.github.io/second-brain/>
