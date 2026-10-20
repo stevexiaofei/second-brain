@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Distributed Storage, Object Storage, File System, Consistency, Replication, Erasure Coding, Metadata]
 created: 2026-08-17
-updated: 2026-09-18
+updated: 2026-10-20
 ---
 
 # 分布式存储基础总览
@@ -189,16 +189,28 @@ flowchart TB
 - 本文是**基础总览**：先建立存储语义、数据放置、故障恢复与性能取舍的通用心智模型。
 - [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md) 是**场景化地图**：在上述基础上串联多级缓存、RDMA / NVMe-oF、云原生存储和多模态数据流水线。
 
+## 本目录笔记
+
+- [块存储、文件存储与对象存储对比](./block-file-object-comparison.md) — 三种存储语义、接口、场景的直观对照（适合最先读）
+- [分布式对象存储](./object-storage.md) — S3 语义、桶/对象模型、纠删码落地
+- [并行文件系统](./parallel-file-systems.md) — Lustre/GPFS 类系统的并发访问与条带化
+- [副本、纠删码与放置](./replication-erasure-coding-placement.md) — 冗余与数据分布的核心权衡
+- [一致性、共识与故障恢复](./consistency-consensus-failure.md) — 副本间如何达成一致、坏了怎么恢复
+- [元数据与性能瓶颈](./metadata-and-performance.md) — 元数据服务、热点与扩展性
+- [Ceph、Lustre、MinIO 入门概览](./ceph-lustre-minio-overview.md) — 常见系统的定位与结构
+- [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md) — 场景化的工程串联
+
 ## 建议学习顺序
 
 如果你是初学者，建议按这个顺序看：
 
-1. 先看 [对象存储](./object-storage.md)
-2. 再看 [并行文件系统](./parallel-file-systems.md)
-3. 然后看 [副本、纠删码与放置](./replication-erasure-coding-placement.md)
-4. 接着看 [一致性、共识与故障恢复](./consistency-consensus-failure.md)
-5. 最后看 [元数据与性能瓶颈](./metadata-and-performance.md)
-6. 若目标是 AI 训练、多云或云原生存储，再看 [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)
+1. 先看 [块存储、文件存储与对象存储对比](./block-file-object-comparison.md) 建立语义直觉
+2. 再看 [对象存储](./object-storage.md)
+3. 然后看 [并行文件系统](./parallel-file-systems.md)
+4. 接着看 [副本、纠删码与放置](./replication-erasure-coding-placement.md)
+5. 然后看 [一致性、共识与故障恢复](./consistency-consensus-failure.md)
+6. 最后看 [元数据与性能瓶颈](./metadata-and-performance.md)
+7. 若目标是 AI 训练、多云或云原生存储，再看 [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md)
 
 ## 这一套知识的底层逻辑
 

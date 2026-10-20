@@ -3,6 +3,9 @@ title: GRPO
 type: concept
 status: growing
 tags: [AI, RL, LLM]
+created: 2026-08-11
+updated: 2026-10-20
+source: 整理自 GRPO（DeepSeekMath 提出）学习过程
 ---
 
 # GRPO

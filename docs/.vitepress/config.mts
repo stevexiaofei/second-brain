@@ -25,7 +25,8 @@ export default withMermaid(
       { text: 'Projects', link: '/projects/' },
       { text: 'Ideas', link: '/ideas/' },
       { text: 'Reading', link: '/reading/' },
-      { text: 'Inbox', link: '/inbox/' }
+      { text: 'Inbox', link: '/inbox/' },
+      { text: 'Archives', link: '/archives/' }
     ],
     sidebar: {
       '/knowledge/': [
@@ -97,23 +98,42 @@ export default withMermaid(
         ]},
         { text: 'PyTorch', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/pytorch/' },
-          { text: '01 架构总览', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/01-architecture-overview' },
-          { text: '02 torch.compile 入口', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/02-torch-compile-entry' },
-          { text: '03 TorchDynamo 前端', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/03-torchdynamo-frontend' },
-          { text: '04 Guard 系统', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/04-guard-system' },
-          { text: '05 缓存机制', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/05-cache-mechanism' },
-          { text: '06 图断裂', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/06-graph-break' },
-          { text: '07 AOTAutograd 中间层', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/07-aotautograd' },
-          { text: '08 前向/反向分区策略', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/08-partition-strategy' },
-          { text: '09 TorchInductor 后端', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/09-torchinductor-backend' },
-          { text: '10 Lowering: FX → IR', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/10-lowering-fx-to-ir' },
-          { text: '11 调度器与融合', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/11-scheduler-fusion' },
-          { text: '12 代码生成', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/12-code-generation' },
-          { text: '13 完整编译流程', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/13-full-compile-pipeline' },
-          { text: '14 配置与模式', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/14-config-and-modes' },
-          { text: '15 torch.fx 专题', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/15-torch-fx-special' },
-          { text: '16 TorchDynamo 深入', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/16-torchdynamo-deep' },
-          { text: '17 torch.compile 后端', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/17-compile-backend' }
+          { text: '项目概述', link: '/knowledge/ai/systems/pytorch/pytorch-overview' },
+          { text: '整体架构', link: '/knowledge/ai/systems/pytorch/pytorch-architecture' },
+          { text: 'C++ 核心模块', link: '/knowledge/ai/systems/pytorch/pytorch-cpp-core' },
+          { text: 'Python 包结构', link: '/knowledge/ai/systems/pytorch/pytorch-python-package' },
+          { text: '自动微分 autograd', link: '/knowledge/ai/systems/pytorch/pytorch-autograd' },
+          { text: '神经网络 nn', link: '/knowledge/ai/systems/pytorch/pytorch-nn' },
+          { text: '优化器 optim', link: '/knowledge/ai/systems/pytorch/pytorch-optim' },
+          { text: 'TorchScript jit', link: '/knowledge/ai/systems/pytorch/pytorch-jit' },
+          { text: 'FX 图变换', link: '/knowledge/ai/systems/pytorch/pytorch-fx' },
+          { text: 'torch.compile 编译栈', link: '/knowledge/ai/systems/pytorch/pytorch-compile' },
+          { text: '分布式训练', link: '/knowledge/ai/systems/pytorch/pytorch-distributed' },
+          { text: 'Reducer 类设计详解', link: '/knowledge/ai/systems/pytorch/pytorch-reducer' },
+          { text: '程序导出 export', link: '/knowledge/ai/systems/pytorch/pytorch-export' },
+          { text: '代码生成 torchgen', link: '/knowledge/ai/systems/pytorch/pytorch-torchgen' },
+          { text: '依赖关系', link: '/knowledge/ai/systems/pytorch/pytorch-dependencies' },
+          { text: '构建与运行', link: '/knowledge/ai/systems/pytorch/pytorch-build-run' },
+          { text: '关键类参考', link: '/knowledge/ai/systems/pytorch/pytorch-key-classes' },
+          { text: 'torch.compile Wiki 系列', collapsed: true, items: [
+            { text: '01 架构总览', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/01-architecture-overview' },
+            { text: '02 torch.compile 入口', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/02-torch-compile-entry' },
+            { text: '03 TorchDynamo 前端', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/03-torchdynamo-frontend' },
+            { text: '04 Guard 系统', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/04-guard-system' },
+            { text: '05 缓存机制', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/05-cache-mechanism' },
+            { text: '06 图断裂', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/06-graph-break' },
+            { text: '07 AOTAutograd 中间层', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/07-aotautograd' },
+            { text: '08 前向/反向分区策略', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/08-partition-strategy' },
+            { text: '09 TorchInductor 后端', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/09-torchinductor-backend' },
+            { text: '10 Lowering: FX → IR', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/10-lowering-fx-to-ir' },
+            { text: '11 调度器与融合', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/11-scheduler-fusion' },
+            { text: '12 代码生成', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/12-code-generation' },
+            { text: '13 完整编译流程', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/13-full-compile-pipeline' },
+            { text: '14 配置与模式', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/14-config-and-modes' },
+            { text: '15 torch.fx 专题', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/15-torch-fx-special' },
+            { text: '16 TorchDynamo 深入', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/16-torchdynamo-deep' },
+            { text: '17 torch.compile 后端', link: '/knowledge/ai/systems/pytorch/torch-compile-wiki/17-compile-backend' }
+          ]}
         ]},
         { text: 'Autonomous Driving', items: [
           { text: 'Overview', link: '/knowledge/autonomous-driving/' },
@@ -123,7 +143,16 @@ export default withMermaid(
           { text: 'Overview', link: '/knowledge/distributed-systems/' },
           { text: '核心理论基础', link: '/knowledge/distributed-systems/distributed-systems-foundations' },
           { text: '分布式存储基础总览', link: '/knowledge/distributed-systems/distributed-storage/' },
-          { text: 'AI 训练与多云存储地图', link: '/knowledge/distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map' }
+          { text: 'AI 训练与多云存储地图', link: '/knowledge/distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map' },
+          { text: '分布式存储基础系列', collapsed: true, items: [
+            { text: '块存储、文件存储与对象存储对比', link: '/knowledge/distributed-systems/distributed-storage/block-file-object-comparison' },
+            { text: '分布式对象存储', link: '/knowledge/distributed-systems/distributed-storage/object-storage' },
+            { text: '并行文件系统', link: '/knowledge/distributed-systems/distributed-storage/parallel-file-systems' },
+            { text: '副本、纠删码与放置', link: '/knowledge/distributed-systems/distributed-storage/replication-erasure-coding-placement' },
+            { text: '一致性、共识与故障恢复', link: '/knowledge/distributed-systems/distributed-storage/consistency-consensus-failure' },
+            { text: '元数据与性能瓶颈', link: '/knowledge/distributed-systems/distributed-storage/metadata-and-performance' },
+            { text: 'Ceph、Lustre、MinIO 入门概览', link: '/knowledge/distributed-systems/distributed-storage/ceph-lustre-minio-overview' }
+          ]}
         ]},
         { text: 'Engineering', items: [
           { text: 'Overview', link: '/knowledge/engineering/' },
@@ -200,16 +229,7 @@ export default withMermaid(
           { text: '奇异值分解 SVD', link: '/knowledge/mathematics/singular-value-decomposition' },
           { text: '魔方群的数学结构', link: '/knowledge/mathematics/rubiks-cube-group-theory' },
           { text: '魔方层先法实操', link: '/knowledge/mathematics/rubiks-cube-solving-guide' },
-          { text: '群论与抽象代数专题', link: '/knowledge/mathematics/group-theory/' },
-          { text: '01 群论导论', link: '/knowledge/mathematics/group-theory/01-introduction-to-group-theory' },
-          { text: '02 模 n 加法群与二面体群', link: '/knowledge/mathematics/group-theory/02-mod-n-and-dihedral-groups' },
-          { text: '03 对称群与循环群', link: '/knowledge/mathematics/group-theory/03-symmetric-and-cyclic-groups' },
-          { text: '04 群的性质（上）', link: '/knowledge/mathematics/group-theory/04-group-properties-I' },
-          { text: '05 群的性质（下）', link: '/knowledge/mathematics/group-theory/05-group-properties-II' },
-          { text: '06 正规子群与商群', link: '/knowledge/mathematics/group-theory/06-normal-subgroup-and-quotient-group' },
-          { text: '07 自同构、直积与半直积', link: '/knowledge/mathematics/group-theory/07-automorphism-and-products' },
-          { text: '08 同构定理（上）', link: '/knowledge/mathematics/group-theory/08-isomorphism-theorems-I' },
-          { text: '09 同构定理（下）与有限阿贝尔群分类', link: '/knowledge/mathematics/group-theory/09-isomorphism-theorems-II' }
+          { text: '群论与抽象代数专题', link: '/knowledge/mathematics/group-theory/' }
         ]},
         { text: '群论与抽象代数', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/mathematics/group-theory/' },
@@ -231,6 +251,7 @@ export default withMermaid(
       ]}],
       '/ideas/': [{ text: 'Ideas', items: [{ text: 'Overview', link: '/ideas/' }] }],
       '/reading/': [{ text: 'Reading', items: [{ text: 'Overview', link: '/reading/' }] }],
+      '/archives/': [{ text: 'Archives', items: [{ text: 'Overview', link: '/archives/' }] }],
       '/inbox/': [{ text: 'Inbox', items: [
         { text: 'Overview', link: '/inbox/' }
       ]}]

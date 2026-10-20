@@ -35,14 +35,14 @@ source: 知乎《群论及抽象代数学习笔记》系列（作者大PPP，NTU
 ## 推荐阅读顺序
 
 1. [01 群论导论](./01-introduction-to-group-theory.md)：二元运算、群的三公理、单位元/逆元唯一性、阶、子群判定引理、生成子群
-2. [02 整数模 n 加法群与二面体群](./mod-n-and-dihedral-groups.md)：同余 → 等价类 → $\mathbb{Z}/n\mathbb{Z}$；正多边形的对称群 $D_n$
-3. [03 对称群与循环群](./symmetric-and-cyclic-groups.md)：排列与 cycle 分解、cycle type、$o(\sigma)=\operatorname{lcm}$、循环群初步
-4. [04 群的性质（上）](./group-properties-I.md)：同态/同构、循环群分类（只有 $\mathbb{Z}$ 与 $\mathbb{Z}/n\mathbb{Z}$）、置换矩阵与 sgn
-5. [05 群的性质（下）](./group-properties-II.md)：交错子群 $A_n$、陪集、拉格朗日定理、阶 6 分类、Cayley 定理
-6. [06 正规子群与商群](./normal-subgroup-and-quotient-group.md)：正规性、商群良定义性、$\mathbb{R}/\mathbb{Z}\cong$ 单位圆、正规化子与中心化子
-7. [07 自同构、直积与半直积](./automorphism-and-products.md)：$Aut(C_n)\cong(\mathbb{Z}/n\mathbb{Z})^\times$、内/外直积、半直积与 $S_n=A_n\rtimes\langle(1,2)\rangle$
-8. [08 同构定理（上）](./isomorphism-theorems-I.md)：核是正规子群、交换图提升引理、第一/二/三同构定理
-9. [09 同构定理（下）与有限阿贝尔群分类](./isomorphism-theorems-II.md)：子群对应定理、有限阿贝尔群分类、阶 8 群的完全分类
+2. [02 整数模 n 加法群与二面体群](./02-mod-n-and-dihedral-groups.md)：同余 → 等价类 → $\mathbb{Z}/n\mathbb{Z}$；正多边形的对称群 $D_n$
+3. [03 对称群与循环群](./03-symmetric-and-cyclic-groups.md)：排列与 cycle 分解、cycle type、$o(\sigma)=\operatorname{lcm}$、循环群初步
+4. [04 群的性质（上）](./04-group-properties-I.md)：同态/同构、循环群分类（只有 $\mathbb{Z}$ 与 $\mathbb{Z}/n\mathbb{Z}$）、置换矩阵与 sgn
+5. [05 群的性质（下）](./05-group-properties-II.md)：交错子群 $A_n$、陪集、拉格朗日定理、阶 6 分类、Cayley 定理
+6. [06 正规子群与商群](./06-normal-subgroup-and-quotient-group.md)：正规性、商群良定义性、$\mathbb{R}/\mathbb{Z}\cong$ 单位圆、正规化子与中心化子
+7. [07 自同构、直积与半直积](./07-automorphism-and-products.md)：$Aut(C_n)\cong(\mathbb{Z}/n\mathbb{Z})^\times$、内/外直积、半直积与 $S_n=A_n\rtimes\langle(1,2)\rangle$
+8. [08 同构定理（上）](./08-isomorphism-theorems-I.md)：核是正规子群、交换图提升引理、第一/二/三同构定理
+9. [09 同构定理（下）与有限阿贝尔群分类](./09-isomorphism-theorems-II.md)：子群对应定理、有限阿贝尔群分类、阶 8 群的完全分类
 
 ## 知识地图
 
@@ -50,23 +50,23 @@ source: 知乎《群论及抽象代数学习笔记》系列（作者大PPP，NTU
 |---|---|
 | 什么是群？单位元/逆元为什么唯一？ | [01](./01-introduction-to-group-theory.md) |
 | 怎么判断一个子集是不是子群？ | [01](./01-introduction-to-group-theory.md)（引理：非空 + 封闭 + 逆元封闭） |
-| 钟表算术为什么构成群？ | [02](./mod-n-and-dihedral-groups.md) |
-| 正多边形的对称有几个？怎么用 $r,m$ 生成？ | [02](./mod-n-and-dihedral-groups.md) |
-| 排列怎么写、怎么乘、怎么求阶？ | [03](./symmetric-and-cyclic-groups.md) |
-| 为什么循环群只有两种？ | [04](./group-properties-I.md) |
-| 排列的"奇偶性"是什么？为什么 $\operatorname{sgn}$ 是同态？ | [04](./group-properties-I.md) |
-| 为什么 $|H|$ 整除 $\|G\|$？ | [05](./group-properties-II.md) |
-| 任意有限群都藏在某个 $S_n$ 里？ | [05](./group-properties-II.md)（Cayley 定理） |
-| 为什么只有正规子群才能造商群？ | [06](./normal-subgroup-and-quotient-group.md) |
-| $\mathbb{R}/\mathbb{Z}$ 是什么？ | [06](./normal-subgroup-and-quotient-group.md)（单位圆） |
-| $D_n$ 能拆成旋转 × 翻转吗？ | [07](./automorphism-and-products.md)（半直积） |
-| $G/\ker\phi\cong\operatorname{im}\phi$ 怎么证、怎么用？ | [08](./isomorphism-theorems-I.md) |
-| $G/N$ 的子群长什么样？ | [09](./isomorphism-theorems-II.md) |
-| 有限阿贝尔群为什么由阶完全决定？ | [09](./isomorphism-theorems-II.md) |
+| 钟表算术为什么构成群？ | [02](./02-mod-n-and-dihedral-groups.md) |
+| 正多边形的对称有几个？怎么用 $r,m$ 生成？ | [02](./02-mod-n-and-dihedral-groups.md) |
+| 排列怎么写、怎么乘、怎么求阶？ | [03](./03-symmetric-and-cyclic-groups.md) |
+| 为什么循环群只有两种？ | [04](./04-group-properties-I.md) |
+| 排列的"奇偶性"是什么？为什么 $\operatorname{sgn}$ 是同态？ | [04](./04-group-properties-I.md) |
+| 为什么 $|H|$ 整除 $\|G\|$？ | [05](./05-group-properties-II.md) |
+| 任意有限群都藏在某个 $S_n$ 里？ | [05](./05-group-properties-II.md)（Cayley 定理） |
+| 为什么只有正规子群才能造商群？ | [06](./06-normal-subgroup-and-quotient-group.md) |
+| $\mathbb{R}/\mathbb{Z}$ 是什么？ | [06](./06-normal-subgroup-and-quotient-group.md)（单位圆） |
+| $D_n$ 能拆成旋转 × 翻转吗？ | [07](./07-automorphism-and-products.md)（半直积） |
+| $G/\ker\phi\cong\operatorname{im}\phi$ 怎么证、怎么用？ | [08](./08-isomorphism-theorems-I.md) |
+| $G/N$ 的子群长什么样？ | [09](./09-isomorphism-theorems-II.md) |
+| 有限阿贝尔群为什么由阶完全决定？ | [09](./09-isomorphism-theorems-II.md) |
 
 ## 与已有笔记的连接
 
-- [魔方群的数学结构](../rubiks-cube-group-theory.md)：$G/\ker\pi$ 的论证（同态基本定理求 $|G|$）正是 [08 第一同构定理](./isomorphism-theorems-I.md) 的直接应用；$A_8,A_{12}$ 来自 [05 交错子群](./group-properties-II.md)；交换子/共轭在 [07](./automorphism-and-products.md) 中以"内自同构"的面目再次出现
+- [魔方群的数学结构](../rubiks-cube-group-theory.md)：$G/\ker\pi$ 的论证（同态基本定理求 $|G|$）正是 [08 第一同构定理](./08-isomorphism-theorems-I.md) 的直接应用；$A_8,A_{12}$ 来自 [05 交错子群](./05-group-properties-II.md)；交换子/共轭在 [07](./07-automorphism-and-products.md) 中以"内自同构"的面目再次出现
 - [魔方层先法实操](../rubiks-cube-solving-guide.md)：层先法的"七步"结构对应"把大群按正规子群链逐步约化"的思想
 - [奇异值分解 SVD](../singular-value-decomposition.md)：同构视角下"换坐标系不改变结构"的另一个实例
 

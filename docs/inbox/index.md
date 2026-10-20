@@ -14,6 +14,8 @@
 ## Notes
 
 > 这里仅保留尚待验证、扩展或消化的内容。已经形成稳定结构的笔记会迁移到 [Knowledge](../knowledge/)；项目类内容进入 [Projects](../projects/)。
+>
+> **状态备注（2026-10-20）**：以下 3 篇自 2026-08 中旬放入以来已静置 8 周以上，均仍为 `seed`。待决定：逐篇通读后晋升到 `knowledge/`、合并、或移入 `archives/`。注意 [CUTLASS 索引](../knowledge/ai/systems/cutlass/index.md) 已将其中两篇 CUDA 笔记作为"前置路线"引用——晋升或移动时需同步修那些链接。
 
 - [AI Infra 方向论文地图](./ai-infra-papers-map.md) — Kernel → Compiler → Runtime → Serving → Cluster 的初步论文阅读线索；保留前需补齐一手来源并逐篇核验
   - 成熟度：待核验的阅读路线，不是已确认的论文结论

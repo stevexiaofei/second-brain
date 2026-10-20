@@ -349,7 +349,7 @@ CUDA bridge
 
 建议与这些笔记一起看：
 
-- [Attention 头变体：MHA/MQA/GQA/MLA](./attention-head-variants.md)
+- [Attention 头变体：MHA/MQA/GQA/MLA](../../attention-head-variants.md)
 - [FlashAttention 源码精读](./flash-attention-source-reading.md)
 - [PyTorch C++ 核心模块](../pytorch/pytorch-cpp-core.md)
 - [PyTorch 依赖关系](../pytorch/pytorch-dependencies.md)

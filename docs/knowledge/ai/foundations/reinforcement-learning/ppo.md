@@ -3,6 +3,9 @@ title: PPO
 type: concept
 status: seed
 tags: [AI, RL]
+created: 2026-08-11
+updated: 2026-10-20
+source: 整理自 PPO（Proximal Policy Optimization, Schulman et al., 2017）学习过程
 ---
 
 # PPO

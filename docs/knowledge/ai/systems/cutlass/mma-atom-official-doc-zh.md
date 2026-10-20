@@ -452,7 +452,7 @@ new m-coord:  0  1  2  3  8  9 10 11 16 17 18 19 24 25 26 27  4  5  6  7 12 13 1
 
 要了解这些 `TiledMMA` 如何用于对数据张量做分区，见 `0x_gemm_tutorial.md`。
 
-> 译注：本译文对应的 Permutation Layout 机制，详见本站 [06 混合精度 MMA 与自定义 FP8 MMA op](./06-cute-mixed-precision-mma.md) 与 [03 TiledMMA 与 fragment](./03-cute-tiled-mma.md)；源码定义见 `include/cute/atom/mma_atom.hpp` 的 `TiledMMA` / `permutation_mnk`。
+> 译注：本译文对应的 Permutation Layout 机制，详见本站 [06 混合精度 MMA 与自定义 FP8 MMA op](./10-cute-mixed-precision-mma.md) 与 [03 TiledMMA 与 fragment](./03-cute-tiled-mma.md)；源码定义见 `include/cute/atom/mma_atom.hpp` 的 `TiledMMA` / `permutation_mnk`。
 
 ## License
 
@@ -468,5 +468,5 @@ SPDX-License-Identifier: BSD-3-Clause
 ## Related
 
 - [03 TiledMMA 与 fragment](./03-cute-tiled-mma.md) — TiledMMA 的 ThrExpand / ValExpand 与本文的 Atom 层对应
-- [06 混合精度 MMA 与自定义 FP8 MMA op](./06-cute-mixed-precision-mma.md) — MMA op / Traits / TV Layout 与 Permutation
+- [06 混合精度 MMA 与自定义 FP8 MMA op](./10-cute-mixed-precision-mma.md) — MMA op / Traits / TV Layout 与 Permutation
 - [01 Tensor 与 Layout](./01-cute-tensor-and-layout.md) — 读懂本文所有 Layout 表示法的前置

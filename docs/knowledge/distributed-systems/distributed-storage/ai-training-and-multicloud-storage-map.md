@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Storage, Distributed Systems, Object Storage, PFS, Ceph, Lustre, RDMA, NVMe-oF, AI Training, Multi-Cloud]
 created: 2026-08-12
-updated: 2026-09-18
+updated: 2026-10-20
 ---
 
 # 分布式存储系统知识地图（面向 AI 训练与多云场景）
@@ -325,7 +325,7 @@ flowchart TD
 
 **0. 存储三大类型与接口语义**（本文第一节）——块/文件/对象的粒度、接口、语义与适用场景，建立全局坐标系
 
-**1. 分布式系统核心理论**（重点，见 [分布式系统核心理论基础](../distributed-systems/distributed-systems-foundations.md)）
+**1. 分布式系统核心理论**（重点，见 [分布式系统核心理论基础](../distributed-systems-foundations.md)）
 
 - 系统模型：同步/异步/部分同步、崩溃/拜占庭、网络分区
 - CAP / PACELC：分区时 C 与 A 取舍、无分区时延迟与一致性权衡
@@ -358,7 +358,7 @@ flowchart TD
 - Amdahl 定律、Little's Law：吞吐与延迟的关系
 - 数量级直觉：内存 μs、NVMe 数十 μs、网络 ms、对象存储几十 ms
 
-**推荐阅读**：《数据密集型应用系统设计》第 5-9 章（副本、分区、事务、一致性）；论文 [Raft](https://raft.github.io/)、[FLP](https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf)；[DDIM 笔记里的数学基础](../ai/foundations/diffusion/ddim-paper.md)与分布式部分无关但保持体系。
+**推荐阅读**：《数据密集型应用系统设计》第 5-9 章（副本、分区、事务、一致性）；论文 [Raft](https://raft.github.io/)、[FLP](https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf)；[DDIM 笔记里的数学基础](../../ai/foundations/diffusion/ddim-paper.md)与分布式部分无关但保持体系。
 
 ### 阶段二：动手实践（2-4 周）
 
@@ -408,10 +408,10 @@ flowchart TD
 
 ## Related
 
-- [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — 源码精读方法论（阶段三可复用）
-- [RVV 算子开发必备基础知识](./rvv-operator-development.md) — 存储服务端高性能计算（RDMA/向量化）相关
-- [PyTorch](../ai/systems/pytorch/) — 存储的下游消费者（DataLoader、checkpoint、DDP）
-- [Second Brain 迭代路线图](../../projects/second-brain-iteration-roadmap.md) — 本文可作为"自动驾驶/数据流水线"方向的内容种子
+- [AI 开源项目源码精读指南](../../ai/systems/ai-open-source-source-reading.md) — 源码精读方法论（阶段三可复用）
+- [RVV 算子开发必备基础知识](../../engineering/rvv-operator-development.md) — 存储服务端高性能计算（RDMA/向量化）相关
+- [PyTorch](../../ai/systems/pytorch/) — 存储的下游消费者（DataLoader、checkpoint、DDP）
+- [Second Brain 迭代路线图](../../../projects/second-brain-iteration-roadmap.md) — 本文可作为"自动驾驶/数据流水线"方向的内容种子
 
 ## References
 

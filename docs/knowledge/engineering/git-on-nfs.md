@@ -3,6 +3,9 @@ title: Git 在 NFS 上的性能问题
 type: experience
 status: growing
 tags: [Git, NFS, Linux]
+created: 2026-08-11
+updated: 2026-10-20
+source: 个人工程实践排查记录
 ---
 
 # Git 在 NFS 上的性能问题

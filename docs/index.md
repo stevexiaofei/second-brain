@@ -35,6 +35,10 @@
 
 [进入 Inbox →](/inbox/)
 
+## 🗄 Archives
+
+[查看 Archives →](/archives/)
+
 ## 🧭 My Philosophy
 
 > Capture everything. Understand deeply. Connect ideas. Keep what matters.

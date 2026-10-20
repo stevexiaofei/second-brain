@@ -21,7 +21,7 @@ GMEM 的访存效率由两件**正交**的事决定：
 
 ## 为什么重要
 
-- 这是[算子优化方法论](../gpu-kernel-optimization-methodology.md)里"通信层面"的**微观物理基础**：memory bound 不是抽象概念，而是可以用 sector 数算出来的。
+- 这是[算子优化方法论](./gpu-kernel-optimization-methodology.md)里"通信层面"的**微观物理基础**：memory bound 不是抽象概念，而是可以用 sector 数算出来的。
 - 它解释了为什么 TiledCopy 的 thread / value layout 不能随便选 —— 布局直接决定每个 warp 的访问形状。
 - 它给出一个可量化的排障指标：**ncu 报告的 "多余的 GMEM 访存量" 百分比**。
 
@@ -131,7 +131,7 @@ GMEM --(合并 + 向量化的连续访问)--> SMEM --(按 MMA 需要的方式重
 
 ## Related
 
-- [GPU 算子优化方法论：计算、通信、存储](../gpu-kernel-optimization-methodology.md) — 通信层面的宏观框架
+- [GPU 算子优化方法论：计算、通信、存储](./gpu-kernel-optimization-methodology.md) — 通信层面的宏观框架
 - [Nsight Compute（ncu）：单 kernel 的硬件计数器分析](../../engineering/profiling/06-nsight-compute-ncu.md) — 本篇的 sector 模型在 ncu 里就是 `Sectors Per Request` 这一个指标
 - [Profiling 专题](../../engineering/profiling/) — 怎么把"实际访存量翻倍"测出来
 - [CUTLASS/CuTe 09：TiledCopy 核心原理](./cutlass/09-cute-tiled-copy-principle.md) — 用 S/D/R Layout 描述"谁访问哪些地址"

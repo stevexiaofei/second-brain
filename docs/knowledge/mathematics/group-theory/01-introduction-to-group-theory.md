@@ -36,12 +36,73 @@ source: 知乎《群论及抽象代数学习笔记（1）- 群论导论》（大
 > - 记号约定：$xy:=x*y$；$x^0=e$；$x^{-m}=(x^{-1})^m$
 > - 例：$(\mathbb{Z},+)$ 是群；$(\mathbb{Q},\times)$ 不是（$0$ 无逆元），但 $(\mathbb{Q}\setminus\{0\},\times)$ 是
 
+**例（是不是群？逐条体检）**：
+
+| 集合 $S$ | 运算 | 结合 | 单位元 | 逆元 | 是群？ |
+|---|---|---|---|---|---|
+| $\mathbb{Z}$ | $+$ | ✓ | $0$ | $-n$ | **是**（阿贝尔） |
+| $\mathbb{Z}$ | $\times$ | ✓ | $1$ | $2$ 无逆元 | 否 |
+| $\mathbb{Q}\setminus\{0\}$ | $\times$ | ✓ | $1$ | $1/q$ | **是** |
+| $\mathbb{R}^{\ge0}$ | $+$ | ✓ | $0$ | $x>0$ 无 | 否 |
+| $\{0,1\}$ | $\times$ | ✓ | $1$ | $0$ 无 | 否（$0$ 不能逆） |
+| $n\times n$ 实矩阵 | $+$ | ✓ | $0$ 矩阵 | $-A$ | **是** |
+| 可逆 $n\times n$ 实矩阵 $GL_n(\mathbb{R})$ | $\times$ | ✓ | $I_n$ | $A^{-1}$ | **是**（非阿贝尔，$n\ge2$） |
+| $\mathbb{Z}$ | $a*b=ab-1$ | ✗ | — | — | 否 |
+
+最后一行值得亲手验：$(a*b)*c=(ab-1)*c=abc-c-1$，而 $a*(b*c)=a(bc-1)-1=abc-a-1$，两者一般不相等——**"封闭"免费，但"结合"是实打实的门槛**。原文特意举这个运算，就是为了说明：$S\times S\to S$ 的映射未必是群运算。
+
+> **非群的常见死法**：①没有单位元（正偶数在加法下）；②有单位元但某元素无逆元（$\mathbb{Z}$ 在乘法下）；③不封闭（负整数在乘法下——注意 $(-1)(-1)=1$ 跑出去了）；④不结合（上面那个 $a*b=ab-1$）。
+>
+> **验证群的四步套路**：先看封闭（若运算写成 $S\times S\to S$ 就自动），再挑结合律（最难但也最常"继承"自熟知的运算），再**猜**单位元（在乘法里通常猜 1、在加法里猜 0、在置换里猜恒等），最后**解方程**找逆元（$x*y=e$ 解出 $y$）。
+
 ### 唯一性
 
 **命题 1.9**：单位元唯一；每个元素的逆元唯一。
 
-证明要点：若 $e,e'$ 都是单位元，则 $e=e*e'=e'$；若 $y,y'$ 都是 $x$ 的逆元，则
+证明：
+
+**(1) 单位元唯一。** 设 $e,e'$ 都满足单位元公理。把 $e$ 当单位元用在 $e'$ 上得 $e*e'=e'$；把 $e'$ 当单位元用在 $e$ 上得 $e*e'=e$。两式左边相同，故 $e=e'$。
+
+**(2) 逆元唯一。** 设 $y,y'$ 都是 $x$ 的逆元（即 $x*y=y*x=e$ 且 $x*y'=y'*x=e$）。从 $y$ 出发，依次用"单位元不变、$x*y'=e$、结合律、$y*x=e$、单位元不变"：
 $$y=y*e=y*(x*y')=(y*x)*y'=e*y'=y'.$$
+故 $x$ 的逆元只有一个，可以放心记作 $x^{-1}$。
+
+> 这两步是纯"符号体操"，但它是后面所有证明的许可证：正因为唯一，才能写"$x$ 的逆元"而不必说"某个逆元"。
+
+**补充性质（群中的基本运算律）**：设 $G$ 是群，$x,y\in G$，$m,n\in\mathbb{Z}$，则
+
+1. $(x^{-1})^{-1}=x$
+2. $(xy)^{-1}=y^{-1}x^{-1}$（**注意顺序颠倒**）
+3. 消去律：$ax=ay\Rightarrow x=y$，$xa=ya\Rightarrow x=y$
+4. 单侧逆元即双侧：$xy=e\Rightarrow yx=e$
+5. 方程 $ax=b$ 与 $ya=b$ 各有唯一解
+6. 幂律：$x^{m+n}=x^mx^n$，$(x^m)^n=x^{mn}$
+
+证明：
+
+1. $x^{-1}*x=e$ 说明 $x$ 是 $x^{-1}$ 的逆元；由逆元唯一性，$x=(x^{-1})^{-1}$。
+2. 直接验证 $(xy)(y^{-1}x^{-1})=x(yy^{-1})x^{-1}=xex^{-1}=xx^{-1}=e$（第一步用了两次结合律）。由逆元唯一性即得。
+3. $ax=ay$ 时左乘 $a^{-1}$：$a^{-1}(ax)=a^{-1}(ay)$，即 $(a^{-1}a)x=(a^{-1}a)y$，即 $ex=ey$，即 $x=y$。（右消去对称。）
+4. 若 $xy=e$，则 $y=ey=(x^{-1}x)y=x^{-1}(xy)=x^{-1}e=x^{-1}$，故 $yx=x^{-1}x=e$。
+5. 存在性：$x=a^{-1}b$；唯一性：若 $ax_1=b=ax_2$ 由消去律得 $x_1=x_2$。
+6. 先对 $n\ge0$ 归纳（$n=0$ 是 $x^m=x^m$；归纳步是结合律），再对 $n<0$ 用 $x^{-1}$ 的定义与 (2)。
+
+> **非阿贝尔群里的陷阱**：$(xy)^n\ne x^ny^n$（$n\neq1$ 时一般不等）。
+>
+> - **反例**（$D_3$，$n=2$）：用 $mr=r^{-1}m$ 化简
+>   $$(rm)^2=rmrm=r(mr)m=r(r^{-1}m)m=(rr^{-1})(mm)=e,$$
+>   而 $r^2m^2=r^2\neq e$。故 $(rm)^2\neq r^2m^2$。
+> - **更小的反例**（$S_3$，对换）：$x=(1,2),\ y=(2,3)$。$xy=(1,2)(2,3)=(1,2,3)$，故 $(xy)^2=(1,3,2)$；而 $x^2y^2=e\cdot e=e$，两者不同。
+>
+> 凡是看到把两个元素的幂"提出来合一"的步骤，先问一句：这两个元素交换吗？
+
+**交换情形的补救**：若 $x,y\in G$ 且 $xy=yx$，则对任意 $n\in\mathbb{Z}$ 有 $(xy)^n=x^ny^n$。
+
+证明（$n\ge0$）：由 $xy=yx$ 反复把 $x$ 逐个穿过每个 $y$，得 $y^nx=xy^n$。于是
+$$(xy)^{n+1}=(xy)^n(xy)=x^ny^nxy=x^n\bigl(y^nx\bigr)y=x^n\bigl(xy^n\bigr)y=x^{n+1}y^{n+1}.$$
+$n<0$ 时先证 $x^{-1}y^{-1}=y^{-1}x^{-1}$（两边相乘即可），再对 $n>0$ 套用。
+
+> **阿贝尔群让一切变简单**：因为 $(\mathbb{Z},+)$、$(\mathbb{Z}/n\mathbb{Z},+)$、（素数 $p$ 下的）$(\mathbb{Z}/p\mathbb{Z})^\times$ 都是阿贝尔的，幂律、消去律在那儿"看起来像数论"。而在 $D_n,S_n$ 里，上面每一条都要先检查交换性。
 
 ### 阶
 
@@ -53,6 +114,27 @@ $$y=y*e=y*(x*y')=(y*x)*y'=e*y'=y'.$$
 例：$(\mathbb{Z},+)$ 中 $o(0)=1$，$o(n)=\infty\ (n\neq 0)$。
 
 **命题 1.13**：$o(x)=o(x^{-1})=o(yxy^{-1})$（逆元与共轭保持阶）——后面证 $A_4\not\cong D_6$ 等结论时，"同构保阶"正是从这里延伸出去的。
+
+证明分三步。
+
+**(1) 先证一条"幂的换算律"**：对任意 $m\ge1$，
+$$(yxy^{-1})^m=yx^my^{-1}.$$
+归纳：$m=1$ 是定义；归纳步用中间的 $y^{-1}y$ 相消
+$$(yxy^{-1})^{m+1}=\bigl(yx^my^{-1}\bigr)(yxy^{-1})=yx^m\bigl(y^{-1}y\bigr)xy^{-1}=yx^{m+1}y^{-1}.$$
+
+**(2) $o(x)=o(yxy^{-1})$。** 由 (1)，对任意 $m\ge1$
+$$(yxy^{-1})^m=e\iff yx^my^{-1}=e\iff x^m=y^{-1}ey=e,$$
+（第二个 $\iff$ 是左右各乘 $y^{-1}$、$y$）。两边的 $m$ 取值集合完全相同，故最小正整数相同，即阶相等。
+
+**(3) $o(x)=o(x^{-1})$。** 对任意 $m\ge1$，先证 $(x^{-1})^m=(x^m)^{-1}$：由 $(xy)^{-1}=y^{-1}x^{-1}$ 对 $x^{m}=x\cdot x^{m-1}$ 归纳即得。于是
+$$(x^{-1})^m=e\iff (x^m)^{-1}=e\iff x^m=e.$$
+（右边 $\iff$ 因为 "$a^{-1}=e\iff a=e$"：两边同取逆，或两边左乘 $a$。）同样是同一个 $m$ 集合，最小正整数相等。
+
+> **例（共轭为什么不改阶）**：$S_5$ 中 $\sigma=(1,2,3,4)(5)$，取 $\tau=(1,4)(2,5)$，则
+> $$\tau\sigma\tau^{-1}=\bigl(4,5,1,2\bigr),$$
+> 仍是 4-cycle，$o=4=o(\sigma)$。这不是巧合：共轭只是把元素名字重命名，**结构不变，名字变了**——这正是 [05](./05-group-properties-II.md) 里"共轭类 = cycle type"的根源。
+>
+> **例（阶的两个常见计算）**：$(\mathbb{Z}/12\mathbb{Z},+)$ 中 $o(\bar4)=3$（$\bar4,\bar8,\overline{12}=\bar0$）；$(\mathbb{Z}/12\mathbb{Z})^\times$ 中 $o(\bar5)=2$（$\bar5^2=\overline{25}=\bar1$）。前者是加法记号（$m$ 倍），后者是乘法记号（$m$ 次幂），算阶时别混。
 
 ### 阿贝尔群
 
@@ -66,30 +148,87 @@ $$y=y*e=y*(x*y')=(y*x)*y'=e*y'=y'.$$
 ## 为什么重要
 
 - 群是第一条"只靠公理推理出结构"的数学对象训练：唯一性、阶的性质全部由三公理推出，无任何额外假设
-- $o(x)=o(yxy^{-1})$ 是第一个"共轭不变量"，预演了整个"用不变量研究群"的方法论（[sgn](./group-properties-I.md)、[正规子群](./normal-subgroup-and-quotient-group.md) 都沿这条路）
+- $o(x)=o(yxy^{-1})$ 是第一个"共轭不变量"，预演了整个"用不变量研究群"的方法论（[sgn](./04-group-properties-I.md)、[正规子群](./06-normal-subgroup-and-quotient-group.md) 都沿这条路）
 
 ## 怎么工作：子群
 
 **定义 1.15**：非空子集 $H\subseteq G$ 是**子群**，若 $(H,*)$ 也是群；$H\neq G$ 时称真子群。任何群至少有两个子群：$G$ 本身与平凡群 $\{e\}$。
 
-**判定引理（子群三条件）**：$H$ 是子群 $\iff$ $H$ 非空、对 $*$ 封闭、对取逆封闭。
+**判定引理（子群判别法）**：设 $H$ 是 $G$ 的**非空**子集。则
 
-> 证明的关键在 $\Leftarrow$：结合律自动继承；对任意 $x\in H$，$x^{-1}\in H$，故 $e=x*x^{-1}\in H$。**三条件判定比四公理验证省事**，后面所有"这是不是子群"的检查都用它。
+$$H\le G\iff \bigl(\forall x,y\in H:\ xy\in H\bigr)\ \text{且}\ \bigl(\forall x\in H:\ x^{-1}\in H\bigr).$$
+
+证明：
+
+**($\Rightarrow$) 必要性。** $H\le G$ 意味着 $H$ 在同一个运算下自成群，而群的运算本身就是 $H\times H\to H$ 的映射，故封闭；逆元在 $H$ 中存在，而由命题 1.9 逆元在 $G$ 中唯一，故 $H$ 里的那个逆元就是 $G$ 里的 $x^{-1}$。
+
+**($\Leftarrow$) 充分性。** 逐条验证群的四个要求：
+
+1. **封闭**：假设已给。
+2. **结合律**：对任意 $a,b,c\in H$，因 $H\subseteq G$ 且 $G$ 的结合律对所有元素成立，故 $(ab)c=a(bc)$——**结合律自动继承，无需验证**，这是引理最省事的地方。
+3. **单位元**：$H$ 非空，取 $x\in H$。由逆元封闭 $x^{-1}\in H$，再由封闭性 $e=x x^{-1}\in H$。故 $e\in H$，且它对 $H$ 中元素仍起单位元作用。
+4. **逆元**：假设已给。
+
+于是 $(H,*)$ 是群，即 $H\le G$。$\blacksquare$
+
+> **等价的单步判别**：也可以只验证一条——$\forall x,y\in H:\ xy^{-1}\in H$（非空）。因为它把"封闭"和"取逆"焊在一起：取 $x=y$ 得 $e\in H$；取 $x=e$ 得 $y^{-1}\in H$；有了逆元封闭再取 $x=a,y=b^{-1}$ 得 $ab\in H$。**三条件判定比四公理验证省事**，后面所有"这是不是子群"的检查都用它。
+
+**例（三个快检）**：
+
+- $H=\{0,2,4\}\subseteq\mathbb{Z}/6\mathbb{Z}$（加法）：封闭（偶 + 偶 = 偶）、逆元封闭（$-\bar2=\bar4,-\bar4=\bar2$），故 $H\le\mathbb{Z}/6\mathbb{Z}$；其实它 $\cong C_3$。
+- $H=\{\bar1,\bar2\}\subseteq(\mathbb{Z}/4\mathbb{Z})^\times=\{\bar1,\bar3\}$：连子集都不是（$\bar2$ 不可逆），判别法无从谈起——**先确认是子集，再谈判别**。
+- $H=\{\bar1,\bar3\}\subseteq(\mathbb{Z}/8\mathbb{Z})^\times$：$\bar1\cdot\bar3=\bar3$、$\bar3\cdot\bar3=\bar1$，封闭且逆元封闭，故 $H\le(\mathbb{Z}/8\mathbb{Z})^\times\cong C_2\times C_2$。
+- $GL_n(\mathbb{R})$（可逆矩阵）中，$SL_n(\mathbb{R})=\{A:\det A=1\}$：$\det(AB)=1$（封闭）、$\det(A^{-1})=1$（逆封闭），非空（$I_n$），故 $SL_n(\mathbb{R})\le GL_n(\mathbb{R})$。这是判别法在"矩阵群"里的标准用法。
 
 **例 1.18（$\mathbb{Z}$ 的子群全分类）**：$(\mathbb{Z},+)$ 的任何子群 $H$ 都形如
-$$H=m\mathbb{Z}=\{\dots,-2m,-m,0,m,2m,\dots\}.$$
-证明取 $|m|$ 为 $H$ 中最小正元素，对任意 $n\in H$ 用带余除法 $n=lm+r$，则 $r=n-lm\in H$ 且 $0\le r<m$，由最小性 $r=0$。
+$$H=m\mathbb{Z}=\{\dots,-2m,-m,0,m,2m,\dots\}\qquad(m\ge0).$$
 
-> 这是**第一个完整的结构分类定理**：看起来无穷多的子群其实只有一条链。证明模式（取最小元 + 带余除法）在循环群子群、[有限阿贝尔群分类](./isomorphism-theorems-II.md) 中反复出现。
+**证明：**
 
-**定义 1.20（生成子群）**：$\langle S\rangle$ 是 $G$ 中包含子集 $S$ 的**最小**子群，且
-$$\langle S\rangle=\bigcap_{S\subseteq H,\ H\le G} H.$$
-（由判定引理可证任意多个子群的交仍是子群。）例：$\langle m\rangle=m\mathbb{Z}=\langle -m\rangle$。
+- $H=\{0\}$ 的情形：取 $m=0$ 即 $H=0\mathbb{Z}$，结论成立。
+- 设 $H\neq\{0\}$。此时 $H$ 含有某个非零元素 $a$。因 $H$ 对取逆封闭（加法逆元），$-a\in H$，故 $H$ 含有正元素；由 $\mathbb{Z}^+$ 的良序性（非空正整数的子集有最小元），$H$ 中**正元素的最小值**存在，记作
+  $$m:=\min\{h\in H:h>0\}.$$
+  （这正是原文说的"取 $|m|$ 为 $H$ 中最小正元素"——先取绝对值保证是正的，再取最小。）
+- 断言 $H=m\mathbb{Z}$，两边互相包含：
+
+  **($\supseteq$) $m\mathbb{Z}\subseteq H$**：$m\in H$，由封闭性 $m+m=2m\in H$，归纳得 $km\in H$ 对所有 $k\ge1$；$0\in H$（单位元）；$-km=-(km)\in H$ 由逆元封闭。故任意整数倍都在 $H$ 里。
+
+  **($\subseteq$) $H\subseteq m\mathbb{Z}$**：任取 $n\in H$。对 $n,m$ 做带余除法（$m>0$）
+  $$n=qm+r,\qquad 0\le r<m,$$
+  其中 $q\in\mathbb{Z}$。由 $n\in H$ 与 $qm\in H$（已证）以及逆元封闭
+  $$r=n-qm=n+\bigl(-(qm)\bigr)\in H.$$
+  若 $r>0$，则 $r$ 是 $H$ 中一个比 $m$ 更小的正元素，与 $m$ 的最小性矛盾。故 $r=0$，即 $n=qm\in m\mathbb{Z}$。
+
+两边合起来即 $H=m\mathbb{Z}$。反过来，对任意 $m\ge0$，$m\mathbb{Z}$ 确实满足三条件判别法（含 $0$、加法封闭、$-\!km\in m\mathbb{Z}$），所以 $m\mathbb{Z}$ 恰好是全部子群。$\blacksquare$
+
+> **注意 $m$ 唯一**：$m$ 由 $H$ 决定（就是 $H$ 的最小正元素），故 $m\mathbb{Z}=m'\mathbb{Z}\iff m=m'$（$m,m'\ge0$）。即 $\mathbb{Z}$ 的非负子群集合与 $\mathbb{Z}_{\ge0}$ 一一对应——**无穷多个子群其实只有一条链**，且包含方向与整除方向相反：
+> $$\{0\}\subsetneq\cdots\subsetneq6\mathbb{Z}\subsetneq3\mathbb{Z}\subsetneq\mathbb{Z},\qquad m\mathbb{Z}\subseteq n\mathbb{Z}\iff n\mid m.$$
+> 这个"整除与包含反向"的对应在 [09 例 5.13](./09-isomorphism-theorems-II.md) 里会以子群格的形式重现。
+
+> 这是本系列的**第一个完整结构分类定理**。证明模式（**取最小元 + 带余除法**）在循环群子群（[04](./04-group-properties-I.md) 推论 3.11）、[有限阿贝尔群分类](./09-isomorphism-theorems-II.md) 中反复出现。
+
+**定义 1.20（生成子群）**：设 $S\subseteq G$，则
+$$\langle S\rangle=\bigcap_{S\subseteq H,\ H\le G} H$$
+称为由 $S$ **生成**的子群。
+
+证明这个定义是合理的（是子群、包含 $S$、最小）：
+
+1. **交是子群**：设 $\{H_i\}_{i\in I}$ 是一族子群。用判别法：非空（每个 $H_i$ 含 $e$，故 $e\in\bigcap H_i$）；$x,y\in\bigcap H_i$ 时对每个 $i$ 有 $xy\in H_i$，故 $xy\in\bigcap H_i$；同理 $x^{-1}\in\bigcap H_i$。故 $\bigcap H_i\le G$。（该结论也用于"$Z(G)=\bigcap C_G(x)$ 是子群"，见 [06](./06-normal-subgroup-and-quotient-group.md)。）
+2. **包含 $S$**：右端求交的每一项都包含 $S$，故交也包含 $S$。
+3. **最小**：若 $H\le G$ 且 $S\subseteq H$，则 $H$ 是求交指标集中一员，故 $\langle S\rangle\subseteq H$。
+
+> **等价描述**：$\langle S\rangle$ 也是"$S$ 的元素与它们的逆的有限乘积全体"
+> $$\langle S\rangle=\{s_1^{\epsilon_1}s_2^{\epsilon_2}\cdots s_k^{\epsilon_k}: k\ge0,\ s_j\in S,\ \epsilon_j=\pm1\}.$$
+> 右端显然含 $S$、对封闭与逆封闭都封闭，故是子群；又任何包含 $S$ 的子群必须包含这些乘积，故它最小。两个描述各有用途：**求交形式适合证明"最小性"，乘积形式适合做计算**。
+
+例：$\langle m\rangle=m\mathbb{Z}=\langle-m\rangle$（生成元不唯一）；$(\mathbb{Z},+)=\langle1\rangle=\langle2,3\rangle$（多个生成元可以更小集合地生成同一个群——例 1.18 告诉我们 $\langle2,3\rangle=1\mathbb{Z}$，因为 $\gcd(2,3)=1$）。
+
+> **我的一句话记法**：$\langle S\rangle$ 与线代的 span 是同一个构造——"包含给定集合的最小子结构"，都用"所有子结构之交"落实。区别只在"子结构"由群公理或线性空间公理决定。
 
 ## 局限 / 边界
 
 - 三公理不含交换律，所以"直觉上的对称"未必够用——非阿贝尔群里 $x*y\neq y*x$ 是常态（$D_n,S_n$）
-- $d\mid |G|$ 不能推出存在 $d$ 阶子群（那是 Lagrange 逆问题，见[群的性质（下）](./group-properties-II.md)的反例）
+- $d\mid |G|$ 不能推出存在 $d$ 阶子群（那是 Lagrange 逆问题，见[群的性质（下）](./05-group-properties-II.md)的反例）
 
 ## 我的理解
 
@@ -99,6 +238,6 @@ $$\langle S\rangle=\bigcap_{S\subseteq H,\ H\le G} H.$$
 
 ## Related
 
-- [02 整数模 n 加法群与二面体群](./mod-n-and-dihedral-groups.md) — 第一批具体例子
-- [03 对称群与循环群](./symmetric-and-cyclic-groups.md) — $\langle g\rangle$ 的专门研究
+- [02 整数模 n 加法群与二面体群](./02-mod-n-and-dihedral-groups.md) — 第一批具体例子
+- [03 对称群与循环群](./03-symmetric-and-cyclic-groups.md) — $\langle g\rangle$ 的专门研究
 - [魔方群的数学结构](../rubiks-cube-group-theory.md) — 用到本篇的生成元与阶概念
