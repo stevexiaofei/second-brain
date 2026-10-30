@@ -25,6 +25,7 @@
 - [分布式训练](./pytorch-distributed.md) — DDP/FSDP/RPC、ProcessGroup、torchrun
 - [程序导出 export](./pytorch-export.md) — ExportedProgram IR、动态形状
 - [Reducer 类设计详解](./pytorch-reducer.md) — DDP 梯度归约协调器深度解析
+- [FSDP 源码阅读指南](./pytorch-fsdp.md) — fully_shard/FSDP2 钩子驱动架构、状态机与读码路线图
 
 ## torch.compile Wiki 系列（基于 PyTorch 2.8.0 源码）
 

@@ -81,7 +81,9 @@ flowchart TD
 ## Related
 
 - [Reducer 类设计详解](./pytorch-reducer.md) — DDP 的 C++ 心脏，梯度分桶与按序归约的深度解析
-- [torch.compile 编译栈](./pytorch-compile.md) — Inductor 的 `fx_passes/fsdp.py`、`ddp_fusion.py` 与分布式协同
+- [FSDP 源码阅读指南](./pytorch-fsdp.md) — FSDP2/fully_shard 的钩子驱动架构与逐层读码路线
+- [FSDP 源码阅读指南](./pytorch-fsdp.md) — FSDP2（fully_shard）钩子驱动架构、状态机与读码路线图
+- [torch.compile 编译栈](./pytorch-compile.md) — Inductor 的 `ddp_fusion.py` 与分布式协同
 - [torch.export 程序导出](./pytorch-export.md) — 导出分布式模型用于部署
 
 ## References

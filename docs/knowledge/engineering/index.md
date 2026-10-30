@@ -2,6 +2,7 @@
 
 ## 笔记索引
 
+- [黑芝麻模型训练平台架构解析](./mlops-platform/black-sesame-training-platform.md) — 混合云 AI 训练平台：ACK 统一调度、双入口管理、存储分层与可观测性
 - [RVV 算子开发必备基础知识](./rvv-operator-development.md) — RISC-V Vector Extension 的核心概念、编程模型、intrinsics 命名和算子开发流程
 - [RVV 算子设计大赛备考指南](./rvv-operator-challenge.md) — 基于大赛三张设计图（Local Buffer/Mode/Intrinsics/DAG）的 Softmax 实战
 - [分布式存储专题](../distributed-systems/distributed-storage/) — 存储语义、一致性、对象/文件/块存储及面向 AI 训练与多云的工程场景地图
@@ -16,6 +17,8 @@
 - [UML 类图（Class Diagram）](./uml-class-diagram.md) — 面向对象设计的静态结构图
 - [DFD（数据流图）](./dfd.md) — 描述数据流动与加工的结构化分析工具
 - [Git on NFS](./git-on-nfs.md) — 工程踩坑经验
+- [MLOps 平台专题](./mlops-platform/) — 混合云训练平台架构：双入口管理、ACK 统一调度、开发与训练分离、存储分层
+- [MLOps 平台专题](./mlops-platform/) — 混合云模型训练平台架构：ACK 统一调度、双入口管理、存储分层与可观测性
 
 ## Linux
 

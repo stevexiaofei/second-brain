@@ -10,5 +10,6 @@
 
 - [Second Brain 使用工作流](./second-brain-workflow.md) — 从 capture 到 knowledge 的完整流程、目录用途、与 AI 助手协作的常用指令
 - [Second Brain 迭代路线图](./second-brain-iteration-roadmap.md) — 现状盘点、四阶段迭代计划（内容闭环/外部打通/AI 深化/发布治理）与优先级建议
+- [Team Brain 计划](./team-brain-plan.md) — 把 second brain 拓展为感知算法团队知识库：GitLab 迁移、与感知仓库打通、团队化运行机制
 - [Shared AI Prompt Templates](../../prompts/index.md) — TRAE / Claude 共用的知识整理 prompt 模板
 - [Claude Compatibility Layer](../../.claude/README.md) — Claude Code 的兼容层与 agent wrappers

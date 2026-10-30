@@ -109,6 +109,7 @@ export default withMermaid(
           { text: 'FX 图变换', link: '/knowledge/ai/systems/pytorch/pytorch-fx' },
           { text: 'torch.compile 编译栈', link: '/knowledge/ai/systems/pytorch/pytorch-compile' },
           { text: '分布式训练', link: '/knowledge/ai/systems/pytorch/pytorch-distributed' },
+          { text: 'FSDP 源码阅读指南', link: '/knowledge/ai/systems/pytorch/pytorch-fsdp' },
           { text: 'Reducer 类设计详解', link: '/knowledge/ai/systems/pytorch/pytorch-reducer' },
           { text: '程序导出 export', link: '/knowledge/ai/systems/pytorch/pytorch-export' },
           { text: '代码生成 torchgen', link: '/knowledge/ai/systems/pytorch/pytorch-torchgen' },
@@ -167,7 +168,8 @@ export default withMermaid(
           { text: 'ER 图', link: '/knowledge/engineering/er-diagram' },
           { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
           { text: 'DFD 数据流图', link: '/knowledge/engineering/dfd' },
-          { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' }
+          { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' },
+          { text: '黑芝麻模型训练平台架构', link: '/knowledge/engineering/mlops-platform/black-sesame-training-platform' }
         ]},
         { text: 'Kubernetes', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/engineering/kubernetes/' },
@@ -247,7 +249,8 @@ export default withMermaid(
       '/projects/': [{ text: 'Projects', items: [
         { text: 'Overview', link: '/projects/' },
         { text: 'Second Brain 工作流', link: '/projects/second-brain-workflow' },
-        { text: '迭代路线图', link: '/projects/second-brain-iteration-roadmap' }
+        { text: '迭代路线图', link: '/projects/second-brain-iteration-roadmap' },
+        { text: 'Team Brain 计划', link: '/projects/team-brain-plan' }
       ]}],
       '/ideas/': [{ text: 'Ideas', items: [{ text: 'Overview', link: '/ideas/' }] }],
       '/reading/': [{ text: 'Reading', items: [{ text: 'Overview', link: '/reading/' }] }],
