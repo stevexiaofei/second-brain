@@ -5,7 +5,7 @@ type: guide
 status: seed
 tags: [engineering, profiling, pytorch, CUDA, memory, OOM, caching-allocator]
 created: 2026-09-11
-updated: 2026-09-11
+updated: 2026-11-03
 source: 个人实践整理 + PyTorch CUDA memory 官方文档与 Understanding GPU Memory 教程
 ---
 
@@ -117,11 +117,48 @@ torch.cuda.memory._record_memory_history(enabled=None)
 
 - **`max_entries` 要够大**，否则只保留最近的若干条，看不到早期分配；
 - **只录几步**（比如稳态的 5~10 步），既够定位又不会让文件过大；
-- 这是**私有 API**（`torch.cuda.memory._`），跨版本可能变化，但它是官方推荐做法。
+- 这是**私有 API**（`torch.cuda.memory._`），跨版本可能变化，但它是官方推荐做法（官方文档本身就是这么写的；截至 2.8 没有公开等价物）。
 
-### 2.2 可视化
+### 2.2 实战采集模式：只录一个完整 iteration
 
-把 `snapshot.pickle` 拖到 <https://pytorch.org/memory_viz>（纯前端，文件不会上传）。三种视图各有分工：
+上面的写法从循环开始就一直记录。训练代码里更省事的做法来自 FSDPToys `train_fsdp2.py`：**在目标 step 的 forward 之前才开启记录，optimizer.step 之后立刻 dump 并关闭**——捕获的恰好是一个完整训练步（forward + backward + clip grad + optimizer）的全部分配事件，开销和文件都最小：
+
+```python
+for batch_idx, (inputs, labels) in enumerate(loader):
+    if args.snapshot and batch_idx == args.snapshot_step:
+        torch.cuda.memory._record_memory_history(max_entries=80000)  # forward 前开启
+    ...
+    loss.backward()
+    optimizer.step()
+
+    if args.snapshot and batch_idx == args.snapshot_step:
+        torch.cuda.memory._dump_snapshot(f"snapshot_iter{batch_idx}_rank{rank}.pickle")
+        torch.cuda.memory._record_memory_history(enabled=None)       # 用完立刻关
+```
+
+优点：
+
+- **捕获的恰是一个完整训练 iteration 的全部显存操作**，稳态循环里这就是最有代表性的窗口；
+- **记录有开销**（每次分配都要记调用栈），只对一个 step 开启，不影响其余训练；
+- **按 rank 分文件 dump**——各 rank 显存峰值可能不同（见第六节误区 9），OOM 的往往只是 straggler rank。
+
+对 FSDP/ZeRO 这类分片训练尤其有用：一个 iteration 的时间线能直接看到 all-gather 临时参数"申请→释放"的尖峰模式，用来判断 `reshard_after_forward`、CPU offload 的实际显存收益。
+
+注意 `max_entries` 是环形缓冲：满 80000 条后淘汰最旧事件。一个 FSDP step 内 all-gather/free 频繁，单 step 事件数可能上万，80000 对单 step 是够的；若记录多个 step 需酌情调大。
+
+### 2.3 可视化
+
+把 `snapshot.pickle` 拖到 <https://pytorch.org/memory_viz>（纯前端，文件不会上传）。也有离线替代：
+
+```python
+# 离线导出 SVG（私有 API，本地 PyTorch 2.8 验证存在）
+torch.cuda.memory._save_memory_usage("mem_usage.svg")     # 时间线曲线
+torch.cuda.memory._save_segment_usage("segments.svg")     # 分段块布局
+```
+
+> 不存在 `python -m torch.utils.memory_viz` 这样的 CLI 模块——`torch/utils/viz/` 下只有 `MemoryViz.js`（在线查看器的源码）和 `_cycles.py`。需要完全离线时，可以浏览器打开该 JS 文件后拖入 pickle。
+
+三种视图各有分工：
 
 | 视图 | 用途 |
 |---|---|
@@ -131,7 +168,7 @@ torch.cuda.memory._record_memory_history(enabled=None)
 
 > 记录 stacks 需要 `_record_memory_history(stacks="all")`（默认在部分版本里就是 `"all"`）。**没有栈，火焰图就是空的**——这是第一次用最常见的困惑。
 
-### 2.3 一次典型的阅读顺序
+### 2.4 一次典型的阅读顺序
 
 ```text
 1. 时间线上找到峰值点 → 对应到第几个 step

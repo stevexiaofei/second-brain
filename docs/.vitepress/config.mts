@@ -109,6 +109,7 @@ export default withMermaid(
           { text: 'FX 图变换', link: '/knowledge/ai/systems/pytorch/pytorch-fx' },
           { text: 'torch.compile 编译栈', link: '/knowledge/ai/systems/pytorch/pytorch-compile' },
           { text: '分布式训练', link: '/knowledge/ai/systems/pytorch/pytorch-distributed' },
+          { text: '集合通信原语', link: '/knowledge/ai/systems/pytorch/pytorch-collective-communication' },
           { text: 'FSDP 源码阅读指南', link: '/knowledge/ai/systems/pytorch/pytorch-fsdp' },
           { text: 'Reducer 类设计详解', link: '/knowledge/ai/systems/pytorch/pytorch-reducer' },
           { text: '程序导出 export', link: '/knowledge/ai/systems/pytorch/pytorch-export' },
@@ -138,7 +139,13 @@ export default withMermaid(
         ]},
         { text: 'Autonomous Driving', items: [
           { text: 'Overview', link: '/knowledge/autonomous-driving/' },
-          { text: '训练数据管理', link: '/knowledge/autonomous-driving/data-management' }
+          { text: '训练数据管理', link: '/knowledge/autonomous-driving/data-management' },
+          { text: 'BEV Data Manager 列式存储', link: '/knowledge/autonomous-driving/bev-data-manager' },
+          { text: '端到端轨迹预测总览', link: '/knowledge/autonomous-driving/e2e-trajectory-diffusion-model' },
+          { text: '六路 token 注意力编码', link: '/knowledge/autonomous-driving/six-modality-attention-encoder' },
+          { text: '锚点扩散解码器', link: '/knowledge/autonomous-driving/anchor-diffusion-decoder' },
+          { text: '轨迹预测 Loss 与评测指标', link: '/knowledge/autonomous-driving/trajectory-loss-and-metrics' },
+          { text: '端到端训练闭环与数据管线', link: '/knowledge/autonomous-driving/e2e-training-pipeline' }
         ]},
         { text: 'Distributed Systems', items: [
           { text: 'Overview', link: '/knowledge/distributed-systems/' },
@@ -169,6 +176,7 @@ export default withMermaid(
           { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
           { text: 'DFD 数据流图', link: '/knowledge/engineering/dfd' },
           { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' },
+          { text: 'Meta DB V2 设计解析', link: '/knowledge/engineering/meta-db-v2-design' },
           { text: '黑芝麻模型训练平台架构', link: '/knowledge/engineering/mlops-platform/black-sesame-training-platform' }
         ]},
         { text: 'Kubernetes', collapsed: true, items: [

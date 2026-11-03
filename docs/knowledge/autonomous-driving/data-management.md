@@ -137,6 +137,7 @@ Dagster/Airflow 调度
 
 ## Related
 
+- [自动驾驶数据集 Meta DB V2 设计解析](../engineering/meta-db-v2-design.md) — 本文原则在工作项目的落地实例：清单驱动、版本化、冷数据治理
 - [面向 AI 训练与多云场景的存储工程地图](../distributed-systems/distributed-storage/ai-training-and-multicloud-storage-map.md) — 对象存储/并行文件系统/多级缓存的底层原理
 - [AI 开源项目源码精读指南](../ai/systems/ai-open-source-source-reading.md) — 数据管线相关开源项目（FiftyOne/DVC）源码精读方向
 - [Semantica 知识图谱](../ai/systems/semantica.md) — 数据血缘/溯源（PROV-O）在数据治理中的应用
