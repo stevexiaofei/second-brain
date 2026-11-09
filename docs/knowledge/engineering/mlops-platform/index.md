@@ -17,6 +17,8 @@ source: 个人整理
 ## 笔记
 
 - [黑芝麻模型训练平台架构解析](./black-sesame-training-platform.md) — 混合云架构实例：双专线互联、双入口管理、ACK Edge Namespace 统一调度云上云下 GPU、NAS/CPFS/OSS 存储分层
+- [局域网多服务器搭建 Volcano 集群](./lan-volcano-cluster.md) — 从 Kubernetes、Volcano 到 GPU 任务的实验部署与验证顺序
+- [千卡集群网络拓扑与 NCCL 排查](./thousand-gpu-network-topology.md) — 从 GPU、NUMA、HCA、rail 到 Leaf/Spine 的分层拓扑与验证方法
 
 ## 与其他专题的关系
 

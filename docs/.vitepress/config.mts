@@ -55,8 +55,16 @@ export default withMermaid(
           { text: 'GPU 全局内存访存模型', link: '/knowledge/ai/systems/gpu-memory-access-model' },
           { text: 'AI 开源源码精读', link: '/knowledge/ai/systems/ai-open-source-source-reading' },
           { text: 'CUTLASS / CuTe', link: '/knowledge/ai/systems/cutlass/' },
+          { text: '并行策略（5D Parallelism）', link: '/knowledge/ai/systems/parallelism/' },
           { text: 'Semantica 知识图谱', link: '/knowledge/ai/systems/semantica' },
           { text: 'Attention 头变体：MHA/MQA/GQA/MLA', link: '/knowledge/ai/attention-head-variants' }
+        ]},
+        { text: '并行策略', collapsed: true, items: [
+          { text: '专题总览', link: '/knowledge/ai/systems/parallelism/' },
+          { text: '5D 并行组合逻辑', link: '/knowledge/ai/systems/parallelism/parallelism-overview' },
+          { text: '张量并行：Megatron 式 TP', link: '/knowledge/ai/systems/parallelism/tensor-parallel-megatron' },
+          { text: '流水线并行', link: '/knowledge/ai/systems/parallelism/pipeline-parallelism' },
+          { text: '专家并行与 MoE', link: '/knowledge/ai/systems/parallelism/expert-parallel-moe' }
         ]},
         { text: 'CUTLASS / CuTe', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/ai/systems/cutlass/' },
@@ -177,7 +185,10 @@ export default withMermaid(
           { text: 'DFD 数据流图', link: '/knowledge/engineering/dfd' },
           { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' },
           { text: 'Meta DB V2 设计解析', link: '/knowledge/engineering/meta-db-v2-design' },
-          { text: '黑芝麻模型训练平台架构', link: '/knowledge/engineering/mlops-platform/black-sesame-training-platform' }
+          { text: 'System Design 学习路线图', link: '/knowledge/engineering/system-design-learning-roadmap' },
+          { text: '黑芝麻模型训练平台架构', link: '/knowledge/engineering/mlops-platform/black-sesame-training-platform' },
+          { text: '局域网 Volcano 集群', link: '/knowledge/engineering/mlops-platform/lan-volcano-cluster' },
+          { text: '千卡网络拓扑与 NCCL', link: '/knowledge/engineering/mlops-platform/thousand-gpu-network-topology' }
         ]},
         { text: 'Kubernetes', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/engineering/kubernetes/' },
@@ -203,7 +214,8 @@ export default withMermaid(
           { text: '04 PyTorch latency profiling', link: '/knowledge/engineering/profiling/04-pytorch-latency-profiling' },
           { text: '05 Nsight Systems (nsys)', link: '/knowledge/engineering/profiling/05-nsight-systems-nsys' },
           { text: '06 Nsight Compute (ncu)', link: '/knowledge/engineering/profiling/06-nsight-compute-ncu' },
-          { text: '07 PyTorch 分布式训练性能分析', link: '/knowledge/engineering/profiling/07-pytorch-distributed-profiling' }
+          { text: '07 PyTorch 分布式训练性能分析', link: '/knowledge/engineering/profiling/07-pytorch-distributed-profiling' },
+          { text: '08 磁盘 IO 压测', link: '/knowledge/engineering/profiling/08-disk-io-benchmark' }
         ]},
         { text: 'C++ 内存顺序', collapsed: true, items: [
           { text: '专题总览', link: '/knowledge/engineering/cpp/' },

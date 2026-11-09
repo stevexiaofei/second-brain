@@ -18,6 +18,7 @@
 - [DFD（数据流图）](./dfd.md) — 描述数据流动与加工的结构化分析工具
 - [Git on NFS](./git-on-nfs.md) — 工程踩坑经验
 - [自动驾驶数据集 Meta DB V2 设计解析](./meta-db-v2-design.md) — 元数据索引层：五实体模型、label 版本管理、数据集即查询视图、冷数据治理
+- [System Design 学习路线图](./system-design-learning-roadmap.md) — 从需求建模、容量估算、存储与分布式系统，到可靠性、平台工程和 AI 基础设施的系统设计路线
 - [MLOps 平台专题](./mlops-platform/) — 混合云训练平台架构：双入口管理、ACK 统一调度、开发与训练分离、存储分层
 - [MLOps 平台专题](./mlops-platform/) — 混合云模型训练平台架构：ACK 统一调度、双入口管理、存储分层与可观测性
 

@@ -10,6 +10,7 @@
 - [PyTorch 专题](./pytorch/) — 框架架构、autograd、编译栈、分布式训练与源码阅读
 - [FlashAttention 专题](./flash-attention/) — 从 IO-aware 算法到 CUDA kernel 与 PyTorch 接入
 - [CUTLASS / CuTe 专题](./cutlass/) — Tensor、Layout、TiledCopy、TiledMMA 与 GEMM 数据流
+- [并行策略（5D）专题](./parallelism/) — 总览、张量并行（Megatron 式）、流水线并行、专家并行与 MoE
 - [nanobot 专题](./nanobot/) — 从消息总线到 AgentLoop、工具、Provider 与 Channel
 - [Semantica](./semantica.md) — 知识图谱、决策溯源与确定性推理基础设施
 
