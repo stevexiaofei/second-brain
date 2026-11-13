@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [tensor-parallel, megatron, tp, all-reduce, dtensor, sequence-parallel, distributed-training]
 created: 2026-11-06
-updated: 2026-11-12
+updated: 2026-11-13
 source: Megatron-LM 论文（Shoeybi et al., 2019; Narayanan et al., 2021）+ PyTorch 源码（tensor/parallel/style.py）
 ---
 
@@ -128,7 +128,58 @@ Megatron 把每段两端的通信包装成两个算子：
 
 ### Sequence Parallel（序列并行，Megatron-SP）
 
+本节保留 TP 语境下的逐步例子；SP 与 CP 的整体对照、CP 的 attention 数据流和实现边界见[独立专题](./sequence-context-parallelism.md)。
+
 经典 TP 在 LayerNorm/Dropout 区间常复制激活。Megatron-SP 把行并行出口的 AR 改成 **reduce-scatter**，在下一列并行入口用 **all-gather**，让中间的 LayerNorm/Dropout 和残差路径沿序列维分片；基本模型下 RS+AG 的通信量与 AR 相同，省的是 token-local 区间的激活显存。
+
+#### 用 2 张卡跟一次激活的布局
+
+假设 TP 组有 2 个 rank，某层激活形状为 $[8, B, H]$（8 个 token）。行并行层的每张卡先算出部分贡献；对同一个 token，两卡的部分贡献要相加，才能得到正确的输出。
+
+**经典 TP 在行并行出口做 all-reduce**：先把两卡的部分结果相加，再把完整结果复制给两卡。后面的 LayerNorm、Dropout 和残差路径因此都看到完整 8 个 token：
+
+```text
+行并行输出（各自是部分贡献）       all-reduce 后
+rank 0: [8, B, H] 部分和  ─┐      rank 0: [token 0..7, B, H]
+rank 1: [8, B, H] 部分和  ─┴─求和→ rank 1: [token 0..7, B, H]
+                                   两卡都对完整序列做 LayerNorm / Dropout / 残差
+```
+
+**Megatron-SP 在这里做 reduce-scatter**：仍然先跨卡求和，但不把完整结果都留给每张卡，而是沿**序列维**切开归属。rank 0 得到 token 0–3 的归约结果，rank 1 得到 token 4–7 的归约结果：
+
+```text
+行并行输出（各自是部分贡献）       reduce-scatter（先求和，再按序列切分）
+rank 0: [8, B, H] 部分和  ─┐      rank 0: [token 0..3, B, H]
+rank 1: [8, B, H] 部分和  ─┴─求和→ rank 1: [token 4..7, B, H]
+                                   各自在本地做对应 token 的 LayerNorm / Dropout / 残差
+```
+
+因此这段 token-local 区间里，每张卡持有的是 $[8/2, B, H]$，而不是 $[8, B, H]$。如果这些激活需要为反向保存，单卡上这部分重复激活大约降到原来的 $1/2$。残差相加要求两支布局一致：主分支和 shortcut 都必须是同一 rank 上对应的 token 片段，不能拿完整序列直接和半段相加。
+
+但下一列并行入口需要完整序列，所以在进入它之前做 **all-gather**，把两个 rank 的 token 片段收齐，并让每张卡都恢复完整张量：
+
+```text
+rank 0: [token 0..3] ─┐
+rank 1: [token 4..7] ─┴─ all-gather → 每张卡都得到 [token 0..7, B, H]
+                                      再进入下一列并行计算
+```
+
+可以把布局变化记成：
+
+```text
+经典 TP：行并行 → all-reduce → Replicate(整段序列)
+                             → token-local 操作（每卡都存整段）
+                             → 下一列并行
+
+Megatron-SP：行并行 → reduce-scatter → Shard(序列片段)
+                                     → token-local 操作（每卡只存本片段）
+                                     → all-gather → Replicate(整段序列)
+                                     → 下一列并行
+```
+
+**为什么通信量相同？**设完整激活大小为 $S$、TP 组大小为 $N$。ring 口径下，all-reduce 每 rank 发送 $2S\frac{N-1}{N}$；reduce-scatter 与 all-gather 各发送 $S\frac{N-1}{N}$，合计仍是 $2S\frac{N-1}{N}$。例如 $N=2$ 时，AR 每 rank 发送 $S$；RS 和 AG 各发送 $S/2$，总共也是 $S$。所以 SP 不是减少总传输字节，而是把“完整副本”改成“中间分片”，在 LayerNorm/Dropout/残差等 token-local 区间降低每卡激活占用。字节数相同不保证运行时间完全相同：实际还受 collective 启动延迟、拓扑、实现和计算重叠影响。
+
+注意这不表示整个模型的激活显存必然减半：all-gather 后完整激活又会暂时出现，attention 等需要跨 token 交互的计算也不能简单当成独立 token-local 操作。SP 节省的是**特定序列分片区间**的冗余激活；具体能省多少取决于模型中这些区间、保存的激活和实现策略。
 
 PyTorch 的 `SequenceParallel`（`style.py`）只负责所包裹的 LayerNorm/RMSNorm/Dropout 的序列分片计算。普通 Tensor 输入会被当作**已经本地切好**的序列片段，不会自动把完整序列切开。要组合 TP+SP，还必须一致配置：行并行输出 `Shard(sequence_dim)`、下一列并行输入从该布局收集成 `Replicate`、残差两支使用同样的序列布局、attention 的形状与 head 处理匹配。不能只在纯 TP 计划里给某个 norm 加一条 `SequenceParallel()`。
 
@@ -231,6 +282,9 @@ def main():
         )
 
         # 1. 各 rank 从同一份模型初始化开始；不能在这里用 rank 改 seed。
+        # 注意：此刻每个 rank 都完整构造了整个 TinyModel，这是临时完整副本。
+        # TP/FSDP 应用后参数即被 DTensor 分片替换；大模型应改用 meta device
+        # 先建空壳再 materialize 本地分片，避免初始化期单卡显存装下整个模型。
         torch.manual_seed(0)
         model = TinyModel().to(device)
 
@@ -289,7 +343,7 @@ torchrun --standalone --nproc-per-node=4 tp_fsdp_demo.py
 **把代码与概念对上：**
 
 1. **TP 计划与模型名一一对应**：`layers.0.fc1` 等是实际存在的子模块。`ColwiseParallel()` 默认要求输入在 TP 组复制、输出沿最后一维分片；`RowwiseParallel()` 默认接收该分片并输出复制布局。因此每个 block 的边界都是完整特征，不需要另外拼接本地张量。本例隐藏维均匀可分，默认返回本地 Tensor 足够表达中间布局。
-2. **同模型、不同数据**：模型初始化 seed 在全部 rank 上相同；数据 seed 只依赖 DP 坐标。rank 0/1 使用相同输入与标签，rank 2/3 使用另一批。不能把数据 seed 写成 `1000 + rank`，否则同一 TP 组会合作计算不同样本。
+2. **同模型、不同数据**：模型初始化 seed 在全部 rank 上相同；数据 seed 只依赖 DP 坐标。rank 0/1 使用相同输入与标签，rank 2/3 使用另一批。不能把数据 seed 写成 `1000 + rank`，否则同一 TP 组会合作计算不同样本。seed 一致还有另一层原因：`TinyModel().to(device)` 阶段每个 rank 都临时持有完整模型，TP/FSDP 之后才被分片替换——只有各 rank 的完整权重一致，各自切出的分片才能拼回同一份模型。真实大模型下这个"先完整后切分"会撑爆单卡初始化显存，工程做法是先在 `torch.device("meta")` 上建空壳、再让并行 plan 只 materialize 本地分片；Megatron-LM 原版则干脆按 rank 直接初始化分片权重，不走完整副本。
 3. **FSDP 自底向上应用**：逐 block 的调用建立独立参数组；根模型调用处理剩余的 `head`。`head` 虽然不做 TP，但每个 TP 组中的输入、参数与梯度在本例中一致，因此无需额外沿 TP 组同步它的参数梯度。
 4. **batch 不乘 TP 度数**：每个数据副本有 8 个样本，两个副本共处理 $8\times2=16$ 个样本，而不是 32 个。MSE 在各副本上取均值，FSDP 按默认语义平均 DP 梯度，不需要再除以 TP 度数；日志也只沿 DP 组求平均。
 5. **这不是完整 Transformer 训练框架**：示例只演示 TP×FSDP 与一次训练循环，不包含 Attention、SP、数据集分片、checkpoint 或性能调优。合成随机数据用于检查流程，不保证 3 步 loss 单调下降。

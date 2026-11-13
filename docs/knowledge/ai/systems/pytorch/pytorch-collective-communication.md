@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [pytorch, distributed, collective, nccl, all-gather, reduce-scatter, all-reduce, source-code]
 created: 2026-11-03
-updated: 2026-11-12
+updated: 2026-11-13
 source: PyTorch 源码（distributed_c10d.py / _fsdp_collectives.py / placement_types.py）+ 个人整理
 ---
 
@@ -433,7 +433,7 @@ Replicate(g)  ──本地除以 N──→  Partial(g)  ──all-reduce──�
 | **TP（Megatron 式）** | 经典无 SP 实现每层前向/反向各 2 次 AR | f: identity → g: AR；反向按逻辑梯度语义配对，SP 使用边界 AG/RS → [TP 详解](../parallelism/tensor-parallel-megatron.md) |
 | **PP** | 邻居间点对点 | send/recv（activation & gradient），非集合通信 → [PP 详解](../parallelism/pipeline-parallelism.md) |
 | **EP/MoE** | token 重路由 | all-to-all ×2（dispatch + combine）→ [EP/MoE 详解](../parallelism/expert-parallel-moe.md) |
-| **序列/上下文并行** | SP 的 token-local 激活分片 / CP 的上下文分片 | SP 常用边界 RS/AG；CP 交换 KV 等（实现各异）→ 见 [TP 笔记的 SP 一节](../parallelism/tensor-parallel-megatron.md#变体与工程细节) |
+| **序列/上下文并行** | SP 的 token-local 激活分片 / CP 的 attention 上下文分片 | SP 常用边界 RS/AG；CP 通信实现各异 → [SP/CP 独立专题](../parallelism/sequence-context-parallelism.md)，另见 [TP 笔记的 SP 例子](../parallelism/tensor-parallel-megatron.md#变体与工程细节) |
 
 > 通信原语是**名词**，训练范式是**句子**。读论文里的并行图时，先把它翻译成"这个箭头是哪种原语、消息多大、在哪个 mesh 维度上"，就完成了从"看懂结构"到"看懂代价"的跨越。各范式的完整展开见[并行策略（5D）系列](../parallelism/index.md)。
 

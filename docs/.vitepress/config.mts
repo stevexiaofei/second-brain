@@ -63,6 +63,7 @@ export default withMermaid(
           { text: '专题总览', link: '/knowledge/ai/systems/parallelism/' },
           { text: '5D 并行组合逻辑', link: '/knowledge/ai/systems/parallelism/parallelism-overview' },
           { text: '张量并行：Megatron 式 TP', link: '/knowledge/ai/systems/parallelism/tensor-parallel-megatron' },
+          { text: '序列并行 SP 与上下文并行 CP', link: '/knowledge/ai/systems/parallelism/sequence-context-parallelism' },
           { text: '流水线并行', link: '/knowledge/ai/systems/parallelism/pipeline-parallelism' },
           { text: '专家并行与 MoE', link: '/knowledge/ai/systems/parallelism/expert-parallel-moe' }
         ]},

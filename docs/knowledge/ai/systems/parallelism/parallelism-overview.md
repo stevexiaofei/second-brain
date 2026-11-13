@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [distributed-training, parallelism, tensor-parallel, pipeline-parallel, expert-parallel, data-parallel, sequence-parallel, megatron]
 created: 2026-11-06
-updated: 2026-11-09
+updated: 2026-11-13
 source: 个人整理 + Megatron-LM / DeepSpeed / PyTorch 文档
 ---
 
@@ -78,7 +78,7 @@ Megatron-LM 文档里的 `--tensor-model-parallel-size 8 --pipeline-model-parall
 | PP | 网络层 | 邻居 send/recv + 调度 | [流水线并行](./pipeline-parallelism.md) |
 | EP/MoE | 专家（token 路由） | dispatch/combine 两次 all-to-all | [专家并行与 MoE](./expert-parallel-moe.md) |
 | DP/FSDP/ZeRO | 数据/优化器状态 | all-reduce / AG+RS | 见 [PyTorch 分布式训练](../pytorch/pytorch-distributed.md)、[FSDP 源码阅读指南](../pytorch/pytorch-fsdp.md) |
-| SP/CP | token-local 区间 / 上下文 | SP 边界 RS/AG；CP 交换 KV 等 | 暂无独立笔记，见 TP 笔记中两者的区别 |
+| SP/CP | token-local 区间 / attention 上下文 | SP 边界 RS/AG；CP 按实现交换或重排 KV 等 | [序列并行 SP 与上下文并行 CP](./sequence-context-parallelism.md) |
 
 ## 与物理拓扑的对照
 
