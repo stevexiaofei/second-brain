@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [pytorch, distributed, collective, nccl, all-gather, reduce-scatter, all-reduce, source-code]
 created: 2026-11-03
-updated: 2026-11-09
+updated: 2026-11-12
 source: PyTorch 源码（distributed_c10d.py / _fsdp_collectives.py / placement_types.py）+ 个人整理
 ---
 
@@ -101,6 +101,10 @@ $$
 
 收发对称，接收量相同；若统计"发送 + 接收"总量则为 $2S\frac{N-1}{N}$。
 
+<RingAllGatherDemo />
+
+上面的动画把 ring all-gather 固定为 4 个 rank：第 $k$ 步每个 rank 只转发一个刚拥有的 chunk，三步后拼齐。all-reduce 还包含前置的 reduce-scatter 阶段，下面用公式核算两段的发送量。
+
 all-reduce 是同样步长的两个阶段串联——reduce-scatter $N-1$ 步 + all-gather $N-1$ 步，每 rank 发送量：
 
 $$
@@ -188,6 +192,10 @@ r3       2   2   2   1     (dim0=7)    r3: [1,2,1,1] → out = [5 | 17,18 | 24 |
 ```
 
 （来源：`all_to_all_single` 官方 docstring，`distributed_c10d.py:4548`。自洽校验只有两条：① 任一列 = 对应行的接收列表——"→r1"列 [2,2,1,2] 正是 r1 的 output_splits；② **全局**守恒 $\sum_r \dim_0^{in} = \sum_r \dim_0^{out} = 27$。注意**单 rank 不守恒是正常的**：r0 发 6 收 9、r2 发 5 收 6——all-to-all 是"换货"不是"切自己的"，输出的总长由"别人想给我多少"决定，与自己的输入长度无关。逐 rank 守恒是读这个例子时最容易产生的误判。）
+
+<AllToAllMatrixDemo />
+
+交互表格沿用上面的 4-rank 不均匀 split：点击发送矩阵中的格子，就能在接收列表中定位对应项。它强调的是逐对自洽与矩阵转置，不是单 rank 的输入/输出长度相等。
 
 值的流向以 r0 为例：`output_splits=[2,3,2,2]` = "我依次从 r0/r1/r2/r3 各收 2、3、2、2 个"。来自 r1 的那段 `[10,11,12]` 由发送侧矩阵唯一确定——r1 的 `input_splits[0]=3`，即 **r1 把自己输入的前 3 个元素发给 r0**（输入的十位数就是来源标签：r1 的元素都是 1x）。四行输出与 docstring 完全一致（已用矩阵模拟逐元素验证）。
 

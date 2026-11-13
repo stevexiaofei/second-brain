@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [tensor-parallel, megatron, tp, all-reduce, dtensor, sequence-parallel, distributed-training]
 created: 2026-11-06
-updated: 2026-11-09
+updated: 2026-11-12
 source: Megatron-LM 论文（Shoeybi et al., 2019; Narayanan et al., 2021）+ PyTorch 源码（tensor/parallel/style.py）
 ---
 
@@ -67,7 +67,28 @@ GeLU 是逐元素的，作用在碎片上等价于作用在完整张量上——
 
 ### Attention：多头天然分块（列切 → 行切）
 
-多头注意力**每个 head 本来就是独立计算的**，把 head 维切给 $N$ 卡等于"每卡算自己的那几个 head"，QKV 投影就是按 head 列切（$[Q_i,K_i,V_i]$ 留在卡内做 attention），输出投影 $B$ 行切，最后 all-reduce。
+先看**单卡上的原始计算**。用 $B$ 表示 batch size、$T$ 表示序列长度、$d_{\text{model}}$ 表示模型宽度、$H$ 表示 head 数，且 $d_h=d_{\text{model}}/H$。输入 $X\in\mathbb{R}^{B\times T\times d_{\text{model}}}$ 经过 Q/K/V 投影并拆成 heads；每个 head 独立计算缩放点积注意力，再拼接并经过输出投影：
+
+$$
+Q,K,V\in\mathbb{R}^{B\times H\times T\times d_h},\qquad
+S_h=\frac{Q_hK_h^\top}{\sqrt{d_h}}\in\mathbb{R}^{B\times T\times T},\qquad
+\operatorname{head}_h=\operatorname{softmax}(S_h)V_h\in\mathbb{R}^{B\times T\times d_h}
+$$
+
+$$
+\operatorname{Concat}(\operatorname{head}_1,\ldots,\operatorname{head}_H)\in\mathbb{R}^{B\times T\times d_{\text{model}}},\qquad
+Z=\operatorname{Concat}(\cdots)W_O\in\mathbb{R}^{B\times T\times d_{\text{model}}}
+$$
+
+```text
+单卡：  X [B,T,d_model] ─→ [W_Q,W_K,W_V] ─→ Q,K,V [B,H,T,d_h]
+                                           ─→ scores [B,H,T,T] × V
+                                           ─→ heads [B,H,T,d_h]
+                                           ─→ 合并 heads [B,T,d_model]
+                                           ─→ [W_O] ─→ Z [B,T,d_model]
+```
+
+这里所有 heads 和完整的 $W_O$ 都在一张卡上，直接得到完整输出 $Z$，没有 TP 通信。Megatron 式 TP 利用 head 之间的独立性，把 $H$ 个 heads 均匀分给 $N$ 张卡（假设 $H$ 可被 $N$ 整除）：每卡负责 $H_i=H/N$ 个 heads，故本地 Q/K/V 与注意力输出的形状分别是 $[B,H_i,T,d_h]$，合并后的本地 head 特征是 $[B,T,H_i d_h]$。对应地，QKV 投影权重按输出维切分；$W_O$ 按输入维行切，每卡权重片是 $[H_i d_h,d_{\text{model}}]$，产生部分和 $Z_i\in\mathbb{R}^{B\times T\times d_{\text{model}}}$，再由 all-reduce 合成完整 $Z$。因此 TP 下各卡的 $Z_i$ 是相同形状的部分和，不是最终输出的不同 head 分片。
 
 ```text
         ┌──────────────────────────────────────────────┐
@@ -122,21 +143,160 @@ PyTorch 的 `SequenceParallel`（`style.py`）只负责所包裹的 LayerNorm/RM
 
 TP 组内各 rank 持有不同的参数分片；DP 组则连接**不同 TP 组中同一 TP 坐标**的 rank，同步的是同一参数分片的不同数据副本梯度。FSDP 的参数 AG/梯度 RS 也沿 **DP 子 mesh** 发生，不是在 TP 组内发生。
 
-```python
-from torch.distributed.device_mesh import init_device_mesh
-from torch.distributed.fsdp import fully_shard
-from torch.distributed.tensor.parallel import parallelize_module
+#### 先看设备分组：4 卡 = 2 路 DP × 2 路 TP
 
-# 前提：进程组/设备已配置，dp * tp 等于参与进程数；tp_plan 适配 model。
-mesh = init_device_mesh("cuda", (dp, tp), mesh_dim_names=("dp", "tp"))
-tp_mesh, dp_mesh = mesh["tp"], mesh["dp"]
-model = parallelize_module(model, tp_mesh, tp_plan)
-for block in model.layers:
-    fully_shard(block, mesh=dp_mesh)
-fully_shard(model, mesh=dp_mesh)
+下面用两个 MLP block 演示组合，不引入 Attention、SP 或混合精度，以免把模型结构与设备分组混在一起。每个进程绑定一张 GPU；本例 rank 排布如下：
+
+```text
+                       TP 坐标 0      TP 坐标 1
+DP 坐标 0                rank 0         rank 1       ← 合作处理数据 A
+DP 坐标 1                rank 2         rank 3       ← 合作处理数据 B
+
+横向 TP 组：  [0, 1]、[2, 3]    不同参数分片，合作计算同一批样本
+竖向 DP 组：  [0, 2]、[1, 3]    同一 TP 参数分片，处理不同批样本
+FSDP 沿竖向分片/恢复参数、归约梯度；不是沿横向做这些操作。
 ```
 
-这是组合片段，不是独立脚本；`model.layers` 的组织方式要与模型匹配。不要把完整 `(dp, tp)` mesh 直接当成 FSDP 的二维 mesh：`fully_shard` 的二维 mesh 约定是 **HSDP 的复制维 × 分片维**，不是 DP×TP。本地参考实现见 `test/distributed/_composable/test_composability/test_2d_composability.py`：先沿 `mesh["tp"]` TP，再沿 `mesh["dp"]` 自底向上 `fully_shard`。
+`mesh["tp"]` 和 `mesh["dp"]` 取得的是**当前 rank 所在的子组**。例如 rank 0 的 TP 组为 `[0, 1]`，DP/FSDP 组为 `[0, 2]`。这里的 DP 表示数据并行维度，不意味着每张卡始终常驻一份完整的 TP 参数分片：FSDP 会进一步分摊存储，计算时再临时取齐。
+
+下面的交互动画逐阶段展示 4 个 rank 的参数分片与通信方向。点选 GPU 查看它所在的 TP / DP 通信组；也可用播放、上一步、下一步控制训练阶段。动画用于解释设备分组与数据布局，不是 NCCL 包级时序仿真。
+
+<TpFsdpDemo />
+
+#### 完整训练示例
+
+**运行条件**：单机 4 张可见 CUDA GPU、支持 NCCL 的 Linux PyTorch 环境，建议 PyTorch 2.8 或更新版本，并具有下面的公开 API。将以下代码保存为 `tp_fsdp_demo.py`，再通过后面的 `torchrun` 命令启动；不要直接用单进程 `python` 启动。
+
+```python
+import os
+
+import torch
+import torch.distributed as dist
+from torch import nn
+from torch.nn import functional as F
+from torch.distributed.device_mesh import init_device_mesh
+from torch.distributed.fsdp import fully_shard
+from torch.distributed.tensor.parallel import (
+    ColwiseParallel,
+    RowwiseParallel,
+    parallelize_module,
+)
+
+
+class MLPBlock(nn.Module):
+    def __init__(self, width=32, hidden=128):
+        super().__init__()
+        self.fc1 = nn.Linear(width, hidden, bias=False)
+        self.fc2 = nn.Linear(hidden, width, bias=False)
+
+    def forward(self, x):
+        # TP 后：fc1 输出本地隐藏特征分片；GeLU 不需要完整隐藏维。
+        # fc2 消费这个分片，归约部分和后恢复完整 width 维。
+        return self.fc2(F.gelu(self.fc1(x)))
+
+
+class TinyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layers = nn.ModuleList([MLPBlock() for _ in range(2)])
+        # head 不做 TP，在 TP 组内复制；稍后仍沿 DP 轴做 FSDP。
+        self.head = nn.Linear(32, 8, bias=False)
+
+    def forward(self, x):
+        for block in self.layers:
+            x = block(x)
+        return self.head(x)
+
+
+def main():
+    dp, tp = 2, 2
+    if int(os.environ.get("WORLD_SIZE", "0")) != dp * tp:
+        raise RuntimeError("请用 torchrun --standalone --nproc-per-node=4 启动")
+    if not torch.cuda.is_available() or not dist.is_nccl_available():
+        raise RuntimeError("需要 CUDA GPU 和支持 NCCL 的 PyTorch 环境")
+
+    local_rank = int(os.environ["LOCAL_RANK"])
+    torch.cuda.set_device(local_rank)
+    device = torch.device("cuda", local_rank)
+    dist.init_process_group(backend="nccl")
+    try:
+        rank = dist.get_rank()
+        mesh = init_device_mesh("cuda", (dp, tp), mesh_dim_names=("dp", "tp"))
+        tp_mesh, dp_mesh = mesh["tp"], mesh["dp"]
+        dp_rank = mesh.get_local_rank("dp")
+        print(
+            f"rank={rank}: TP={tp_mesh.mesh.tolist()}, "
+            f"DP/FSDP={dp_mesh.mesh.tolist()}",
+            flush=True,
+        )
+
+        # 1. 各 rank 从同一份模型初始化开始；不能在这里用 rank 改 seed。
+        torch.manual_seed(0)
+        model = TinyModel().to(device)
+
+        # 2. 先做 TP：每个 block 都是列并行 → GeLU → 行并行。
+        tp_plan = {}
+        for i in range(len(model.layers)):
+            tp_plan[f"layers.{i}.fc1"] = ColwiseParallel()
+            tp_plan[f"layers.{i}.fc2"] = RowwiseParallel()
+        model = parallelize_module(model, tp_mesh, tp_plan)
+
+        # 3. 再沿 DP 子 mesh 做 FSDP，按 block 组织参数恢复/释放。
+        for block in model.layers:
+            fully_shard(block, mesh=dp_mesh, reshard_after_forward=True)
+        # 根模型接管未被 block 管理的 head 参数，不会重复分片 block。
+        # 根 fully_shard 使用默认 root 调度；子 block 仍按上面的策略 reshard。
+        fully_shard(model, mesh=dp_mesh)
+
+        # 4. 参数布局确定后，再创建优化器。
+        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, foreach=False)
+        model.train()
+
+        # 5. 同一 TP 组的数据相同，不同 DP 副本的数据不同。
+        # 用独立生成器，避免数据生成依赖 TP 内部的随机数状态。
+        data_rng = torch.Generator(device=device).manual_seed(1000 + dp_rank)
+        for step in range(3):
+            x = torch.randn(8, 32, device=device, generator=data_rng)
+            target = torch.randn(8, 8, device=device, generator=data_rng)
+            optimizer.zero_grad(set_to_none=True)
+            loss = F.mse_loss(model(x), target)
+            loss.backward()
+            optimizer.step()
+
+            # 每个 DP 组都要参与通信，不能把 all_reduce 放进 rank == 0。
+            # 这里只聚合日志；梯度已由 FSDP 归约，不手动再做一次。
+            mean_loss = loss.detach().clone()
+            dist.all_reduce(mean_loss, op=dist.ReduceOp.SUM, group=dp_mesh.get_group())
+            mean_loss /= dp
+            if rank == 0:
+                print(f"step={step}, dp_mean_loss={mean_loss.item():.6f}", flush=True)
+    finally:
+        dist.destroy_process_group()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+启动命令：
+
+```bash
+torchrun --standalone --nproc-per-node=4 tp_fsdp_demo.py
+```
+
+正常执行时，四个进程分别打印各自的 TP 与 DP/FSDP 组，rank 0 再打印 3 步的平均 loss。进程输出顺序不保证固定；具体 loss 以实际运行结果为准，这里不提供未经实测的数值。
+
+**把代码与概念对上：**
+
+1. **TP 计划与模型名一一对应**：`layers.0.fc1` 等是实际存在的子模块。`ColwiseParallel()` 默认要求输入在 TP 组复制、输出沿最后一维分片；`RowwiseParallel()` 默认接收该分片并输出复制布局。因此每个 block 的边界都是完整特征，不需要另外拼接本地张量。本例隐藏维均匀可分，默认返回本地 Tensor 足够表达中间布局。
+2. **同模型、不同数据**：模型初始化 seed 在全部 rank 上相同；数据 seed 只依赖 DP 坐标。rank 0/1 使用相同输入与标签，rank 2/3 使用另一批。不能把数据 seed 写成 `1000 + rank`，否则同一 TP 组会合作计算不同样本。
+3. **FSDP 自底向上应用**：逐 block 的调用建立独立参数组；根模型调用处理剩余的 `head`。`head` 虽然不做 TP，但每个 TP 组中的输入、参数与梯度在本例中一致，因此无需额外沿 TP 组同步它的参数梯度。
+4. **batch 不乘 TP 度数**：每个数据副本有 8 个样本，两个副本共处理 $8\times2=16$ 个样本，而不是 32 个。MSE 在各副本上取均值，FSDP 按默认语义平均 DP 梯度，不需要再除以 TP 度数；日志也只沿 DP 组求平均。
+5. **这不是完整 Transformer 训练框架**：示例只演示 TP×FSDP 与一次训练循环，不包含 Attention、SP、数据集分片、checkpoint 或性能调优。合成随机数据用于检查流程，不保证 3 步 loss 单调下降。
+
+不要把完整 `(dp, tp)` mesh 直接传给 `fully_shard`：它接收二维 mesh 时的约定是 **HSDP 的复制维 × 分片维**，不是 DP×TP；轴名叫 `"tp"` 不会使其自动识别为张量并行。这里必须传 `mesh["dp"]`，且 DP、TP 子 mesh 来自同一个父 mesh。
+
+**验证边界**：API 与组合顺序已对照本地 PyTorch 源码和测试；这不等于四卡运行验证。参考 `torch/testing/_internal/common_fsdp.py` 的 `MLPStack.parallelize()` 与 `test/distributed/_composable/test_composability/test_2d_composability.py`：先沿 TP 子 mesh 分片，再沿 DP 子 mesh 自底向上 `fully_shard`。
 
 ## PyTorch 侧实现
 
