@@ -107,6 +107,9 @@ flowchart TD
 | 05 | [Nsight Systems（nsys）](05-nsight-systems-nsys.md) | 系统级时间线：空洞、同步、通信重叠 |
 | 06 | [Nsight Compute（ncu）](06-nsight-compute-ncu.md) | 单 kernel 的硬件计数器：是带宽、算力还是延迟受限 |
 | 07 | [PyTorch 分布式训练性能分析](07-pytorch-distributed-profiling.md) | straggler、通信占比、通信与计算重叠；DDP / FSDP 的调优旋钮 |
+| 08 | [磁盘 IO 压测：disk_io_bench.py 解读](08-disk-io-benchmark.md) | 挂载点横向对比：缓冲 vs 落盘、顺序 vs 随机的读写基准与判读 |
+
+> 存储 IO 的定位：01 号的 iostat 告诉你"现在谁在用盘"（观测），08 号告诉你"盘还剩多少能力"（压测）。DataLoader 慢、checkpoint 卡训练时两者连用。
 
 ## Related
 

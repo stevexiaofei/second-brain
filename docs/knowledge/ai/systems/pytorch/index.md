@@ -24,6 +24,7 @@
 - [torch.compile Wiki 系列（17 章）](./torch-compile-wiki/01-architecture-overview.md) — 基于 PyTorch 2.8.0 源码的全链路精读
 - [分布式训练](./pytorch-distributed.md) — DDP/FSDP/RPC、ProcessGroup、torchrun
 - [集合通信原语](./pytorch-collective-communication.md) — all-gather/reduce-scatter/all-reduce 语义、通信量公式、FSDP2/DTensor 源码消费
+- [并行策略（5D）系列](../parallelism/index.md) — TP（Megatron 式）/PP/EP-MoE 的范式层展开，集合通信的"句子"
 - [程序导出 export](./pytorch-export.md) — ExportedProgram IR、动态形状
 - [Reducer 类设计详解](./pytorch-reducer.md) — DDP 梯度归约协调器深度解析
 - [FSDP 源码阅读指南](./pytorch-fsdp.md) — fully_shard/FSDP2 钩子驱动架构、状态机与读码路线图

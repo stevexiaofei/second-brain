@@ -83,6 +83,7 @@ flowchart TD
 - [Reducer 类设计详解](./pytorch-reducer.md) — DDP 的 C++ 心脏，梯度分桶与按序归约的深度解析
 - [FSDP 源码阅读指南](./pytorch-fsdp.md) — FSDP2（fully_shard）钩子驱动架构、状态机与读码路线图
 - [集合通信原语](./pytorch-collective-communication.md) — all-gather / reduce-scatter / all-reduce 语义、通信量公式与 FSDP2/DTensor 的源码消费
+- [并行策略（5D）系列](../parallelism/index.md) — TP（Megatron 式）/PP/EP-MoE 范式详解：DTensor parallelize_module、pipelining 调度器、A2A 路由
 - [torch.compile 编译栈](./pytorch-compile.md) — Inductor 的 `ddp_fusion.py` 与分布式协同
 - [torch.export 程序导出](./pytorch-export.md) — 导出分布式模型用于部署
 

@@ -10,3 +10,4 @@ Shared canonical prompt templates for TRAE and Claude Code.
 - [Inbox Organizer](./inbox-organizer.md) — 扫描 Inbox → 分类决策 → 确认后整理、迁移与链接
 - [Codebase Reading Guide](./codebase-reading-guide.md) — new repository / subsystem reading workflow
 - [Repository Refactor](./repository-refactor.md) — repository-wide structure and maintenance audit → approved refactor → validation workflow
+- [Interactive Explainer Animation](./interactive-explainer-animation.md) — 为知识文档设计、实现并验证教学型交互动画

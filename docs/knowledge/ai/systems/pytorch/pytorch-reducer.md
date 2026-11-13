@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [pytorch, source-code, distributed, ddp]
 created: 2026-08-11
-updated: 2026-08-11
+updated: 2026-11-13
 ---
 
 # Reducer 类设计详解（DDP 的 C++ 心脏）
@@ -122,6 +122,10 @@ flowchart LR
 > **归约约束**：桶按 `next_bucket_` 严格递增归约，避免跨 rank 同一时刻在 allreduce 不同桶导致死锁；`all_reduce_bucket` 立即返回 Future 不阻塞，通信与反向计算重叠。
 
 > 每个状态转移同步修改的标志/计数器，见上文 "状态机: bool 标志 + 计数器" 表格。
+
+<ReducerFlowDemo />
+
+动画使用 4 个参数、2 个 bucket 演示一次反向：刻意让 Bucket 1 先就绪，观察它如何等待 `next_bucket_`，以及 Bucket 0 就绪后两个 bucket 如何按序发起异步归约。它简化了真实模型的桶大小与通信耗时，重点呈现 `pending`、调用顺序和 `finalize_backward` 的关系；点击参数可查看 `variable_locators_` 映射。
 
 ### 核心流程：构造 → forward → backward → finalize
 
