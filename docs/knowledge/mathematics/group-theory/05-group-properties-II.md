@@ -224,7 +224,7 @@ $$\sigma_{gh}(x)=(gh)x=g(hx)=\sigma_g(\sigma_h(x))=(\sigma_g\circ\sigma_h)(x),$$
 >
 > **例（$S_3$ 的 Cayley 嵌入是自身）**：$G=S_3$ 时 $\Gamma\le S_{S_3}\cong S_6$，但 $S_3$ 本身已经在 $S_3$ 里——Cayley 给的嵌入通常**不是最优的**（$|G|=n$ 时嵌到 $S_n$，但小群常能嵌到更小的对称群）。
 >
-> **换位视角（为什么这条定理重要）**：抽象群 $G$ 的元素自己变成"作用在 $G$ 上的变换"。**任何有限群都是具体的**——不存在"纯抽象"的有限群；且"研究群 = 研究它怎么作用于某个集合"这一方法论从此有了地基。这与[魔方群](../rubiks-cube-group-theory.md) 的视角完全一致：魔方群就是"作用在 54 个贴纸上的置换群"。
+> **换位视角（为什么这条定理重要）**：抽象群 $G$ 的元素自己变成"作用在 $G$ 上的变换"。**任何有限群都是具体的**——不存在"纯抽象"的有限群；且"研究群 = 研究它怎么作用于某个集合"这一方法论从此有了地基。这与[魔方群](./rubiks-cube-group-theory.md) 的视角完全一致：魔方群就是"作用在 54 个贴纸上的置换群"。
 >
 > **变形与加强（本系列未展开）**：若 $G$ 有指数 $k$ 的子群，可嵌到 $S_k$（**广义 Cayley / 群作用**）；$|G|$ 是质数幂时能嵌得更小。这些是 Sylow 与群作用理论的开端。
 
@@ -234,7 +234,7 @@ $$\sigma_{gh}(x)=(gh)x=g(hx)=\sigma_g(\sigma_h(x))=(\sigma_g\circ\sigma_h)(x),$$
 
 - 拉格朗日定理是**有限群论的第一次收网**：$o(g)\mid|G|$、质数阶必循环、$|A_n|=n!/2$ 全是它的即插即用
 - 阶 6 分类示范了"按阶分类群"的完整打法——后面[阶 8 分类](./09-isomorphism-theorems-II.md)（5 个群）是同一方法在小阶上的极限
-- Cayley 定理给[魔方群](../rubiks-cube-group-theory.md) 这样的"作用群"提供了理论地基：研究群 = 研究它怎么作用于某个集合
+- Cayley 定理给[魔方群](./rubiks-cube-group-theory.md) 这样的"作用群"提供了理论地基：研究群 = 研究它怎么作用于某个集合
 
 ## 局限 / 边界
 
@@ -251,4 +251,4 @@ $$\sigma_{gh}(x)=(gh)x=g(hx)=\sigma_g(\sigma_h(x))=(\sigma_g\circ\sigma_h)(x),$$
 - [04 群的性质（上）](./04-group-properties-I.md) — sgn 同态，$A_n$ 是其核
 - [06 正规子群与商群](./06-normal-subgroup-and-quotient-group.md) — 指数 2 的子群必正规
 - [08 同构定理（上）](./08-isomorphism-theorems-I.md) — 例 5.4 用第一同构定理重证"指数 2 正规"
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — $|G|=|\ker\pi|\cdot|P|$ 的计数结构与拉格朗日同源
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — $|G|=|\ker\pi|\cdot|P|$ 的计数结构与拉格朗日同源

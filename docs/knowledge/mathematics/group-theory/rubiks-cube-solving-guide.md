@@ -201,7 +201,7 @@ L  F  R (Left / Front / Right)
 ## Related
 
 - [魔方群的数学结构](./rubiks-cube-group-theory.md) — 本文所有"原理"标注的理论依据
-- [如何学习：方法地图](../learning/how-to-learn-systematically.md) — 技能类学习的通用方法
+- [如何学习：方法地图](../../learning/how-to-learn-systematically.md) — 技能类学习的通用方法
 
 ## References
 

@@ -203,7 +203,7 @@ $$D_4=\{e,\ r,\ r^2,\ r^3,\ m,\ rm,\ r^2m,\ r^3m\}$$
 
 - $\mathbb{Z}/n\mathbb{Z}$ 是**良定义性检查**的标准训练场——后续商群（[06](./06-normal-subgroup-and-quotient-group.md)）、同构定理（[08](./08-isomorphism-theorems-I.md)）里每个"在等价类上定义的映射"都要过这一关
 - $(\mathbb{Z}/n\mathbb{Z})^\times$ 把数论（gcd、Bézout）变成群论对象，后面 $Aut(C_n)\cong(\mathbb{Z}/n\mathbb{Z})^\times$（[07](./07-automorphism-and-products.md)）把两者接通
-- $D_n$ 是最小的非阿贝尔群家族，也是[魔方群](../rubiks-cube-group-theory.md)"转动生成对称"的最简模型
+- $D_n$ 是最小的非阿贝尔群家族，也是[魔方群](./rubiks-cube-group-theory.md)"转动生成对称"的最简模型
 
 ## 局限 / 边界
 
@@ -223,4 +223,4 @@ $$D_4=\{e,\ r,\ r^2,\ r^3,\ m,\ rm,\ r^2m,\ r^3m\}$$
 - [01 群论导论](./01-introduction-to-group-theory.md) — 子群判定引理
 - [03 对称群与循环群](./03-symmetric-and-cyclic-groups.md) — $\langle r\rangle=\{1,r,\dots,r^{n-1}\}$ 展开
 - [07 自同构、直积与半直积](./07-automorphism-and-products.md) — $Aut(D_3)\cong D_3$
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — 更大的"对称生成群"实例
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — 更大的"对称生成群"实例

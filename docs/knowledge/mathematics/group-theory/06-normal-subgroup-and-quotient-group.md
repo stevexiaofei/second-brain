@@ -47,7 +47,7 @@ $$H\triangleleft G\iff \forall g:\ gH=Hg\iff \forall g:\ gHg^{-1}=H\iff \forall 
 3. $H\triangleleft G\Rightarrow$ $H$ 是若干共轭类的并（$H$ 对共轭封闭）——这是**实际判断正规性最快的方法**：把 $G$ 按共轭类分解成块，看 $H$ 是不是整块整块地取
 4. $H\triangleleft G\iff H$ 是某个同态的核
 
-> **(4) 是"正规性"最深的意义**：一开始 "正规" 看起来只是"能造商群"的技术条件，但它其实就是"能当核"的代数条件。这解释了为什么后面[第一同构定理](./08-isomorphism-theorems-I.md) 里 $\ker\phi\triangleleft G$ 是自然的，也解释了[魔方群](../rubiks-cube-group-theory.md) 中 $\ker\pi$（朝向部分）为什么天然正规。
+> **(4) 是"正规性"最深的意义**：一开始 "正规" 看起来只是"能造商群"的技术条件，但它其实就是"能当核"的代数条件。这解释了为什么后面[第一同构定理](./08-isomorphism-theorems-I.md) 里 $\ker\phi\triangleleft G$ 是自然的，也解释了[魔方群](./rubiks-cube-group-theory.md) 中 $\ker\pi$（朝向部分）为什么天然正规。
 >
 > **例（用共轭类判正规，$S_4$）**：$S_4$ 的共轭类按 cycle type 分成 5 块（大小 $1,6,3,8,6$，见 [03](./03-symmetric-and-cyclic-groups.md) 的表）。正规子群必须是若干块的并就包含 $\{e\}$，且大小整除 $|S_4|=24$：可能的并集大小只有 $1$（$\{e\}$）、$4=1+3$（$V_4=\{e,\text{三个双对换}\}$）、$24$（全体）。故 $S_4$ 的正规子群恰为 $\{e\},V_4,A_4,S_4$（$A_4$ 大小 $12=1+3+8$ ✓）。**这张"共轭类 + 整除"的筛子把无穷的检查压成几步**。
 
@@ -190,7 +190,7 @@ $$Z(G)=\{g\in G:gx=xg,\ \forall x\in G\}=\bigcap_{x\in G}C_G(x).$$
 
 ## 为什么重要
 
-- 商群是"把群除掉一个正规部分"的运算——所有同构定理（[08](./08-isomorphism-theorems-I.md)、[09](./09-isomorphism-theorems-II.md)）都是商群的性质；[魔方群](../rubiks-cube-group-theory.md) 求 $|G|$ 用的 $G/\ker\pi\cong P$ 就是一次商群操作
+- 商群是"把群除掉一个正规部分"的运算——所有同构定理（[08](./08-isomorphism-theorems-I.md)、[09](./09-isomorphism-theorems-II.md)）都是商群的性质；[魔方群](./rubiks-cube-group-theory.md) 求 $|G|$ 用的 $G/\ker\pi\cong P$ 就是一次商群操作
 - 中心化子/正规化子是共轭作用的"稳定子"，为 Sylow 理论（未覆盖）与群作用计数铺路
 - $C_{p^2}\ne C_p\times C_p$ 这类"同阶不同构"的分辨工作依赖商群与直积工具（[07](./07-automorphism-and-products.md)）
 
@@ -209,4 +209,4 @@ $$Z(G)=\{g\in G:gx=xg,\ \forall x\in G\}=\bigcap_{x\in G}C_G(x).$$
 - [05 群的性质（下）](./05-group-properties-II.md) — 陪集与指数是商群的前置
 - [07 自同构、直积与半直积](./07-automorphism-and-products.md) — $N\rtimes H$ 中 $N$ 必须正规
 - [08 同构定理（上）](./08-isomorphism-theorems-I.md) — 商群性质的集中爆发
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — $\ker\Phi$ 是正规子群、$G/G_0\cong\mathbb{Z}_3\times\mathbb{Z}_2\times\mathbb{Z}_2$
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — $\ker\Phi$ 是正规子群、$G/G_0\cong\mathbb{Z}_3\times\mathbb{Z}_2\times\mathbb{Z}_2$

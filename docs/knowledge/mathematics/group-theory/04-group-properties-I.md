@@ -217,12 +217,12 @@ $$\operatorname{sgn}(\sigma)=\prod_{j=1}^{m}\operatorname{sgn}(\sigma_j)=\prod_{
 >
 > 两条路线一致 ✓。**定理 3.21 的价值就在这里**：交叠分解虽然不方便读结构（路线二要先算），但**奇偶性能直接数出来**（路线一）。而且两种分解给同一个答案，这本身就是在验证 $sgn$ 的良定义性。
 >
-> **这门"数偶长度 cycle"的手艺**：[魔方群](../rubiks-cube-group-theory.md) 里角块与棱块的奇偶性同步守恒，就是 $sgn$ 在两类块上的同时应用（转角数不变 $\leftrightarrow$ 奇偶性不变）。
+> **这门"数偶长度 cycle"的手艺**：[魔方群](./rubiks-cube-group-theory.md) 里角块与棱块的奇偶性同步守恒，就是 $sgn$ 在两类块上的同时应用（转角数不变 $\leftrightarrow$ 奇偶性不变）。
 
 ## 为什么重要
 
 - 同态/同构是整个专题后半部（[商群](./06-normal-subgroup-and-quotient-group.md)、[同构定理](./08-isomorphism-theorems-I.md)）的语言基础；$\ker\varphi$ 在这里作为子群登场，[08](./08-isomorphism-theorems-I.md) 里它升级为正规子群并给出 $G/\ker\varphi\cong\operatorname{im}\varphi$
-- sgn 是第一个"从群到 $C_2$ 的非平凡同态"，其核就是[交错子群 $A_n$](./05-group-properties-II.md)；[魔方群](../rubiks-cube-group-theory.md) 的守恒律一（角/棱奇偶性同步）正是 sgn 思想的二维版本
+- sgn 是第一个"从群到 $C_2$ 的非平凡同态"，其核就是[交错子群 $A_n$](./05-group-properties-II.md)；[魔方群](./rubiks-cube-group-theory.md) 的守恒律一（角/棱奇偶性同步）正是 sgn 思想的二维版本
 - 置换矩阵把 $S_n$ 线性代数化——"群表示论"的第一次预演
 
 ## 局限 / 边界
@@ -240,4 +240,4 @@ $$\operatorname{sgn}(\sigma)=\prod_{j=1}^{m}\operatorname{sgn}(\sigma_j)=\prod_{
 - [03 对称群与循环群](./03-symmetric-and-cyclic-groups.md) — cycle 分解是 sgn 计算的输入
 - [05 群的性质（下）](./05-group-properties-II.md) — $A_n=\ker(sgn)$、拉格朗日定理
 - [08 同构定理（上）](./08-isomorphism-theorems-I.md) — $\ker\varphi$ 的完整故事
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — 奇偶性守恒 = sgn 思想的二维推广
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — 奇偶性守恒 = sgn 思想的二维推广

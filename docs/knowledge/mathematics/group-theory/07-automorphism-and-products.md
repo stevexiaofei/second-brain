@@ -234,13 +234,13 @@ $$S_n=A_n\rtimes\langle(1,2)\rangle\qquad(\text{不是直积}).$$
 
 > **具体看 $n=3$**：$S_3=A_3\rtimes\langle(1,2)\rangle$，$\phi((1,2))$ 在 $A_3=\langle(1,2,3)\rangle$ 上的作用是共轭：$(1,2)(1,2,3)(1,2)=(1,3,2)=(1,2,3)^{-1}$——**正是 $C_3$ 的取逆自同构**，于是 $S_3\cong C_3\rtimes C_2=D_3$ ✓ 与 [05 阶 6 分类](./05-group-properties-II.md)接上。
 >
-> **这个例子的分量**：半直积不是冷门构造，而是"**正规部分 + 一点外在扭曲**"的**标准形状**。$S_n$、$D_n$、甚至[魔方群](../rubiks-cube-group-theory.md)（$\ker\pi$ 朝向部分 $\rtimes$ 位置置换部分）都是这个形状。
+> **这个例子的分量**：半直积不是冷门构造，而是"**正规部分 + 一点外在扭曲**"的**标准形状**。$S_n$、$D_n$、甚至[魔方群](./rubiks-cube-group-theory.md)（$\ker\pi$ 朝向部分 $\rtimes$ 位置置换部分）都是这个形状。
 
 ## 为什么重要
 
 - "拼群"是分类定理的原材料：[有限阿贝尔群分类](./09-isomorphism-theorems-II.md)的结论就是"循环群质数幂的直积"；[阶 8 分类](./09-isomorphism-theorems-II.md)里 $D_4=C_4\rtimes C_2$ 型结构
 - $Aut(C_n)\cong(\mathbb{Z}/n\mathbb{Z})^\times$ 把[模 n 乘法群](./02-mod-n-and-dihedral-groups.md)接回群论主线
-- 内自同构 $\lambda_g$ 正是[魔方笔记](../rubiks-cube-group-theory.md)里的"共轭搬运"：$o(x)=o(\lambda_g(x))$（[01](./01-introduction-to-group-theory.md) 命题 1.13）在这里得到代数身份
+- 内自同构 $\lambda_g$ 正是[魔方笔记](./rubiks-cube-group-theory.md)里的"共轭搬运"：$o(x)=o(\lambda_g(x))$（[01](./01-introduction-to-group-theory.md) 命题 1.13）在这里得到代数身份
 
 ## 局限 / 边界
 
@@ -257,4 +257,4 @@ $$S_n=A_n\rtimes\langle(1,2)\rangle\qquad(\text{不是直积}).$$
 - [06 正规子群与商群](./06-normal-subgroup-and-quotient-group.md) — 正规性是半直积的前提
 - [08 同构定理（上）](./08-isomorphism-theorems-I.md) — $HK/H\cong K/(H\cap K)$ 配合内直积使用
 - [09 同构定理（下）与有限阿贝尔群分类](./09-isomorphism-theorems-II.md) — 直积是分类的表达语言
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — 共轭与交换子
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — 共轭与交换子

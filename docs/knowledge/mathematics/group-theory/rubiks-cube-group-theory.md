@@ -4,8 +4,8 @@ type: concept
 status: growing
 tags: [Mathematics, Group Theory, Rubiks Cube, Permutation, Parity, Combinatorics]
 created: 2026-10-05
-updated: 2026-10-05
-source: Singmaster《Notes on Rubik's Magic Cube》、Joyner《Adventures in Group Theory》、Kociemba 两阶段算法、Rokicki 等 God's Number 论文
+updated: 2026-10-07
+source: Singmaster《Notes on Rubik's Magic Cube》、Joyner《Adventures in Group Theory》、Kociemba 两阶段算法（棱块朝向判据采用其标准定义）、Rokicki 等 God's Number 论文
 ---
 
 # 魔方群的数学结构
@@ -53,9 +53,55 @@ $$
 
 可达状态集合 $G\subseteq X$ 称为**魔方群**（Rubik's Cube Group）。下面的任务就是确定 $|G|$。
 
-### 1.2 朝向必须良定义
+### 1.2 记号约定：六个面
 
-朝向若依赖"历史怎么转的"，就不是状态的函数，守恒律的陈述就失去意义。因此按**只看当前构型**的方式定义：
+用 $R,L,U,D,F,B$ 表示六个面，$R$ 表示"把右面转 $90^\circ$"：
+
+| 记号 | 面 | 记号 | 面 |
+|---|---|---|---|
+| $R$ | 右面 Right | $L$ | 左面 Left |
+| $U$ | 上面 Up | $D$ | 下面 Down |
+| $F$ | 前面 Front（面向观察者） | $B$ | 后面 Back |
+
+每个记号有三种形式：$R$（顺时针 $90^\circ$）、$R^{-1}$（逆时针 $90^\circ$，实操中常写作 `R'`）、$R^2$（$180^\circ$）。
+
+> "顺时针"的参照系是该面的**外侧**：正对着这个面看时的顺时针。因此 $R$ 与 $L$ 的顺时针在空间中方向相反。六面的完整说明与实操公式见 [魔方层先法实操指南](./rubiks-cube-solving-guide.md)。
+
+### 1.3 朝向的定义：参考面与参考贴纸
+
+朝向若依赖"历史怎么转的"，就不是状态的函数，守恒律的陈述会失去指称对象（见本节末尾的反例）。因此必须按**只看当前构型**的方式定义。先区分一对容易混淆的概念：
+
+| 概念 | 属于 | 个数 | 定义 |
+|---|---|---|---|
+| **参考面** | 角块**位置** | 8 | 每个角块位置由三个面围成，其中恰有一个朝 U 或朝 D；称该面为此位置的参考面。U 层的 4 个位置参考面是 U 面，D 层的 4 个参考面是 D 面 |
+| **参考贴纸** | 角块**块** | 8 | 每个角块有 3 张贴纸；还原态下恰有一张朝 U 或朝 D，永久标记这张为参考贴纸 |
+
+一句话对照：**参考面属于位置，参考贴纸属于块**。还原态下两者一一对齐，转动后就会错开——错开量就是朝向。
+
+下图是同一个角块位置上的三种朝向（虚线顶面 = 该位置的参考面，高亮面 = 参考贴纸当前所在面）：
+
+<svg viewBox="0 0 720 300" width="100%" height="auto" role="img" aria-label="角块朝向的三种取值：参考贴纸落在参考面上为 0，落在另外两个面上分别为 1 和 2">
+  <text x="360" y="40" text-anchor="middle" style="fill: var(--vp-c-text-2); font-size: 14px">虚线 = 参考面（属于位置）　高亮面 = 参考贴纸（属于块）</text>
+  <polygon points="150,125 200,148 150,170 100,148" style="fill: var(--vp-c-brand-soft); stroke: var(--vp-c-brand-1); stroke-width: 2" />
+  <polygon points="150,125 200,148 150,170 100,148" style="fill: none; stroke: var(--vp-c-text-3); stroke-width: 1.5; stroke-dasharray: 5 4" />
+  <polygon points="150,170 200,148 200,192 150,215" style="fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.5" />
+  <polygon points="150,170 100,148 100,192 150,215" style="fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.5" />
+  <text x="150" y="262" text-anchor="middle" style="fill: var(--vp-c-brand-1); font-size: 14px; font-weight: 500">朝向 0</text>
+  <polygon points="360,125 410,148 360,170 310,148" style="fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.5" />
+  <polygon points="360,125 410,148 360,170 310,148" style="fill: none; stroke: var(--vp-c-text-3); stroke-width: 1.5; stroke-dasharray: 5 4" />
+  <polygon points="360,170 410,148 410,192 360,215" style="fill: var(--vp-c-brand-soft); stroke: var(--vp-c-brand-1); stroke-width: 2" />
+  <polygon points="360,170 310,148 310,192 360,215" style="fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.5" />
+  <text x="360" y="262" text-anchor="middle" style="fill: var(--vp-c-text-1); font-size: 14px; font-weight: 500">朝向 1</text>
+  <polygon points="570,125 620,148 570,170 520,148" style="fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.5" />
+  <polygon points="570,125 620,148 570,170 520,148" style="fill: none; stroke: var(--vp-c-text-3); stroke-width: 1.5; stroke-dasharray: 5 4" />
+  <polygon points="570,170 620,148 620,192 570,215" style="fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); stroke-width: 1.5" />
+  <polygon points="570,170 520,148 520,192 570,215" style="fill: var(--vp-c-brand-soft); stroke: var(--vp-c-brand-1); stroke-width: 2" />
+  <text x="570" y="262" text-anchor="middle" style="fill: var(--vp-c-text-1); font-size: 14px; font-weight: 500">朝向 2</text>
+</svg>
+
+三个小立方体代表**同一个角位置**上的角块，只改朝向：参考面（虚线顶面）由位置决定，三帧中都固定在顶部；参考贴纸（高亮面）分别落在参考面、右面、左面，对应需要转 $0$、$1$、$2$ 次 $120^\circ$ 才能回到参考面。
+
+（注意：哪个非零面算 $1$、哪个算 $2$，取决于你选择的旋转正方向约定；但"只有三种取值"与"总和守恒"的结论与约定无关。）
 
 **角块朝向的定义**
 
@@ -63,7 +109,29 @@ $$
 2. 每个角块**块**指定一张**参考贴纸**：还原态时位于 U 面或 D 面的那张贴纸
 3. **扭转** $o_{c}\in\{0,1,2\}$：以该位置的顶点连线为轴，把角块旋转 $o_c\cdot 120^\circ$（按固定右手约定）后，参考贴纸恰好落在参考面上
 
-**棱块朝向的定义**（同理）：每个棱块位置有参考面（U/D 面那侧），每个棱块有参考贴纸；$f_e=0$ 表示参考贴纸落在参考面上（未翻转），$f_e=1$ 表示不在。
+**棱块朝向的定义**（与角块同理，但基准要分类确定）：12 个棱块按是否含 U/D 色分成两类，各自指定一张**判据贴纸**：
+
+| 块类别 | 个数 | 判据贴纸 | 允许面集 |
+|---|---|---|---|
+| 含 U/D 色 | 8 | 该块的 U/D 色贴纸 | U 面或 D 面 |
+| 中间层棱块（不含 U/D 色） | 4 | 该块的 F/B 色贴纸 | F 面或 B 面 |
+
+$f_e=0$ 表示未翻转（判据贴纸落在对应的允许面集内），$f_e=1$ 表示翻转。完整判据与交叉验证见 [§3.2](#_3-2-棱块翻转守恒)。
+
+> 棱块与角块在这里有一处结构差异：8 个角块位置**全部**位于 U/D 层，所以角块可以统一用"该位置的 U/D 面"作参考基准；而 4 个中间层棱块位置（$FR,FL,BL,BR$）的两个面都是侧向面，没有 U/D 面可用，必须改用 F/B 面作基准。这正是"棱块朝向"比"角块朝向"更容易讲错的地方。
+
+#### 反例：为什么不能按"路径"定义
+
+若把朝向朴素地定义成"这个块从还原态起一共被转了几次"，立刻矛盾：
+
+- 序列 $w_1=$ 空（什么都不做）：到达还原态，记 $\tilde o(w_1)=0$
+- 序列 $w_2=R^4=RRRR$：同样到达还原态（因为 $R^4=e$），但右面确实被转了 4 次，累积得 $\tilde o(w_2)\neq 0$
+
+同一个构型得到两个不同的朝向值，所以 $\tilde o$ **不是构型的函数**。
+
+根源在于："转动序列"与"构型"不是同一层东西——序列属于 6 个生成元的**自由群** $F_6$（无穷多元素），构型属于商 $G=F_6/\!\sim$（模去关系），二者之间是多对一的投影。只要存在非平凡关系（$R^4=e$、$RR^{-1}=e$……），同一构型就有无穷多种表示。**定义在构型上的量必须对表示的选择不变，这就是"良定义"的全部含义。**
+
+参考面与参考贴纸的写法恰好满足这一点：二者都**在当前构型中直接可观测**（参考面看位置，参考贴纸看块），定义里不含任何历史信息，因此无需额外证明就良定义。
 
 > 关键性质：$o$、$f$ 都是**当前构型的函数**，与到达路径无关。这是后面所有证明的合法性基础。
 
@@ -139,8 +207,13 @@ $$
 
 代入坐标验证：$URF=(1,1,1)\mapsto(1,1,-1)=UBR$，$UBR=(1,1,-1)\mapsto(1,-1,-1)=DRB$，$DRB=(1,-1,-1)\mapsto(1,-1,1)=DFR$，$DFR=(1,-1,1)\mapsto(1,1,1)=URF$ ✓
 
-这是长度 4 的循环，故 $\operatorname{sgn}(\sigma_R)=(-1)^{4-1}=-1$。
-右面 4 个棱块位置同样是 4-循环 $UR\to BR\to DR\to FR\to UR$，$\operatorname{sgn}(\tau_R)=-1$。
+这是长度 4 的循环。由 $k$-循环的符号公式 $\operatorname{sgn}((a_1\cdots a_k))=(-1)^{k-1}$（$k$-循环恰等于 $k-1$ 个对换的乘积，完整推导见 [置换的符号与行列式](./permutation-sign-and-determinant.md)），得
+
+$$
+\operatorname{sgn}(\sigma_R)=(-1)^{4-1}=-1
+$$
+
+右面 4 个棱块位置同样是 4-循环 $UR\to BR\to DR\to FR\to UR$，同理 $\operatorname{sgn}(\tau_R)=-1$。
 
 对 $U$、$F$ 同理（都是"一个面上的 4 角 + 4 棱循环"），$L$、$D$、$B$ 由对称性亦然。因此
 
@@ -166,7 +239,18 @@ $$
 
 ## 3.2 棱块翻转守恒
 
-先给出翻转在坐标下的**判据**：设棱块在位置 $p$，其参考贴纸法向为 $\mathbf u$；转动后块到达位置 $q$，贴纸法向变为 $\mathbf u'$；若 $\mathbf u'$ 等于 $q$ 的参考面法向，则未翻转（$f=0$），否则翻转（$f=1$）。
+先给出翻转在坐标下的**判据**（采用 Kociemba 的标准定义）。把棱块按是否含 U/D 色分两类，各指定一张**判据贴纸**：
+
+| 块类别 | 个数 | 判据贴纸 | 允许面集 |
+|---|---|---|---|
+| 含 U/D 色（$UF,UR,UB,UL,DF,DR,DB,DL$） | 8 | 该块的 U/D 色贴纸 | $\{+y,-y\}$ |
+| 中间层棱块（$FR,FL,BL,BR$） | 4 | 该块的 F/B 色贴纸 | $\{+z,-z\}$ |
+
+于是：棱块**未翻转**（$f=0$）当且仅当其判据贴纸的法向落在对应的允许面集内；否则翻转。
+
+> 交叉验证：这个定义恰好使 $G_1=\langle U,D,R^2,L^2,F^2,B^2\rangle$（Kociemba 算法第一阶段的目标子群）成为"保持所有棱块方向"的转动集合——$U$、$D$ 翻转 $0$ 块；$R^2$、$L^2$、$F^2$、$B^2$ 虽然其 $90^\circ$ 版本会翻转棱块，但第二次作用会把同一批块的翻转状态逐一复原（例如 $R$ 翻转 4 块，再做一次 $R$ 后这 4 块全部回到未翻转），净效果为 $0$。于是 $G_1$ 的每个生成元都保持棱块方向不变。这正是该定义被广泛采用的原因。
+>
+> 另一种常见的口头表述是"等级法"（六个面按 $U/D>F/B>R/L$ 分级，要求高等级颜色朝向高等级参考面）。需留意它与本定义**并不等价**：当块的颜色类型与所在位置不匹配时（例如含 F/R 色的中间层棱块跑到 U 层位置），两者判定相反。本笔记采用上面的标准定义。
 
 **定理 2**：对任意 $g\in G$，
 
@@ -176,29 +260,31 @@ $$
 
 *证明（逐生成元验证）*：只需验证生成元下该和不变。
 
-**（a）$U$ 转动**：$U$ 面固定，4 个被循环的棱块 $UR,UF,UL,UB$ 参考面均为 $+y$；其贴纸法向 $+y$ 在 $(x,y,z)\mapsto(-z,y,x)$ 下不变（$(0,1,0)\mapsto(0,1,0)$），始终落在新位置的参考面上。故 4 个棱块翻转状态均不变，和不变。
+**（a）$U$ 转动**：$U$ 面固定，被循环的 4 个棱块 $UF,UR,UB,UL$ 都含 U/D 色，其判据贴纸法向为 $+y$；在 $(x,y,z)\mapsto(-z,y,x)$ 下 $(0,1,0)\mapsto(0,1,0)$ 不变，故 4 块的判据贴纸始终朝向 U 面，全部未翻转，和变化 $0$。
 
-**（b）$R$ 转动**：循环 $UR\to BR\to DR\to FR\to UR$（坐标已验），各位置参考面依次为 $+y,-z,-y,+z$。
+**（b）$R$ 转动**：循环 $UR\to BR\to DR\to FR\to UR$（坐标已验），面映射 $U\to B,\ B\to D,\ D\to F,\ F\to U$。
 
-| 块 | 移动 | 贴纸法向变化 | 新位置参考面 | 翻转 |
+| 块类别 | 移动 | 判据贴纸法向变化 | 允许面集 | 翻转 |
 |---|---|---|---|---|
-| A | $UR\to BR$ | $+y\mapsto-z$ | $-z$ | 否 |
-| B | $BR\to DR$ | $-z\mapsto-y$ | $-y$ | 否 |
-| C | $DR\to FR$ | $-y\mapsto+z$ | $+z$ | 否 |
-| D | $FR\to UR$ | $+z\mapsto+y$ | $+y$ | 否 |
+| 含 U/D 色 | $UR\to BR$ | $+y\mapsto-z$ | $\{\pm y\}$ | **是** |
+| 中间层（F/B 色） | $BR\to DR$ | $-z\mapsto-y$ | $\{\pm z\}$ | **是** |
+| 含 U/D 色 | $DR\to FR$ | $-y\mapsto+z$ | $\{\pm y\}$ | **是** |
+| 中间层（F/B 色） | $FR\to UR$ | $+z\mapsto+y$ | $\{\pm z\}$ | **是** |
 
-（每行由 $(x,y,z)\mapsto(x,z,-y)$ 直接算出，例如 $+y=(0,1,0)\mapsto(0,0,-1)=-z$。）4 个均未翻转，和变化 $0$。
+由 $(x,y,z)\mapsto(x,z,-y)$ 直接算出，例如 $+y=(0,1,0)\mapsto(0,0,-1)=-z$。4 块全部翻转，和变化 $4\equiv 0\pmod 2$。
 
-**（c）$F$ 转动**：循环 $UF\to FR\to DF\to FL\to UF$，参考面依次 $+y,+z,-y,+z$。
+**（c）$F$ 转动**：循环 $UF\to FR\to DF\to FL\to UF$，面映射 $U\to R,\ R\to D,\ D\to L,\ L\to U$（$F$ 面固定）。
 
-| 块 | 移动 | 贴纸法向变化 | 新位置参考面 | 翻转 |
+| 块类别 | 移动 | 判据贴纸法向变化 | 允许面集 | 翻转 |
 |---|---|---|---|---|
-| A | $UF\to FR$ | $+y\mapsto+x$ | $+z$ | **是** |
-| B | $FR\to DF$ | $+z\mapsto+z$ | $-y$ | **是** |
-| C | $DF\to FL$ | $-y\mapsto-x$ | $+z$ | **是** |
-| D | $FL\to UF$ | $+z\mapsto+z$ | $+y$ | **是** |
+| 含 U/D 色 | $UF\to FR$ | $+y\mapsto+x$ | $\{\pm y\}$ | **是** |
+| 中间层（F/B 色） | $FR\to DF$ | $+z\mapsto+z$ | $\{\pm z\}$ | 否 |
+| 含 U/D 色 | $DF\to FL$ | $-y\mapsto-x$ | $\{\pm y\}$ | **是** |
+| 中间层（F/B 色） | $FL\to UF$ | $+z\mapsto+z$ | $\{\pm z\}$ | 否 |
 
-4 个全部翻转，和变化 $4\equiv 0\pmod 2$。
+由 $(x,y,z)\mapsto(y,-x,z)$ 算出；因 $F$ 面在该转动下固定，中间层两块（$FR$、$FL$）的 F/B 色贴纸留在 F 面上，故未翻转。2 块翻转，和变化 $2\equiv 0\pmod 2$。
+
+> 注意 $R$ 与 $F$ 的对比：$R$ 下 4 块全翻转、$F$ 下只翻转 2 块。守恒律只要求**总数为偶**，不要求每次翻转同样多块——这正是"守恒看奇偶而非计数"的体现。
 
 三个方向下和均不变，由引理 0 定理成立。$\blacksquare$
 
@@ -326,11 +412,11 @@ $$
 
 | 转动 | 角块扭转变化（逐块） | 和 | $\bmod 3$ | 棱块翻转数 | $\bmod 2$ |
 |---|---|---|---|---|---|
-| $R$ | $1,\,2,\,1,\,2$ | 6 | $0$ ✓ | 0 | $0$ ✓ |
+| $R$ | $1,\,2,\,1,\,2$ | 6 | $0$ ✓ | 4 | $0$ ✓ |
 | $U$ | $0,\,0,\,0,\,0$ | 0 | $0$ ✓ | 0 | $0$ ✓ |
-| $F$ | $2,\,1,\,1,\,2$ | 6 | $0$ ✓ | 4 | $0$ ✓ |
+| $F$ | $2,\,1,\,1,\,2$ | 6 | $0$ ✓ | 2 | $0$ ✓ |
 
-与 §3.2、§3.3 的手算结果逐项一致（$R$ 的 $1,2,1,2$、$U$ 的全零、$F$ 的四块全翻转），三个守恒律得证。
+脚本对棱块采用的是 §3.2 的标准判据（含 U/D 色者看其 U/D 色贴纸、中间层块看其 F/B 色贴纸）。与 §3.2、§3.3 的手算结果逐项一致（角块 $R$ 的 $1,2,1,2$、$U$ 的全零；棱块 $R$ 的 4 块全翻转、$F$ 的 2 块翻转），三个守恒律得证。
 
 > 实现要点：转动必须**只作用于该层**（例如 $R$ 只作用于 $x=+1$ 的块）。若写成对整个空间的旋转，会把不参与该转动的块也"搬走"，得到无关的虚假结果——这是复现此类计算时最容易踩的坑。
 
@@ -505,10 +591,12 @@ $$
 
 ## Related
 
+- [群论基础](./group-theory-basics.md) — 本文用到的群论概念（生成元、同态与核、群作用、交换子、第一同构定理）的系统整理
 - [魔方层先法实操](./rubiks-cube-solving-guide.md) — 本文结论对应的可执行解法
-- [群论与抽象代数专题](./group-theory/index.md) — 本文用到的前置概念（置换、交错群、同构定理、商群）的系统性沉淀；$|G|$ 的计算（§5）是第一同构定理的直用
-- [奇异值分解 SVD](./singular-value-decomposition.md) — 同样以"结构分解"理解线性算子
-- [Lagrangian 与约束优化](./lagrangian-and-constrained-optimization.md) — 另一类"约束下求极值"的形式化
+- [群论与抽象代数专题](./index.md) — 本文用到的前置概念（置换、交错群、同构定理、商群）的系统性沉淀；$|G|$ 的计算（§5）是第一同构定理的直用
+- [置换的符号与行列式](./permutation-sign-and-determinant.md) — §3.1 用到的 $k$-循环符号公式 $(-1)^{k-1}$ 的完整推导，以及 $\operatorname{sgn}$ 与行列式的同一性
+- [奇异值分解 SVD](../singular-value-decomposition.md) — 同样以"结构分解"理解线性算子
+- [Lagrangian 与约束优化](../lagrangian-and-constrained-optimization.md) — 另一类"约束下求极值"的形式化
 
 ## References
 

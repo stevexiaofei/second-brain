@@ -250,8 +250,6 @@ export default withMermaid(
           { text: '高斯分布', link: '/knowledge/mathematics/gaussian-distribution' },
           { text: 'Lagrangian 与约束优化', link: '/knowledge/mathematics/lagrangian-and-constrained-optimization' },
           { text: '奇异值分解 SVD', link: '/knowledge/mathematics/singular-value-decomposition' },
-          { text: '魔方群的数学结构', link: '/knowledge/mathematics/rubiks-cube-group-theory' },
-          { text: '魔方层先法实操', link: '/knowledge/mathematics/rubiks-cube-solving-guide' },
           { text: '群论与抽象代数专题', link: '/knowledge/mathematics/group-theory/' }
         ]},
         { text: '群论与抽象代数', collapsed: true, items: [
@@ -264,12 +262,18 @@ export default withMermaid(
           { text: '06 正规子群与商群', link: '/knowledge/mathematics/group-theory/06-normal-subgroup-and-quotient-group' },
           { text: '07 自同构、直积与半直积', link: '/knowledge/mathematics/group-theory/07-automorphism-and-products' },
           { text: '08 同构定理（上）', link: '/knowledge/mathematics/group-theory/08-isomorphism-theorems-I' },
-          { text: '09 同构定理（下）与有限阿贝尔群分类', link: '/knowledge/mathematics/group-theory/09-isomorphism-theorems-II' }
+          { text: '09 同构定理（下）与有限阿贝尔群分类', link: '/knowledge/mathematics/group-theory/09-isomorphism-theorems-II' },
+          // 本站自写（非课程系列）
+          { text: '群论基础', link: '/knowledge/mathematics/group-theory/group-theory-basics' },
+          { text: '置换的符号与行列式', link: '/knowledge/mathematics/group-theory/permutation-sign-and-determinant' },
+          { text: '魔方群的数学结构', link: '/knowledge/mathematics/group-theory/rubiks-cube-group-theory' },
+          { text: '魔方层先法实操', link: '/knowledge/mathematics/group-theory/rubiks-cube-solving-guide' }
         ]}
       ],
       '/projects/': [{ text: 'Projects', items: [
         { text: 'Overview', link: '/projects/' },
         { text: 'Second Brain 工作流', link: '/projects/second-brain-workflow' },
+        { text: '把某个主题打印成一份文档', link: '/projects/topic-print-workflow' },
         { text: '迭代路线图', link: '/projects/second-brain-iteration-roadmap' },
         { text: 'Team Brain 计划', link: '/projects/team-brain-plan' }
       ]}],

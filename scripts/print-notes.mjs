@@ -5,6 +5,7 @@
 //   npm run print -- docs/knowledge/mathematics/group-theory [--pdf] [--out <file>] [--title <text>] [--no-toc]
 //
 // 产物：print/<目录名>.html（自包含：KaTeX CSS+字体 data URI、mermaid.js、打印样式全内联）
+//       笔记引用的本地图片复制到 print/<目录名>.assets/ 并改写 src
 //       加 --pdf 时另产出同名 .pdf（headless Chrome 打印）。
 //
 // 设计要点（与 AGENTS.md 的"Markdown 是唯一事实源"一致）：只读 Markdown 与
@@ -12,8 +13,9 @@
 // 保证公式/代码高亮与站点一致。
 
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import { resolveConfig, createMarkdownRenderer } from 'vitepress'
@@ -78,6 +80,46 @@ if (files.length === 0) {
   process.exit(1)
 }
 console.log(`共 ${files.length} 篇: ${files.join(', ')}`)
+
+// ---------- 1.5 输出路径与图片资源（提前算好，渲染期改写需要用） ----------
+
+const outPath = opts.out
+  ? path.isAbsolute(opts.out)
+    ? opts.out
+    : path.join(REPO, 'print', opts.out)
+  : path.join(REPO, 'print', `${path.basename(dirAbs)}.html`)
+const assetDir = outPath.replace(/\.html$/i, '.assets')
+const copiedAssets = new Map() // 源文件绝对路径 → 复制后的文件名
+
+// 笔记里的图片惯用相对路径（./images/x.png），直接用会在输出目录断链；
+// 把每个被引用的本地图片复制到 <out>.assets/ 下并改写成相对 outPath 的路径。
+function copyAsset(abs) {
+  if (copiedAssets.has(abs)) return copiedAssets.get(abs)
+  fs.mkdirSync(assetDir, { recursive: true })
+  const safe = path.basename(abs).replace(/[^\w.-]+/g, '_')
+  const name = `${copiedAssets.size + 1}-${safe}`
+  fs.copyFileSync(abs, path.join(assetDir, name))
+  copiedAssets.set(abs, name)
+  return name
+}
+
+function rewriteImages(html) {
+  return html.replace(/(<img\b[^>]*?\bsrc=")([^"]+)(")/g, (whole, pre, src, post) => {
+    if (/^(https?:|data:)/.test(src)) return whole
+    const decoded = decodeURIComponent(src)
+    // "/xxx" 是站点根路径，对应 docs/public/xxx
+    const abs = decoded.startsWith('/')
+      ? path.join(REPO, 'docs', 'public', decoded)
+      : path.resolve(dirAbs, decoded)
+    if (!fs.existsSync(abs)) {
+      warnings.push(`${path.relative(REPO, abs)}: 图片不存在，保留原样`)
+      return whole
+    }
+    const name = copyAsset(abs)
+    const rel = path.relative(path.dirname(outPath), path.join(assetDir, name)).split(path.sep).join('/')
+    return `${pre}${rel}${post}`
+  })
+}
 
 // ---------- 2. 渲染管线（与站点同款，单一 shiki 主题 → 内联颜色） ----------
 
@@ -173,6 +215,9 @@ for (let i = 0; i < files.length; i++) {
 
   // 原文自带一个 H1，与插入的篇名重复 → 去掉首个 H1（含其 header-anchor）
   html = html.replace(/^\s*<h1 id="[^"]*"[^>]*>[\s\S]*?<\/h1>\s*/i, '')
+
+  // 本地图片复制到 <out>.assets/ 并改写 src
+  html = rewriteImages(html)
 
   sections.push(
     `<section class="note" id="note-${i}">\n<h1 class="note-title">${fmTitle?.[1]?.trim() ?? file.replace(/\.md$/, '')}</h1>\n${html}\n</section>`
@@ -296,11 +341,6 @@ ${sections.join('\n')}
 
 // ---------- 5. 输出 ----------
 
-const outPath = opts.out
-  ? path.isAbsolute(opts.out)
-    ? opts.out
-    : path.join(REPO, 'print', opts.out)
-  : path.join(REPO, 'print', `${path.basename(dirAbs)}.html`)
 fs.mkdirSync(path.dirname(outPath), { recursive: true })
 fs.writeFileSync(outPath, htmlDoc)
 console.log(`HTML: ${outPath} (${(htmlDoc.length / 1024 / 1024).toFixed(1)} MB)`)
@@ -327,24 +367,58 @@ if (opts.pdf) {
     process.exit(1)
   }
   const pdfPath = outPath.replace(/\.html$/, '.pdf')
-  const r = spawnSync(
+  fs.rmSync(pdfPath, { force: true }) // 便于判断本次是否真的产出了 PDF
+
+  // Chrome 打完 PDF 后经常不主动退出（残留 renderer / 网络进程），
+  // 因此不能等它结束：后台启动 → 轮询 PDF 落盘且体积稳定 → 杀整个进程组。
+  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'print-notes-'))
+  const child = spawn(
     chrome,
     [
       '--headless=new',
       '--disable-gpu',
       '--no-sandbox',
+      '--no-first-run',
       '--no-pdf-header-footer',
       '--run-all-compositor-stages-before-draw',
+      `--user-data-dir=${userDataDir}`,
       '--virtual-time-budget=20000',
       `--print-to-pdf=${pdfPath}`,
       pathToFileURL(outPath).href
     ],
-    { stdio: 'inherit', timeout: 120000 }
+    { stdio: 'ignore', detached: true }
   )
-  if (r.status === 0 && fs.existsSync(pdfPath)) {
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+  let lastSize = -1
+  let stableTicks = 0
+  const deadline = Date.now() + 120000
+  while (Date.now() < deadline) {
+    await sleep(300)
+    if (!fs.existsSync(pdfPath)) continue
+    const size = fs.statSync(pdfPath).size
+    if (size > 0 && size === lastSize) {
+      if (++stableTicks >= 3) break
+    } else {
+      stableTicks = 0
+    }
+    lastSize = size
+  }
+
+  try {
+    process.kill(-child.pid, 'SIGKILL')
+  } catch {
+    try {
+      child.kill('SIGKILL')
+    } catch {}
+  }
+  await sleep(200)
+  fs.rmSync(userDataDir, { recursive: true, force: true })
+
+  if (fs.existsSync(pdfPath)) {
     console.log(`PDF:  ${pdfPath} (${(fs.statSync(pdfPath).size / 1024 / 1024).toFixed(1)} MB)`)
   } else {
-    console.error(`PDF 生成失败（exit=${r.status}），HTML 已保留: ${outPath}`)
+    console.error(`PDF 生成失败，HTML 已保留: ${outPath}`)
     process.exit(1)
   }
 }

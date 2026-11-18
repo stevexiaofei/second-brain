@@ -240,4 +240,4 @@ $$\langle S\rangle=\bigcap_{S\subseteq H,\ H\le G} H$$
 
 - [02 整数模 n 加法群与二面体群](./02-mod-n-and-dihedral-groups.md) — 第一批具体例子
 - [03 对称群与循环群](./03-symmetric-and-cyclic-groups.md) — $\langle g\rangle$ 的专门研究
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — 用到本篇的生成元与阶概念
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — 用到本篇的生成元与阶概念

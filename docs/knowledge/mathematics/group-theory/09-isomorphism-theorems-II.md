@@ -60,7 +60,8 @@ $$\{G\text{ 的包含 }N\text{ 的子群}\}\ \xrightarrow{\ \sim\ }\ \{G/N\text{
 
 **(4) 保持正规性。**
 - **($\Rightarrow$)** $H\triangleleft G$、$N\le H$ 时 $H/N\triangleleft G/N$：任取 $gN\in G/N$、$hN\in H/N$，
-  $$(gN)(hN)(gN)^{-1}=(ghg^{-1})N\in H/N\quad(\text{因}\ ghg^{-1}\in H)✓。$$
+  $$(gN)(hN)(gN)^{-1}=(ghg^{-1})N\in H/N\quad(\text{因}\ ghg^{-1}\in H)$$
+  ✓
 - **($\Leftarrow$)** 设 $H/N\triangleleft G/N$。任取 $g\in G,h\in H$：$\pi(ghg^{-1})=(gN)(hN)(gN)^{-1}\in H/N$，故 $ghg^{-1}\in\pi^{-1}(H/N)=H$（用 (1)）✓。
 
 故 $H\triangleleft G$ ✓。$\blacksquare$
@@ -255,7 +256,7 @@ $$3=3\ \to\ C_8;\qquad 3=2+1\ \to\ C_4\times C_2;\qquad 3=1+1+1\ \to\ C_2^3.$$
 
 **总表**：
 
-| $G$（$|G|=8$） | 阿贝尔 | 2 阶元素个数 | 4 阶元素个数 | 结构 |
+| $G$（$\lvert G\rvert=8$） | 阿贝尔 | 2 阶元素个数 | 4 阶元素个数 | 结构 |
 |---|---|---|---|---|
 | $C_8$ | 是 | 1 | 2 | $\langle r\rangle,\ r^8=e$ |
 | $C_4\times C_2$ | 是 | 3 | 4 | $\langle r\rangle\times\langle s\rangle$ |
@@ -271,7 +272,7 @@ $$3=3\ \to\ C_8;\qquad 3=2+1\ \to\ C_4\times C_2;\qquad 3=1+1+1\ \to\ C_2^3.$$
 
 - 这是本系列的**收官定理**：它宣布有限阿贝尔群在"质数幂循环群直积"意义下完全可知——阶定了，可能性就有限
 - 子群对应定理是实用工具：大群的子群结构难列时，转去小商群里列（$S_4\to S_3$ 的降维打击）
-- [魔方群](../rubiks-cube-group-theory.md) 的商 $G/G_0\cong\mathbb{Z}_3\times\mathbb{Z}_2\times\mathbb{Z}_2$ 可以用本篇立刻验证：$3,2,2$ 两两互质，直积不塌缩
+- [魔方群](./rubiks-cube-group-theory.md) 的商 $G/G_0\cong\mathbb{Z}_3\times\mathbb{Z}_2\times\mathbb{Z}_2$ 可以用本篇立刻验证：$3,2,2$ 两两互质，直积不塌缩
 
 ## 局限 / 边界
 
@@ -290,4 +291,4 @@ $$3=3\ \to\ C_8;\qquad 3=2+1\ \to\ C_4\times C_2;\qquad 3=1+1+1\ \to\ C_2^3.$$
 - [08 同构定理（上）](./08-isomorphism-theorems-I.md) — 本篇所有证明的引擎
 - [07 自同构、直积与半直积](./07-automorphism-and-products.md) — $C_n$ 质数幂分解、内直积判定
 - [05 群的性质（下）](./05-group-properties-II.md) — 阶 6 分类（分类思想的小型预演）
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — $G/G_0\cong\mathbb{Z}_3\times\mathbb{Z}_2\times\mathbb{Z}_2$
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — $G/G_0\cong\mathbb{Z}_3\times\mathbb{Z}_2\times\mathbb{Z}_2$

@@ -216,7 +216,7 @@ $\blacksquare$
 ## 为什么重要
 
 - 三定理合起来是**商群运算律**：第一定理给出"模掉核"的标准操作，第二、三定理给出两个交换/结合的换算规则——后续一切分类证明都在这套语言里进行
-- [魔方群](../rubiks-cube-group-theory.md) 求 $|G|$ 的核心一步 $G/\ker\pi\cong P$ 就是第一同构定理的直用：核是朝向部分（$3^7 2^{11}$），像是位置部分（$(8!12!/2)$）
+- [魔方群](./rubiks-cube-group-theory.md) 求 $|G|$ 的核心一步 $G/\ker\pi\cong P$ 就是第一同构定理的直用：核是朝向部分（$3^7 2^{11}$），像是位置部分（$(8!12!/2)$）
 - 第二定理的阶公式是估算子群乘积大小的唯一直接工具
 
 ## 局限 / 边界
@@ -234,4 +234,4 @@ $\blacksquare$
 - [06 正规子群与商群](./06-normal-subgroup-and-quotient-group.md) — 商群定义与良定义性
 - [07 自同构、直积与半直积](./07-automorphism-and-products.md) — 内直积判定条件与第二定理配合
 - [09 同构定理（下）与有限阿贝尔群分类](./09-isomorphism-theorems-II.md) — 子群对应定理继续这条线
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — $G/\ker\pi\cong P$ 的完整应用
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — $G/\ker\pi\cong P$ 的完整应用

@@ -140,7 +140,7 @@ $$\sigma^k=\mathrm{id}\iff \sigma_i^k=\mathrm{id}\ \text{对每个}\ i\iff \ell_
 > - **最大值问题**：$S_9$ 中元素阶最大是多少？要把 9 拆成和不超过 9 的两两互质部分使 lcm 最大：$9=4+3+2$，$\operatorname{lcm}(4,3,2)=12$；而 $9=5+4$ 给 $\operatorname{lcm}=20$，更大；$9=5+3+1$ 给 15。最优是 $9=5+4\Rightarrow o_{\max}=20$。（魔方群里著名的 $1260=\operatorname{lcm}(9,7,5,4,3)$ 是同一套"拆和求最大 lcm"的算法在更多数字上的结果。）
 > - **推论**：$S_n$ 的**指数**（所有元素阶的 lcm）即 Landau 函数 $g(n)$，增长极快：$g(10)=30,\ g(20)=420,\ g(50)=180180$。
 
-> cycle type（把长度排成不增序列）是排列的共轭不变量——两个排列共轭当且仅当 type 相同。这是 [魔方群](../rubiks-cube-group-theory.md) 里"块的位置怎么排"的全部语言。
+> cycle type（把长度排成不增序列）是排列的共轭不变量——两个排列共轭当且仅当 type 相同。这是 [魔方群](./rubiks-cube-group-theory.md) 里"块的位置怎么排"的全部语言。
 
 ### 循环群初步
 
@@ -235,4 +235,4 @@ $$(g^k)^{n/d}=g^{k\cdot n/d}=\bigl(g^n\bigr)^{k/d}=e^{k/d}=e.$$
 - [02 整数模 n 加法群与二面体群](./02-mod-n-and-dihedral-groups.md) — $\mathbb{Z}/n\mathbb{Z}=\langle\bar1\rangle$
 - [04 群的性质（上）](./04-group-properties-I.md) — 循环群分类与 sgn
 - [05 群的性质（下）](./05-group-properties-II.md) — Cayley 定理、拉格朗日定理
-- [魔方群的数学结构](../rubiks-cube-group-theory.md) — cycle type 与置换奇偶性的应用场
+- [魔方群的数学结构](./rubiks-cube-group-theory.md) — cycle type 与置换奇偶性的应用场
