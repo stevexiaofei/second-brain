@@ -185,6 +185,7 @@ export default withMermaid(
           { text: 'UML 类图', link: '/knowledge/engineering/uml-class-diagram' },
           { text: 'DFD 数据流图', link: '/knowledge/engineering/dfd' },
           { text: 'Git on NFS', link: '/knowledge/engineering/git-on-nfs' },
+          { text: 'Linux 挂载与磁盘查看', link: '/knowledge/engineering/linux-mount-and-disk-inspection' },
           { text: 'Meta DB V2 设计解析', link: '/knowledge/engineering/meta-db-v2-design' },
           { text: 'System Design 学习路线图', link: '/knowledge/engineering/system-design-learning-roadmap' },
           { text: '黑芝麻模型训练平台架构', link: '/knowledge/engineering/mlops-platform/black-sesame-training-platform' },
