@@ -196,6 +196,7 @@ flowchart TB
 - [并行文件系统](./parallel-file-systems.md) — Lustre/GPFS/CephFS 的并发访问与条带化
 - [NFS：部署、挂载与计算节点连接](./nfs-deployment-and-mount.md) — 导出、路径映射、权限与挂载读取交互演示
 - [CephFS：并行访问、部署、挂载与网络](./cephfs-deployment-and-mount.md) — MON/MDS/OSD、public/cluster 网络、cephadm 与读写交互演示
+- [Mini CephFS：用最少 C++ 看懂对象、副本与修复](./cephfs-cpp-demo.md) — 单进程内存教学工程：inode、对象切分、多副本读写、节点故障与修复
 - [副本、纠删码与放置](./replication-erasure-coding-placement.md) — 冗余与数据分布的核心权衡
 - [一致性、共识与故障恢复](./consistency-consensus-failure.md) — 副本间如何达成一致、坏了怎么恢复
 - [inode：文件身份、元数据与数据定位](./inode-file-metadata.md) — 目录项、fd、缓存、硬链接与文件生命周期

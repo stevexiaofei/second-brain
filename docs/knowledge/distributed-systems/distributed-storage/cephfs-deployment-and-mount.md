@@ -19,6 +19,8 @@ import NetworkStorageDemo from '../../../.vitepress/components/NetworkStorageDem
 
 如果还不清楚“导出”和“挂载”的区别，先读 [NFS 部署与挂载](./nfs-deployment-and-mount.md)。本文在该心智模型上解释：为什么共享文件系统不一定需要所有数据都经过同一台文件服务器。
 
+想通过实际执行的 C++ 代码观察文件切对象、主副本复制与故障修复，可读 [Mini CephFS 教学工程](./cephfs-cpp-demo.md)。它是单进程内存模拟器，不是本文部署的真实 CephFS，也不兼容 Ceph 协议。
+
 ::: warning 事实、示意和验证范围
 概念及命令格式参考 Ceph 官方 Squid 分支文档；其他版本应重新核对。地址、机器数量、对象分布和阶段时序是教学示意，没有在真实 Ceph 集群执行部署、故障注入或吞吐测试。以下不是复制即得的生产部署脚本，也不包含数据盘初始化的安全审批和备份流程。
 :::

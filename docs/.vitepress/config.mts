@@ -168,6 +168,7 @@ export default withMermaid(
             { text: '并行文件系统', link: '/knowledge/distributed-systems/distributed-storage/parallel-file-systems' },
             { text: 'NFS 部署与挂载', link: '/knowledge/distributed-systems/distributed-storage/nfs-deployment-and-mount' },
             { text: 'CephFS 部署、挂载与网络', link: '/knowledge/distributed-systems/distributed-storage/cephfs-deployment-and-mount' },
+            { text: 'Mini CephFS：C++ 教学工程', link: '/knowledge/distributed-systems/distributed-storage/cephfs-cpp-demo' },
             { text: '副本、纠删码与放置', link: '/knowledge/distributed-systems/distributed-storage/replication-erasure-coding-placement' },
             { text: '一致性、共识与故障恢复', link: '/knowledge/distributed-systems/distributed-storage/consistency-consensus-failure' },
             { text: 'inode：文件身份与元数据', link: '/knowledge/distributed-systems/distributed-storage/inode-file-metadata' },
