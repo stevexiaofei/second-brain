@@ -20,6 +20,8 @@
 
 DP/FSDP/ZeRO 这条数据并行进化线不在此系列，见 [PyTorch 分布式训练](../pytorch/pytorch-distributed.md) 与 [FSDP 源码阅读指南](../pytorch/pytorch-fsdp.md)。
 
+**读完本系列后的下一步**：按 [PyTorch 分布式源码精读路线](../pytorch/pytorch-distributed-source-reading.md)，把概念追到通信组、张量布局、hook 状态机与流水线调度；先读通信、DDP 与 FSDP2，不必从头通读整个 PyTorch。
+
 ## Related
 
 - [PyTorch 专题](../pytorch/) — 分布式栈的源码级基础

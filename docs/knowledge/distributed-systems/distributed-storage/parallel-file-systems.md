@@ -4,14 +4,18 @@ type: concept
 status: seed
 tags: [Parallel File System, POSIX, Metadata, Striping, Locking, Lustre, CephFS, GPFS]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-11-20
 ---
 
 # 并行文件系统
 
 ## 一句话理解
 
-并行文件系统（PFS）可以理解成：**让很多机器一起提供一个看起来像普通文件系统的共享存储**。它保留了你熟悉的 `path / file / directory / permission` 这些语义，但内部把数据和元数据拆开，在多台机器上并行处理。
+并行文件系统（PFS）的核心是：**在共享文件系统视图下，让多个客户端和 I/O 请求并行利用多个存储资源**。它保留了熟悉的 `path / file / directory / permission` 语义，通常将数据和元数据分离，并把文件数据分布到多个数据节点。
+
+“分布式”强调资源部署在多台机器上，“并行”强调资源能够同时工作：两者相关，但不能仅凭“有多台服务器”就认定已经获得并行 I/O 吞吐。CephFS 是同时具备这两种属性的具体系统；存储并行与 GPU 的计算并行则是两个不同维度。
+
+从部署角度理解，可依次阅读 [NFS 的导出与挂载](./nfs-deployment-and-mount.md) 和 [CephFS 的部署、网络与原生客户端访问](./cephfs-deployment-and-mount.md)，其中包含可逐步检查数据路径的交互演示。
 
 ## 为什么会有并行文件系统
 
@@ -21,7 +25,7 @@ updated: 2026-08-17
 - 一个文件太大，单节点带宽不够
 - 一个目录里有几百万个文件
 - 多台计算节点需要共享同一份数据
-- 需要比 NFS 更高的吞吐和更强的扩展性
+- 常见单服务器 NFS 部署的资源上限已不足，需要扩展存储端吞吐和并发能力
 
 这时就需要 PFS。
 
@@ -172,7 +176,7 @@ PFS 通常允许客户端缓存元数据和数据，这样可以减少远程访�
 |---|---|---|---|
 | Lustre | 中心化 MDS | OST 条带化 | HPC 常见，高吞吐 |
 | GPFS / Storage Scale | 分布式元数据 | 条带化 + 复制 | 企业级、强一致、可扩展 |
-| CephFS | 分布式 MDS | RADOS 对象 | 开源生态强，和 Ceph 一体 |
+| CephFS | MDS，可配置多 active rank 与 standby | RADOS 对象 | 开源生态强，和 Ceph 一体；数据并行不要求多 active MDS |
 | BeeGFS | 分布式元数据 | 条带化 | 容易部署，性能不错 |
 
 ## PFS 适合什么
@@ -237,6 +241,8 @@ AI 训练经常需要：
 
 ## Related
 
+- [NFS：部署、挂载与计算节点连接](./nfs-deployment-and-mount.md) — 先理解导出、挂载和普通共享文件访问
+- [CephFS：并行访问、部署、挂载与网络](./cephfs-deployment-and-mount.md) — 用交互演示区分元数据、并行数据访问和副本复制
 - [分布式存储基础总览](./index.md)
 - [对象存储](./object-storage.md)
 - [元数据与性能瓶颈](./metadata-and-performance.md)

@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Ceph, Lustre, MinIO, Architecture, Object Storage, Parallel File System, Distributed Storage]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-11-20
 ---
 
 # Ceph、Lustre、MinIO 入门概览
@@ -29,11 +29,12 @@ Ceph 的核心思想是：
 
 > 用一套统一的底层存储引擎，向上提供对象、块、文件三种不同服务。
 
-### Ceph 的三个常见入口
+### Ceph 的底层与三个常见入口
 
 - **RADOS**：底层对象存储层
 - **RBD**：块设备接口
-- **CephFS**：文件系统接口
+- **CephFS**：分布式共享文件系统，支持多个客户端与存储资源的并行访问；具体见 [部署、挂载与网络](./cephfs-deployment-and-mount.md)
+- **RGW**：对象存储网关，对外提供 S3 等接口；不要把底层 RADOS 对象和 S3 接口混为一谈
 
 ### Ceph 为什么重要
 
@@ -185,6 +186,7 @@ MinIO 更像一个“学习对象存储和快速搭实验环境”的入口。
 
 ## Related
 
+- [CephFS：并行访问、部署、挂载与网络](./cephfs-deployment-and-mount.md) — 原生客户端连接、cephadm 部署和挂载步骤
 - [分布式存储基础总览](./index.md)
 - [块存储、文件存储与对象存储对比](./block-file-object-comparison.md)
 - [对象存储](./object-storage.md)

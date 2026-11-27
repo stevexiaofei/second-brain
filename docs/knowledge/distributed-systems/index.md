@@ -2,7 +2,7 @@
 
 ## 笔记索引
 
-- [分布式系统核心理论基础](./distributed-systems-foundations.md) — 系统模型、CAP/FLP、一致性模型、共识算法（Raft/Paxos/Quorum）、时钟、复制分区、分布式事务、故障检测
+- [分布式系统核心理论基础](./distributed-systems-foundations.md) — 初学者教程：从共享笔记的保存、旧读、断网和换主出发，再理解 CAP/FLP、共识、Quorum、时钟、分片和事务
 
 ## Distributed Storage
 
@@ -10,6 +10,8 @@
 - [面向 AI 训练与多云场景的存储工程地图](./distributed-storage/ai-training-and-multicloud-storage-map.md) — 多级缓存、RDMA / NVMe-oF、Kubernetes 与多模态数据场景
 - [对象存储](./distributed-storage/object-storage.md) — Bucket/Object/Key、S3、Multipart、生命周期、一致性
 - [并行文件系统](./distributed-storage/parallel-file-systems.md) — POSIX 语义、元数据、条带化、锁、Lustre/CephFS/GPFS
+- [NFS：部署、挂载与计算节点连接](./distributed-storage/nfs-deployment-and-mount.md) — 导出、路径映射、网络与挂载读取交互演示
+- [CephFS：并行访问、部署、挂载与网络](./distributed-storage/cephfs-deployment-and-mount.md) — MON/MDS/OSD、双网络、cephadm 与读写路径交互演示
 - [副本、纠删码与放置](./distributed-storage/replication-erasure-coding-placement.md) — 复制、EC、故障域、CRUSH、重平衡
 - [一致性、共识与故障恢复](./distributed-storage/consistency-consensus-failure.md) — 一致性、Quorum、Raft、租约、fencing、脑裂
 - [元数据与性能瓶颈](./distributed-storage/metadata-and-performance.md) — 小文件、热点、尾延迟、缓存、重平衡

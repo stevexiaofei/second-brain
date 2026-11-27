@@ -45,6 +45,14 @@
 .VPDoc table { margin: 0.6rem 0; }
 .VPDoc th, .VPDoc td { padding: 0.3rem 0.8rem; }
 
+/* 公式恢复渲染后，长公式只在自身区域滚动，避免撑宽手机页面。 */
+.VPDoc .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.2em 0;
+}
+
 /* 代码块紧凑 */
 .VPDoc div[class*='language-'] { margin: 0.6rem 0; }
 

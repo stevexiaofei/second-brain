@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [expert-parallel, ep, moe, all-to-all, routing, capacity-factor, deepseek, mixtral, distributed-training]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-18
 source: Switch Transformer / GShard / Mixtral / DeepSeek-V3 论文 + 个人整理
 ---
 
@@ -19,22 +19,116 @@ source: Switch Transformer / GShard / Mixtral / DeepSeek-V3 论文 + 个人整�
 - **解耦总参数与激活参数**：例如 DeepSeek-V3 报告 671B 总参数、每 token 37B 激活参数。理解这种区别，才能分别估算参数驻留显存与实际 FLOPs，不能把所有 MoE 的激活比例套成同一个值。
 - **让 all-to-all 的语义落到具体业务**：不同 token 去不同专家，每个 rank 发给各对端的内容和大小可能不同。路由、负载均衡与网络拓扑共同决定速度；TP 的重分片等其他策略也可能使用 A2A，它并非 EP 独占。
 
+## 先把 MoE 想清楚：一个 FFN 变成多条可选择的路
+
+### 普通 Transformer 里的 FFN
+
+可以先把 Transformer 的一层粗略看成：
+
+```text
+token 向量 → Attention → FFN → 下一层输入
+```
+
+Attention 让 token 汇集上下文信息，FFN 再对各 token 的向量分别做非线性变换。这里省略了残差连接和归一化等结构。
+
+这里的 FFN（feed-forward network，前馈网络）接收一个 token 的向量，经过自己的可学习参数和非线性变换后，输出一个新向量。普通的 dense Transformer 在同一层中只有一套 FFN 参数，因此所有 token 都经过同一个 FFN：
+
+```text
+token A ─┐
+token B ─┼──> 同一个 FFN ──> 各自的输出向量
+token C ─┘
+```
+
+这里的“同一个”指共享同一套参数，不是说所有 token 的向量会混成一个 token。
+
+### MoE 的核心改动
+
+MoE（Mixture of Experts，混合专家）把某些层的一个 FFN 换成多个独立的 FFN，分别称为专家（expert），再增加一个路由器（router/gate）：
+
+```text
+专家池：E0、E1、E2、E3（各有独立 FFN 参数）
+
+token 向量 → 路由器 → 只选少数专家 → 选中专家分别计算 → 合并输出
+```
+
+路由器根据当前 token 的向量给专家打分；Top-$k$ 路由只选择分数最高的 $k$ 个专家。**模型准备了多套参数，但每个 token 只激活其中少数几套。** 因而 MoE 是模型结构与条件计算机制，不是多个完整模型分别生成文本后投票。
+
+例如 4 个专家、Top-2 时：
+
+```text
+token A ──> 路由器选 E0、E2 ──> E0 和 E2 分别计算 ──> 加权合并
+token B ──> 路由器选 E1、E3 ──> E1 和 E3 分别计算 ──> 加权合并
+```
+
+专家通常只是某个 MoE 层里的 FFN，并不是四个完整的聊天模型；同一个 token 到下一层 MoE 时还会重新路由。训练可能让专家形成一定分工，但不能先验断言某个专家只负责数学、中文或代码。
+
+### 一个 token 的数值路径
+
+令 $x$ 为一个 token 进入 MoE 层时的向量，$N$ 为专家总数，$W_r$ 为路由器参数。路由器先产生专家分数：
+
+$$
+q(x)=\operatorname{softmax}(W_r x)
+$$
+
+再取分数最高的 $k$ 个专家，得到集合 $\mathcal{I}(x)=\operatorname{TopK}(q(x))$。选中的专家分别产生向量 $h_i=\operatorname{FFN}_i(x)$，最后按组合权重 $a_i(x)$ 合并：
+
+$$
+ y=\sum_{i\in\mathcal{I}(x)} a_i(x)h_i
+$$
+
+其中 $x$ 是输入 token 向量，$q(x)$ 是路由概率或分数，$\mathcal{I}(x)$ 是入选专家集合，$h_i$ 是专家 $i$ 的输出，$a_i(x)$ 是组合权重，$y$ 是 MoE 层输出。不同实现可能对入选概率重新归一化，或使用其他 gate/缩放方案；上式表达的是共同结构，不是所有模型的唯一细节。
+
+例如路由器给 E1、E2 的分数分别为 $0.50$、$0.30$，采用入选后归一化，则：
+
+$$
+ y=\frac{0.50}{0.50+0.30}h_1+\frac{0.30}{0.50+0.30}h_2=0.625h_1+0.375h_2
+$$
+
+这里是在**向量空间中加权求和**，不是把两个专家生成的文字拼接起来。
+
+### 为什么需要 MoE
+
+固定每个专家的宽度与 Top-$k$ 时，增加专家总数主要增加模型的参数容量，而不按专家总数同比增加每个 token 的专家计算量：
+
+| 设计 | 该层准备的 FFN 参数 | 每个 token 激活的专家数 |
+|---|---:|---:|
+| 普通 FFN | 1 套 | 1 套 |
+| 4 专家、Top-2 | 4 套 | 2 套 |
+| 16 专家、Top-2 | 16 套 | 2 套 |
+
+所以 MoE 试图解耦“模型总共拥有多少参数”和“每个 token 实际使用多少参数”。但它不是免费扩容：没被某个 token 选中的专家参数通常仍需驻留在设备或可访问的存储中；路由器、token 重排、通信、负载不均和容量管理都会产生代价。**少算不等于少存，也不等于端到端一定更快。**
+
+### MoE 与 EP 的关系
+
+如果所有专家都在一张卡上，仍然是 MoE，只是没有跨设备的专家并行。若把专家分布到不同设备，例如：
+
+```text
+GPU 0：E0、E1                 GPU 1：E2、E3
+```
+
+某个来自 GPU 0 的 token 若被选中 E1、E3，就需要：
+
+```text
+token（GPU 0）
+   ├──> 本卡 E1 计算 ─────────────┐
+   └──> 发到 GPU 1 的 E3 计算 ──> 送回
+                                  └──> 按 gate 加权合并
+```
+
+因此：**MoE 决定 token 使用哪些专家；EP（Expert Parallelism）决定这些专家放在哪些设备上。** dispatch 是把专家任务送到目标专家所在 rank，combine 是把结果送回来源 rank 并按 gate 权重恢复 token 顺序。MoE 是模型结构，EP 是并行策略，二者不是同义词。
+
 ## 核心机制：路由、dispatch、计算与 combine
 
-一个常见的 Top-k MoE 层可以写为：
-
-$$
-p(x)=\operatorname{softmax}(W_r x),\qquad
-\mathcal{I}(x)=\operatorname{TopK}(p(x)),\qquad
-y=\sum_{i\in\mathcal{I}(x)} a_i(x)\operatorname{FFN}_i(x)
-$$
-
-$W_r$ 是路由器，专家参数相互独立。$a_i(x)$ 是被选中专家的组合权重：有的实现对入选概率重新归一化，有的采用其他 gate/缩放方案，不能把这一选择当成 MoE 的统一定义。共享专家若存在，还要额外加入其输出。
+前面描述的是一个 token 的逻辑计算路径；当专家分布到多个 rank 时，需要把它落实为以下数据流。共享专家若存在，还要额外加入其输出。
 
 1. **路由（本地）**：对 token 计算专家编号与 gate 权重；Top-k 大于 1 时，同一 token 可能生成多份专家任务。
 2. **dispatch**：按目标 rank 打包 token 和必要的还原索引，常用 A2A 发给专家所在设备。
 3. **计算（本地）**：按专家分组执行本地 FFN，可能使用 grouped GEMM。
 4. **combine**：把结果送回来源 rank，按索引恢复 token 顺序，依据 gate 权重求和。
+
+下面的演示跟踪 4 个 token 的完整流程：先观察路由如何产生倾斜的任务分布，再看 dispatch 中跨 rank 的 all-to-all，最后对比有无容量限制时专家计算与 combine 的差异（每专家容量 2 格，E0 有 3 份任务，必然有一份溢出）。
+
+<MoeDispatchDemo />
 
 为什么常用 A2A 而非 AG？AG 会把所有来源的数据都收齐，A2A 则只把每段数据送给指定目的地。EP 可以使用其他 dispatcher（例如 AG 或专用 P2P/融合通信），但其冗余量、内存和拓扑适用范围不同，不能说语义上“必须 A2A”。训练反向还需对 dispatch/combine 及 gate 计算传播梯度；“两次 A2A”这里只计前向。
 

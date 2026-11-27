@@ -40,7 +40,7 @@ source: GPipe / Megatron-LM / Zero Bubble 论文 + PyTorch 源码（torch/distri
 
 ### 气泡：先固定分母
 
-以下是**stage 均衡、通信开销忽略、每个 microbatch 的前向/反向时间固定**的简化模型。令 $t_f,t_b$ 为一个 stage 处理一个 microbatch 的前向/反向时长，则 GPipe 的理想耗时为：
+以下是**stage 均衡、通信开销忽略、每个 microbatch 的前向/反向时间固定**的简化模型。令 $p$ 为 stage 数，$m$ 为 microbatch 个数，$t_f,t_b$ 为一个 stage 处理一个 microbatch 的前向/反向时长，则 GPipe 的理想耗时为：
 
 $$
 T_{\text{useful}} = m(t_f+t_b), \qquad
@@ -86,9 +86,17 @@ GPipe 在反向开始前保存多个 microbatch 的激活，每个 stage 的激�
 - 每个 stage 的激活驻留从通常的 $O(m)$ 降为至多 $O(p)$ 个 microbatch（当 $m$ 足够大时，上游驻留通常更多）。
 - 这里讨论每步排空、每步更新一次参数的同步调度，不等同于原始 PipeDream 的异步/权重版本化训练语义。
 
+下面的交互演示对照两种调度：逐步观察反向何时开始，以及每个 stage 已保存但尚未释放的 microbatch 激活。例子假设前向和反向各占一个时隙，忽略通信和计算不均衡；它展示的是一种合法调度，而不是实际运行的性能测量。
+
+<PipelineScheduleDemo />
+
 ### Interleaved 1F1B：每卡持有多个虚拟 stage
 
 把模型分为 $vp$ 个更小的虚拟 stage，每个物理 rank 持有 $v$ 个，例如 rank $i$ 持有编号 $i,i+p,\ldots$ 的 stage。调度在同一卡上的多个 model chunk 间交错执行。
+
+下面用 $p=2$、$v=2$ 展示：rank 0 持有 stage 0、2，rank 1 持有 stage 1、3。选择一个 microbatch 跟踪它先向前、再向后经过四个 stage；同时观察每张卡在不同 chunk、不同 microbatch 的前向与反向之间切换。时隙只是理想化示意，不是实测性能。
+
+<InterleavedPipelineDemo />
 
 在虚拟 stage 等分、可行的 microbatch 调度、忽略通信等假设下，常见的理想近似为：
 
@@ -131,7 +139,7 @@ Zero Bubble 调度利用这种拆分填充普通 1F1B 的空洞。代价包括�
 ## 与其他并行轴的组合
 
 - **PP × TP**：每个 stage 的层内部再 TP。边界传输可能是复制激活，也可能是序列分片等布局；须匹配发送和接收端的 TP/SP 约定，不能假定总传完整激活。
-- **PP × DP**：纯 DP×TP×PP 网格下 $d=\text{world size}/(n_{tp}p)$，全局 batch 仍是 $bmd$，不额外乘 PP 或 TP 度数。
+- **PP × DP**：纯 DP×TP×PP 网格下 $d=\text{world size}/(n_{tp}p)$，其中 $n_{tp}$ 为每个 stage 内部的 TP 度数（$p$、$d$ 沿用前文：stage 数与数据并行副本数）。全局 batch 仍是 $bmd$，不额外乘 PP 或 TP 度数。
 - **PP × FSDP**：每个 stage 内再沿数据并行组分片参数/梯度/优化器状态。逻辑可组合不代表没有调度、显存和通信资源竞争。
 
 ## PyTorch 侧实现

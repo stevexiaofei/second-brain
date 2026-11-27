@@ -6,6 +6,9 @@ import TpFsdpDemo from '../components/TpFsdpDemo.vue'
 import RingAllGatherDemo from '../components/RingAllGatherDemo.vue'
 import AllToAllMatrixDemo from '../components/AllToAllMatrixDemo.vue'
 import ReducerFlowDemo from '../components/ReducerFlowDemo.vue'
+import PipelineScheduleDemo from '../components/PipelineScheduleDemo.vue'
+import InterleavedPipelineDemo from '../components/InterleavedPipelineDemo.vue'
+import MoeDispatchDemo from '../components/MoeDispatchDemo.vue'
 
 export default {
   ...DefaultTheme,
@@ -15,5 +18,8 @@ export default {
     app.component('RingAllGatherDemo', RingAllGatherDemo)
     app.component('AllToAllMatrixDemo', AllToAllMatrixDemo)
     app.component('ReducerFlowDemo', ReducerFlowDemo)
+    app.component('PipelineScheduleDemo', PipelineScheduleDemo)
+    app.component('InterleavedPipelineDemo', InterleavedPipelineDemo)
+    app.component('MoeDispatchDemo', MoeDispatchDemo)
   },
 }

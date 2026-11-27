@@ -4,7 +4,7 @@ type: concept
 status: growing
 tags: [pytorch, distributed, collective, nccl, all-gather, reduce-scatter, all-reduce, source-code]
 created: 2026-11-03
-updated: 2026-11-13
+updated: 2026-11-25
 source: PyTorch 源码（distributed_c10d.py / _fsdp_collectives.py / placement_types.py）+ 个人整理
 ---
 
@@ -217,9 +217,10 @@ TP 的 `Shard(i)→Shard(j)` 重分片也可由 `all_to_all_single` 实现，但
 
 ### 同步语义：async_op 与 stream
 
-- `async_op=False`：CPU 阻塞直到通信入队完成（GPU 上只是入队，真正等齐仍由 stream 语义保证）。
-- `async_op=True`：返回 work handle，之后 `work.wait()`。**等价但不推荐**——PyTorch 更惯用的做法是独立通信 stream + event 同步（FSDP2 与 DDP 都是这么做的），让 CPU 永不阻塞、通信与计算在 GPU 上自然重叠。
-- 传统 API 之外还有 **functional collectives** 的 `AsyncCollectiveTensor`：返回一个"懒 tensor"，用到时才 `wait()`，DTensor 的 `redistribute` 就靠它把通信藏进算子图。
+- `async_op=False`：接口返回时的保证依后端而异；CUDA/NCCL 不能理解为“主机等到所有 GPU 通信完成”，GPU 结果消费仍受 stream 依赖约束。
+- `async_op=True`：返回 `Work`，调用者必须在消费结果前建立依赖。CUDA/NCCL 默认非 blocking-wait 路径的 `work.wait()` 主要让**当前 CUDA 流**等待通信完成，不必阻塞 CPU 到 GPU 完成；开启 blocking wait、显式 timeout 等会改变主机等待行为，barrier 另有特殊处理。它是正常同步接口，不应标为“不推荐”，也不保证通信自动被计算掩盖。
+- 本地 `ba56102387ef` 提交的 `ProcessGroupNCCL::collective`（:3610-3616）对 `asyncOp=False` 使用当前流，对 `True` 使用专用 NCCL 流。FSDP2 还会在自身通信流内以 `async_op=False` 发起通信，因此“上层异步重叠”不能只看这个布尔值，必须追 stream/event 与缓冲区生命周期。
+- 传统 API 之外还有 **functional collectives** 的 `AsyncCollectiveTensor`：普通运算消费它时通常通过分发路径触发等待，也可显式 `wait_tensor()`；`redistribute(async_op=False)` 的包装路径会主动等待。不要把它等同于原生 `Work` 输出缓冲区的读写契约。
 
 ## 工作原理
 

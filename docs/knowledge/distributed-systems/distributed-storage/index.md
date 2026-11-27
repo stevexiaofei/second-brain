@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Distributed Storage, Object Storage, File System, Consistency, Replication, Erasure Coding, Metadata]
 created: 2026-08-17
-updated: 2026-10-20
+updated: 2026-11-25
 ---
 
 # 分布式存储基础总览
@@ -193,9 +193,12 @@ flowchart TB
 
 - [块存储、文件存储与对象存储对比](./block-file-object-comparison.md) — 三种存储语义、接口、场景的直观对照（适合最先读）
 - [分布式对象存储](./object-storage.md) — S3 语义、桶/对象模型、纠删码落地
-- [并行文件系统](./parallel-file-systems.md) — Lustre/GPFS 类系统的并发访问与条带化
+- [并行文件系统](./parallel-file-systems.md) — Lustre/GPFS/CephFS 的并发访问与条带化
+- [NFS：部署、挂载与计算节点连接](./nfs-deployment-and-mount.md) — 导出、路径映射、权限与挂载读取交互演示
+- [CephFS：并行访问、部署、挂载与网络](./cephfs-deployment-and-mount.md) — MON/MDS/OSD、public/cluster 网络、cephadm 与读写交互演示
 - [副本、纠删码与放置](./replication-erasure-coding-placement.md) — 冗余与数据分布的核心权衡
 - [一致性、共识与故障恢复](./consistency-consensus-failure.md) — 副本间如何达成一致、坏了怎么恢复
+- [inode：文件身份、元数据与数据定位](./inode-file-metadata.md) — 目录项、fd、缓存、硬链接与文件生命周期
 - [元数据与性能瓶颈](./metadata-and-performance.md) — 元数据服务、热点与扩展性
 - [Ceph、Lustre、MinIO 入门概览](./ceph-lustre-minio-overview.md) — 常见系统的定位与结构
 - [面向 AI 训练与多云场景的存储工程地图](./ai-training-and-multicloud-storage-map.md) — 场景化的工程串联

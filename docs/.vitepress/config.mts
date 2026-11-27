@@ -118,6 +118,7 @@ export default withMermaid(
           { text: 'FX 图变换', link: '/knowledge/ai/systems/pytorch/pytorch-fx' },
           { text: 'torch.compile 编译栈', link: '/knowledge/ai/systems/pytorch/pytorch-compile' },
           { text: '分布式训练', link: '/knowledge/ai/systems/pytorch/pytorch-distributed' },
+          { text: '5D → 分布式源码精读路线', link: '/knowledge/ai/systems/pytorch/pytorch-distributed-source-reading' },
           { text: '集合通信原语', link: '/knowledge/ai/systems/pytorch/pytorch-collective-communication' },
           { text: 'FSDP 源码阅读指南', link: '/knowledge/ai/systems/pytorch/pytorch-fsdp' },
           { text: 'Reducer 类设计详解', link: '/knowledge/ai/systems/pytorch/pytorch-reducer' },
@@ -165,8 +166,11 @@ export default withMermaid(
             { text: '块存储、文件存储与对象存储对比', link: '/knowledge/distributed-systems/distributed-storage/block-file-object-comparison' },
             { text: '分布式对象存储', link: '/knowledge/distributed-systems/distributed-storage/object-storage' },
             { text: '并行文件系统', link: '/knowledge/distributed-systems/distributed-storage/parallel-file-systems' },
+            { text: 'NFS 部署与挂载', link: '/knowledge/distributed-systems/distributed-storage/nfs-deployment-and-mount' },
+            { text: 'CephFS 部署、挂载与网络', link: '/knowledge/distributed-systems/distributed-storage/cephfs-deployment-and-mount' },
             { text: '副本、纠删码与放置', link: '/knowledge/distributed-systems/distributed-storage/replication-erasure-coding-placement' },
             { text: '一致性、共识与故障恢复', link: '/knowledge/distributed-systems/distributed-storage/consistency-consensus-failure' },
+            { text: 'inode：文件身份与元数据', link: '/knowledge/distributed-systems/distributed-storage/inode-file-metadata' },
             { text: '元数据与性能瓶颈', link: '/knowledge/distributed-systems/distributed-storage/metadata-and-performance' },
             { text: 'Ceph、Lustre、MinIO 入门概览', link: '/knowledge/distributed-systems/distributed-storage/ceph-lustre-minio-overview' }
           ]}
@@ -292,6 +296,22 @@ export default withMermaid(
   },
   markdown: {
     config: (md) => {
+      // markdown-it-texmath 默认输出 <eq>/<eqn> 自定义标签，VitePress 会把它们当作未注册的
+      // Vue 组件，构建产物里公式内容会被剥成空占位（<section><!----></section>）。
+      // 这里在挂载 texmath 后改写其规则模板，换成 Vue 中性的 span 标签；
+      // 公式本体仍由 KaTeX 渲染，class 保持 katex 默认输出，样式不受影响。
+      const vueSafe = (tmpl) => tmpl
+        .replace('<eqn>', '<span class="texmath-eqn">')
+        .replace('</eqn>', '</span>')
+        .replace('<eq>', '<span class="texmath-eq">')
+        .replace('</eq>', '</span>')
+      for (const group of Object.values(texmath.rules)) {
+        for (const rule of [...(group.inline || []), ...(group.block || [])]) {
+          if (typeof rule.tmpl === 'string' && (rule.tmpl.includes('<eqn>') || rule.tmpl.includes('<eq>'))) {
+            rule.tmpl = vueSafe(rule.tmpl)
+          }
+        }
+      }
       md.use(texmath, { engine: katex, delimiters: 'dollars', katexOptions: { throwOnError: false } })
     }
   },
@@ -307,7 +327,9 @@ export default withMermaid(
       edgeLabelBackground: '#f1f5f9',
       tertiaryColor: '#f1f5f9'
     },
-    startOnLoad: true,
+    // Mermaid.vue already renders each graph explicitly. Auto-scanning .mermaid again can
+    // parse the injected SVG as a graph and replace it with an error box on first load.
+    startOnLoad: false,
     securityLevel: 'loose',
     flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
     sequence: { useMaxWidth: false, wrap: true, actorMargin: 50 },

@@ -4,7 +4,7 @@ type: concept
 status: seed
 tags: [Metadata, Performance, Tail Latency, Cache, Hotspot, Small Files, Rebalance]
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-11-25
 ---
 
 # 元数据与性能瓶颈
@@ -28,6 +28,8 @@ updated: 2026-08-17
 - 分片位置
 - 副本状态
 - 生命周期状态
+
+文件系统中的一个具体基础是 [inode：文件身份、元数据与数据定位](./inode-file-metadata.md)：名字由目录记录关联到 inode，inode 描述文件属性和布局，fd 则表示进程已打开的访问关系。区分目录元数据、文件元数据和文件内容缓存，才能理解为什么“单文件读写快”不代表“海量文件的创建和查找快”。
 
 ## 为什么元数据会成为瓶颈
 

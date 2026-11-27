@@ -4,12 +4,12 @@ type: concept
 status: seed
 tags: [pytorch, source-code, distributed, fsdp]
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-11-25
 ---
 
 # FSDP 源码阅读指南
 
-> 基于 `D:\project\pytorch` 仓库源码静态阅读（version.txt: `2.8.0a0`，2025-08）。覆盖 FSDP1（`FullyShardedDataParallel`）与 FSDP2（`fully_shard`），以 FSDP2 为主线。
+> 基于 `D:\project\pytorch` 仓库源码静态阅读（version.txt: `2.8.0a0`，2025-08；2026-11-25 核验提交为 `ba56102387ef`）。覆盖 FSDP1（`FullyShardedDataParallel`）与 FSDP2（`fully_shard`），以 FSDP2 为主线。跨模块衔接与版本边界见 [分布式源码精读路线](./pytorch-distributed-source-reading.md)。
 
 ## 一句话理解
 
@@ -26,7 +26,7 @@ updated: 2026-10-29
 | | FSDP1 `FullyShardedDataParallel` | FSDP2 `fully_shard` |
 |---|---|---|
 | 形态 | `nn.Module` wrapper，包一层 | 可组合函数，原模块原地改类，**FQN 不变** |
-| 分片单位 | 一组参数 flatten+concat 成一维 `FlatParameter` 再 chunk | 逐参数 dim-0 chunk，每参数一个 DTensor |
+| 分片单位 | 一组参数 flatten+concat 成一维 `FlatParameter` 再 chunk | 默认逐参数 dim-0 chunk，每参数一个 DTensor；可指定其他 shard 维 |
 | 核心状态 | `_FSDPState` + `FlatParamHandle` | `FSDPState` + `FSDPParamGroup` + `FSDPParam` |
 | 注册时机 | 构造函数里 eager/lazy init | `@contract` 挂 state，首次 forward 才 lazy init |
 | 内存管理 | `record_stream` + `_FreeEventQueue` 限流 | storage resize（对象复用、别名保持），确定性释放 |
@@ -108,7 +108,7 @@ flowchart TD
     C["<b>post_forward（每组）</b><br/><small>reshard（root 默认不 reshard）· 记录 post_forward_order<br/>对输出张量挂 <code>t.register_hook(_pre_backward)</code></small>"]:::action
     D["<b>pre_backward（张量钩子触发）</b><br/><small>unshard（若未预取）· 按反向 post-forward 序预取上一组</small>"]:::action
     E["<b>反向计算</b><br/><small>autograd 正常算梯度到 unsharded 参数</small>"]
-    F["<b>post_backward（每组）</b><br/><small>积累未约梯度 · reshard · 取走 unsharded grads<br/>chunk_cat 拷入 → reduce_scatter（RS 流）→ 视图写回 .grad(DTensor)</small>"]:::action
+    F["<b>post_backward（每组）</b><br/><small>积累未约梯度 · 保留梯度引用 · 按策略 reshard<br/>chunk_cat 拷入 → reduce_scatter（RS 流）→ 视图写回 .grad(DTensor)</small>"]:::action
     G["<b>root_post_backward_final_callback</b><br/><small>引擎 queue_callback 兜底：漏跑的 post_backward 补跑<br/>末次反向清 post_forward_order、等 RS 事件</small>"]:::step
 
     A --> B --> C --> E
@@ -123,7 +123,7 @@ flowchart TD
 
 ### 1. 初始化：两段式
 
-**构造期**（`fully_shard`，`_fully_shard.py`:86）：`@contract` 装饰器把 `FSDPState` 挂到模块 → `_get_managed_modules` DFS 收集"没被内层 fully_shard 认领"的子模块（遇内层组即停，这就是自底向上分组的实现）→ `_move_states_to_device` 搬参数/buffer 到 device → 构造 `FSDPParamGroup`（每个 `FSDPParam._init_sharded_param` 立即做 dim-0 chunk + pad，把模块参数原地换成 sharded DTensor）。最后把模块 `__class__` 换成动态生成的 `FSDP<Orig>`（`FSDPModule` 放 MRO 最左，`:242-249`）——**不换类就拿不到 `reshard()/unshard()` 等方法，但不换类就无法保持 FQN 与 isinstance 兼容，这是个精巧折中**。
+**构造期**（`fully_shard`，`_fully_shard.py`:86）：`@contract` 装饰器把 `FSDPState` 挂到模块 → `_get_managed_modules` DFS 收集"没被内层 fully_shard 认领"的子模块（遇内层组即停，这就是自底向上分组的实现）→ `_move_states_to_device` 搬参数/buffer 到 device → 构造 `FSDPParamGroup`（每个 `FSDPParam._init_sharded_param` 立即做 dim-0 chunk + pad，把模块参数原地换成 sharded DTensor）。最后把模块 `__class__` 换成动态生成的 `FSDP<Orig>`（`FSDPModule` 放 MRO 最左，`:242-249`）——**通过原地改类提供 `reshard()/unshard()`，同时不增加 wrapper 层级；原类仍在继承链中，保持 FQN 与针对原类的 `isinstance` 兼容**。
 
 **lazy init**（首次 forward，`_fsdp_state.py`:153）：第一个跑 forward 的 state 自封为根，遍历模块树找出所有 state，共享 `FSDPStateContext` + `FSDPCommContext`，根组的 `post_forward_mesh_info` 置 None（root 前向后立即反传，reshard 纯浪费）。
 
@@ -134,7 +134,7 @@ flowchart TD
 ```mermaid
 flowchart LR
     CI["<b>copy-in 流</b><br/><small><code>fsdp.all_gather_copy_in</code><br/>foreach_copy_ 聚合本 rank 分片<br/>（混精在此转 bf16）</small>"]:::step
-    AG["<b>AG 流</b><br/><small><code>all_gather_into_tensor</code><br/>async_op=True 立即返回<br/>record_event</small>"]:::action
+    AG["<b>AG 流</b><br/><small><code>all_gather_into_tensor</code><br/>在 AG 流发起通信<br/>record_event</small>"]:::action
     CO["<b>copy-out（当前流）</b><br/><small>wait event/work → <code>split_with_sizes_copy</code><br/>按参数切开 → as_strided 视图 → setattr</small>"]:::action
     NEXT["<b>下一组 pre-forward</b><br/><small>copy-in 提前于当前计算执行<br/>（隐式预取 = 默认行为）</small>"]:::branchYes
 
@@ -150,19 +150,19 @@ flowchart LR
     classDef branchYes fill:#eef2ff,stroke:#c7d2fe,color:#3730a3,stroke-width:1.5px
 ```
 
-`FSDPCommContext.lazy_init`（`_fsdp_param_group.py`:52）建 4 条高优先级流：`all_gather_copy_in_stream`、`all_gather_stream`、`reduce_scatter_stream`、`all_reduce_stream`（HSDP 用，与 RS 走不同网络资源可并行）。预取两级：**前向隐式预取**（每组 pre-forward 顺带发起下一组的 copy-in）+ **反向显式预取**（`_backward_prefetch` 按 `post_forward_order` 的逆序发起上一组 unshard，`:512`）。用户可用 `set_modules_to_forward_prefetch/backward_prefetch` 覆盖为手动调度。
+`FSDPCommContext.lazy_init`（`_fsdp_param_group.py`:52）建 4 条流：前三条 `all_gather_copy_in_stream`、`all_gather_stream`、`reduce_scatter_stream` 为高优先级；`all_reduce_stream` 使用默认优先级，供 HSDP 等路径使用。默认前向隐式预取依赖 CPU 提前进入下一组 hook 与不同流的排队，使下一组 copy-in/AG 有机会与尚未完成的当前计算重叠；并不是当前组 hook 主动调用下一组。默认反向则由 `_backward_prefetch` 按 `post_forward_order` 的逆序显式发起上一组 unshard（`:512`）。`set_modules_to_forward_prefetch/backward_prefetch` 允许用户指定额外的预取目标。
 
 ### 3. reshard 与 `reshard_after_forward`
 
 - `True`（非根默认）：post-forward 即 `to_sharded()`，`free_unsharded_param()` 把 AG 输出 storage `resize_(0)`，反向重新 all-gather——显存最低、通信最多。
 - `False`（根默认）：反向免 all-gather。
-- `int k`：`_get_post_forward_mesh_info`（`_fsdp_init.py`:20）构造一个 k 列的 post-forward DeviceMesh，post-forward 只 clone 出本 rank 在小网格里的分片（`to_sharded_post_forward`），反向只需在小网格内 all-gather——**用 $1/k$ 的额外显存换反向通信量降为 $1/k$**，典型取值是节点内卡数。
+- `int k`：这里 $k$ 是前向后用于重新分片的较小子组大小，必须是原 shard 组大小的非平凡因子。`_get_post_forward_mesh_info`（`_fsdp_init.py`:20）构造对应小网格，`to_sharded_post_forward` 保留较大的本地分片，反向仅在小组内 all-gather。相比 `True`，以更高参数驻留量换取较小反向通信组；相比 `False`，仍可节省驻留显存。通信字节数还取决于组大小、参数量与 dtype，不能一概写成“降为原来的 $1/k$”。典型选择是节点内卡数。
 
 ### 4. post_backward：reduce-scatter 流水线
 
 `FSDPParamGroup.post_backward`（`:391`）在"该组最后一个参数梯度算完"时触发（触发机制见下节），依次：
 1. 合并混精积累的梯度（`accumulate_unsharded_grad_if_needed`）；
-2. 先 reshard 再取走 unsharded 梯度引用（顺序刻意如此：先释放参数显存，再为通信分配缓冲）；
+2. 先收集 unsharded 梯度引用并清理其挂载位置，再按 `reshard_after_backward` 决定是否 reshard；源码注释强调必须在参数数据仍存在时访问计算参数，而参数重分片/释放仍发生在后续通信缓冲分配之前；
 3. `foreach_reduce`（`_fsdp_collectives.py`:376）：`chunk_cat` 一次性把所有梯度拷进 1D RS 输入 → RS 流上 `reduce_scatter_tensor` → 除法/换 dtype → `as_strided` 直接把 RS 输出的分片**视图**赋给 `sharded_param.grad`（包成 DTensor，零拷贝）。
 
 除法策略（`_get_gradient_divide_factors`，`:605`）值得细读：fp32/bf16 直接用 NCCL `ReduceOp.AVG`（零额外 kernel）；自定义 factor 走 `_make_nccl_premul_sum`；fp16 有溢出风险时按 $\sqrt{N}$ 拆成 pre/post 两次除。HSDP 在此之上于 `all_reduce_stream` 上做跨节点 all-reduce，还可积累部分约简结果（`set_requires_all_reduce(False)` 实现"只 RS 不 AR"的梯度积累）。
@@ -179,7 +179,7 @@ flowchart LR
 1. **FlatParameter 扁平化**（`_flat_param.py`:202, :812）：多参数 concat → pad → chunk，`_param_infos`/`_shared_param_infos` 记录还原映射；`_use_unsharded_views`（`:1914`）用视图 setattr 还原原参数——对比 FSDP2 的 per-param as_strided，理解为什么"分片表示复杂、state dict 要 all-gather"。
 2. **钩子注册**（`_runtime_utils.py`:1412）：FSDP1 挂钩在 **AccumulateGrad 节点**上（`flat_param.expand_as().grad_fn.next_functions[0]` 拿节点再 `register_hook`）——与 [Reducer 类设计详解](./pytorch-reducer.md) 同款手法；FSDP2 换成对**输出张量** `t.register_hook` + `autograd.Function`，两者对照着看能体会"参数侧钩子"与"数据侧钩子"的取舍。
 3. **`limit_all_gathers` 限流**（`_limiter_utils.py`:7 `_FreeEventQueue`，最多 2 个 in-flight AG）：FSDP2 用 storage resize + 延迟释放引用替代了 CPU 限流，官方文档明确说这是为了确定性内存与不阻塞 CPU。
-4. **执行顺序记录**（`_exec_order_utils.py`）：FSDP1 用 FX trace 预推执行序；FSDP2 直接运行时记录 `post_forward_order`——简化是 FSDP2 的主旋律。
+4. **执行顺序记录**（`_exec_order_utils.py`）：FSDP1 的 `record_pre_forward` 在首轮运行时记录并固定前向顺序，`record_post_forward` 每轮更新后向预取所需顺序，并带跨 rank/跨轮检查；不是用 FX trace 预推。FSDP2 同样在运行时记录 `post_forward_order`，反向按其逆序预取。
 
 ## 与编译栈的协同（进阶专题）
 
